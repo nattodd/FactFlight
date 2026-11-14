@@ -7,3 +7,9 @@
 #menuView .hero{display:block}#menuView .context .dot{width:auto;height:auto;background:none;display:inline}
 .topnav [aria-current=page]{background:var(--soft)}
 
+
+/* Larger tile labels and descriptions for children and older readers. */
+#menuView .tile strong,#menuView .choice strong{font-size:20px}
+#menuView .tile p,#menuView .tile .sub,#menuView .small,#menuView .context,#menuView .review p,#menuView .notice,#menuView .footer-action p,#menuView details p{font-size:16px;line-height:1.5}
+#menuView .choice .example{font-size:26px}#menuView .choice .number,#menuView .example-note,#menuView .quick-tag,#menuView .steps span{font-size:14px}
+#menuView .badge{font-size:12px}#menuView .eyebrow{font-size:13px}#menuView .pills button{font-size:20px}#menuView .tile{min-height:190px}

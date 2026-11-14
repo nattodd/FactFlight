@@ -67,7 +67,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
   const shot=async step=>{assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),step+' overflow');if(width===390||width===1440)await p.screenshot({path:path.join(output,`menu-${step}-${width}.png`),fullPage:true})};
   await shot('home');await p.locator('[data-math]').click();await shot('math');await p.locator('[data-activity=addition]').click();await shot('mode');await p.locator('[data-mode=free]').click();await shot('level');await p.locator('[data-next]').click();await shot('ready');await p.locator('[data-view=focus]').click();await p.locator('[data-start]').click();
   const flightBox=await p.locator('#practiceView').boundingBox();if(flightBox.height<height-32)assert(Math.abs(flightBox.y+flightBox.height/2-height/2)<5,'flight should be vertically centered');
-  for(const id of ['skip','undo','end','sessionHome']){const b=await p.locator('#'+id).boundingBox();assert(b&&b.y>=0&&b.y+b.height<=height,id+' outside viewport')}
+  for(const id of ['skip','undo','end','sessionHome']){await p.locator('#'+id).scrollIntoViewIfNeeded();const b=await p.locator('#'+id).boundingBox();assert(b&&b.y>=-1&&b.y+b.height<=height+1,id+' unreachable after scrolling')}
   if(width===390||width===1440)await p.screenshot({path:path.join(output,`flight-centered-${width}.png`)});
   await p.locator('#sessionHome').click();await p.locator('#continueFlight').click();await p.locator('[data-focus-digit="1"]').click();await p.locator('#focusForm button[type=submit]').click();await p.locator('#end').click();await p.locator('#resultHome').click();assert(await p.locator('[data-math]').isVisible());await c.close();
  });

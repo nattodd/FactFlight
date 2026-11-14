@@ -44,3 +44,12 @@ The owner reported successful desktop/iPhone testing in Chrome and Safari, and r
 
 Seven targeted automated checks passed: five layout sizes (320x568, 390x844, 844x390, 768x1024, 1440x1000), a 390x400 overflow/scrolling check, and the existing 320px School voice/keypad check. The centered 390px screenshot was visually inspected. Physical-device validation of this alignment change and commit/push remain pending.
 
+
+## Larger-text follow-up — 2026-11-14
+
+The owner approved the larger-font screenshot and authorized committing and pushing after testing. Menu tile titles are 20px and descriptions 16px. Short Focus equations are 48–64px on phones (about 55px at 390px width); longer prompts use 34–46px rather than the previous small-text override. Keypad digits, speech feedback, controls, worksheet facts, and results text are enlarged. Centering remains when space permits; compact screens allow natural scrolling instead of reducing legibility.
+
+All 43 relevant automated checks passed: 9 readability checks across six viewports and eight activities, 18 original regression checks, 11 Focus checks, and 5 menu-layout checks. Checks include wrapping/clipping, scroll reachability, both themes, School voice mocks and keypad, original three-column worksheet, scoring and history regression. The initial strict scroll-bounds assertion was adjusted for subpixel rounding. The dark/light 390px School screenshots were visually inspected. No speech, scoring, timer, or storage behavior was changed; JavaScript changes only classify long equations and add a presentation class.
+
+Real iPhone/Safari/Chrome validation of the larger typography remains pending; simulated devices and speech mocks do not establish physical-device acceptance.
+

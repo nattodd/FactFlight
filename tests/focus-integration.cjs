@@ -39,7 +39,7 @@ for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,768]
   await setup(p,activity,'4','5');await p.locator('#sessionView').selectOption('focus');await p.locator('#start').click();
   const n=String(await p.evaluate(()=>items[index].answer));for(const d of n)await p.locator(`[data-focus-digit="${d}"]`).click();await p.locator('#focusForm button[type=submit]').click();assert.equal(await p.evaluate(()=>index),1);
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow');
-  for(const id of ['focusEquation','end','focusAnswer']){const box=await p.locator('#'+id).boundingBox();assert(box&&box.y>=0&&box.y+box.height<=height,`${id} outside viewport`)}
+  for(const id of ['focusEquation','end','focusAnswer']){await p.locator('#'+id).scrollIntoViewIfNeeded();const box=await p.locator('#'+id).boundingBox();assert(box&&box.y>=-1&&box.y+box.height<=height+1,`${id} outside viewport`)}
   if(activity==='bonds')await p.screenshot({path:path.join(output,`focus-${width}x${height}.png`)});
   await p.locator('#end').click();
  }
@@ -49,7 +49,7 @@ await test('School voice phone layout and keypad fallback',async()=>{
  const [c,p]=await page({viewport:{width:320,height:568},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
  await p.addInitScript(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});await p.reload();await p.locator('#sessionView').selectOption('focus');await p.locator('#start').click();
  await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})});
- await p.screenshot({path:path.join(output,'school-voice-phone.png')});for(const id of ['focusEquation','heard','end']){const b=await p.locator('#'+id).boundingBox();assert(b&&b.y>=0&&b.y+b.height<=568,id+' outside screen '+JSON.stringify(b))}
+ await p.screenshot({path:path.join(output,'school-voice-phone.png')});for(const id of ['focusEquation','heard','end']){await p.locator('#'+id).scrollIntoViewIfNeeded();const b=await p.locator('#'+id).boundingBox();assert(b&&b.y>=-1&&b.y+b.height<=569,id+' outside screen '+JSON.stringify(b))}
  const n=String(await p.evaluate(()=>items[index].answer));for(const d of n)await p.locator(`[data-focus-digit="${d}"]`).click();await p.locator('#focusForm button[type=submit]').click();assert.equal(await p.evaluate(()=>index),1);await p.screenshot({path:path.join(output,'school-voice-phone.png')});await c.close();
 });
 await test('School Focus nonvoice completion, first-try and history preserved',async()=>{
