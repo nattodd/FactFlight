@@ -21,6 +21,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Added brand-kit FF Home Screen icon metadata, a branded favicon, and a web manifest with relative paths for root and subpath hosting. This increment retains browser display mode and does not add offline caching.
 
 ### Changed
+- Focus problems now shake and turn red after wrong answers, briefly turn green with “Correct!” before advancing, and flash grey-blue when final speech cannot be interpreted. Wrong-answer red remains until Skip/correction; unclear speech briefly overlays it, then restores red. Feedback includes symbols/text and respects reduced-motion preferences.
+- Correct Focus answers remain visible for 350 milliseconds, with repeat input guarded during the transition. Skip, Undo, Finish, scoring and timer expiry remain supported; completion time is captured at the final correct answer.
 - Duplicate-only imports now explicitly say “Profile already exists” and show an “Already imported” disabled action. Imports using an older nickname keep the current local name for the matching learner ID.
 - Enlarged menu tile labels, descriptions, results text, keypad digits, and session controls. Focus equations are substantially larger, with a separate readable size for longer prompts; compact screens can scroll rather than shrinking text.
 - Centered the in-flight Focus layout vertically within the available viewport when space permits; shorter screens retain natural scrolling so controls remain reachable.
@@ -40,6 +42,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Recorded owner acceptance of learner renaming and duplicate-import messaging on physical iPhone Chrome and Safari, with progress intact.
 - Recorded owner acceptance of learner import/restore on physical iPhone Chrome and Safari, including duplicates and preservation of another learner’s progress.
 - Recorded owner acceptance of profile export and deletion on physical iPhone Chrome and Safari, including preservation of another learner’s progress.
 - Recorded owner acceptance of learner profiles on physical iPhone Chrome and Safari, including separate progress and non-saving Guest behavior.

@@ -23,6 +23,8 @@
   --redbg: #FCE7E9;
   --green: #216344;
   --greenbg: #DCF3DF;
+  --feedback-neutral-bg: #E2EBEF;
+  --feedback-neutral-ink: #334E5A;
   --focus-ring: var(--brand-ink);
   --shadow: 0 16px 50px #0B0B0F10;
 }
@@ -41,6 +43,8 @@
   --redbg: #4C2932;
   --green: #B9F2BE;
   --greenbg: #254B35;
+  --feedback-neutral-bg: #34454E;
+  --feedback-neutral-ink: #E2EBEF;
   --focus-ring: var(--brand-amber);
   --shadow: none;
 }

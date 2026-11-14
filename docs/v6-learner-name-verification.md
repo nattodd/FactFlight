@@ -17,3 +17,7 @@ All 64 targeted isolated Windows Chrome checks passed: 9 rename checks, 16 impor
 The phone rename dialog screenshot was visually inspected. The rename suite was rerun after refining immediate saved-result labels. `git diff --check` passed. No real user history was accessed or changed during tests.
 
 Physical iPhone Safari/Chrome and Home Screen testing of the new nickname dialog and clearer import messages remains pending. Check the keyboard, Save/Cancel, reload, existing results after rename, and importing a backup exported before renaming. Android/tablet and actual microphone checks remain unverified for this increment. The owner approved committing and pushing this increment to `v6-development` for the normal Netlify preview; physical-device acceptance remains pending.
+
+## Owner device acceptance — 2026-11-14
+
+After deployment of `31bb944`, the owner tested changing learner names and duplicate-import messaging on physical iPhone Chrome and Safari and confirmed everything works and progress stays intact. This records acceptance of those reported flows, not a fresh exhaustive device regression pass.

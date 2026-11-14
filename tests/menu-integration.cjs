@@ -19,7 +19,7 @@ async function choose(p,{activity='addition',mode='quick',view='focus',input='ke
  await p.locator('[data-next]').click();await p.locator(`[data-input="${input}"]`).click();await p.locator(`[data-view="${view}"]`).click();
  await p.locator('[data-start]').click();
 }
-async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter')}
+async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter');await require('./feedback-wait.cjs')(p)}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true,channel:'chrome'});
  await test('Home tiles and Quick completion for all eight activities in both views',async()=>{
@@ -32,11 +32,11 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
   await p.waitForFunction(()=>JSON.parse(localStorage.getItem("fact-flight-family-v1")).sessions.length===16);await p.reload();await p.locator("[data-learner]:not([data-learner=guest])").first().click();assert.equal(await p.evaluate(()=>history.length),16);await c.close();
  });
  await test('Free Practice exceeds 120 answers, preserves skip/undo and excludes unseen tail',async()=>{
-  for(const view of ['focus','worksheet']){const [c,p]=await page();await p.clock.install();await choose(p,{mode:'free',view,activity:'squares'});await p.clock.fastForward(180000);assert.equal(await p.evaluate(()=>phase),'running');
+  for(const view of ['focus','worksheet']){const [c,p]=await page();await p.clock.install();p.feedbackClock=true;await choose(p,{mode:'free',view,activity:'squares'});await p.clock.fastForward(180000);assert.equal(await p.evaluate(()=>phase),'running');
    assert.equal(await p.evaluate(()=>items.length),1);await answer(p,9999);await answer(p);await p.locator('#skip').click();
    const next=await p.evaluate(()=>items[index].text);await p.locator('#undo').click();assert.equal(await p.evaluate(()=>index),1);await p.locator('#skip').click();assert.equal(await p.evaluate(()=>items[index].text),next);
    // Exercise continuous generation well past every previous question-count limit.
-   await p.evaluate(()=>{for(let n=0;n<125;n++)submit(items[index].answer,String(items[index].answer),'keyboard')});
+   for(let n=0;n<125;n++){await p.evaluate(()=>submit(items[index].answer,String(items[index].answer),'keyboard'));await require('./feedback-wait.cjs')(p)}
    assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>index),127);assert.equal(await p.evaluate(()=>items.length),128);
    assert(await p.evaluate(()=>items.every((p,i)=>!items.slice(Math.max(0,i-3),i).some(q=>q.key===p.key))));
    await p.locator('#end').click();assert.equal(await p.evaluate(()=>history[0].items.length),127);assert.deepEqual(await p.evaluate(()=>stats(history[0])),{first:125,correct:126,wrong:0,unanswered:1,errors:1,skips:1});
@@ -44,7 +44,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
   }
  });
  await test('Home/Progress guard retains session, finish saves once, timer expires through dialog',async()=>{
-  const [c,p]=await page();await p.clock.install();await choose(p,{mode:'timed',count:10});await answer(p);
+  const [c,p]=await page();await p.clock.install();p.feedbackClock=true;await choose(p,{mode:'timed',count:10});await answer(p);
   const before=await p.evaluate(()=>JSON.stringify(items));for(const nav of ['sessionHome','homeNav','historyNav']){await p.locator('#'+nav).evaluate(e=>e.click());assert(await p.locator('#exitDialog').isVisible());await p.clock.fastForward(1000);await p.locator('#continueFlight').click();assert.equal(await p.evaluate(()=>JSON.stringify(items)),before)}
   await p.locator('#sessionHome').click();await p.locator('#finishFlight').click();assert(await p.locator('#resultsView').isVisible());assert.equal(await p.evaluate(()=>history.length),1);await p.locator('#resultHome').click();assert(await p.locator('[data-quick]').isVisible());
   await choose(p,{mode:'test'});assert.equal(await p.evaluate(()=>items.length),60);await p.locator('#sessionHome').click();await p.clock.fastForward(120100);assert(!(await p.locator('#exitDialog').isVisible()));assert.equal(await p.evaluate(()=>history[0].reason),'time');await c.close();
@@ -53,7 +53,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
   const [c,p]=await page();await p.addInitScript(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});await p.reload();await choose(p,{mode:'school',table:7,input:'voice'});assert.equal(await p.evaluate(()=>phase),'checking');
   let idx=0;const say=text=>p.evaluate(({text,index})=>{const r=[{transcript:text}];r.isFinal=true;testRecognition.onresult({resultIndex:index,results:Array(index+1).fill(r)})},{text,index:idx++});
   await say('ready');assert.equal(await p.evaluate(()=>items.length),60);assert.equal(await p.evaluate(()=>table),7);assert.equal(await p.evaluate(()=>mode),'test');assert.equal(await p.evaluate(()=>freePractice),false);
-  await say('9999');assert.equal(await p.evaluate(()=>index),0);await say(String(await p.evaluate(()=>items[index].answer)));assert.equal(await p.evaluate(()=>index),1);assert((await p.locator('#heard').innerText()).includes('Heard'));
+  await say('9999');assert.equal(await p.evaluate(()=>index),0);await say(String(await p.evaluate(()=>items[index].answer)));await require('./feedback-wait.cjs')(p);assert.equal(await p.evaluate(()=>index),1);assert((await p.locator('#heard').innerText()).includes('Heard'));
   await p.evaluate(()=>setMicStatus('disconnected'));await p.locator('#micReconnectTop').click();assert.equal(await p.locator('#micStatus').getAttribute('data-state'),'connected');await p.locator('#end').click();assert.equal(await p.evaluate(()=>history[0].table),7);assert.equal(await p.evaluate(()=>history[0].activity),undefined);await c.close();
  });
  await test('Microphone cancellation returns to selected ready step and keyboard fallback',async()=>{

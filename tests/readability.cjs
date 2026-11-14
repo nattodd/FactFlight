@@ -19,7 +19,7 @@ async function choose(p,{activity='addition',mode='quick',view='focus',input='ke
  await p.locator('[data-next]').click();await p.locator(`[data-input="${input}"]`).click();await p.locator(`[data-view="${view}"]`).click();
  await p.locator('[data-start]').click();
 }
-async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter')}
+async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter');await require('./feedback-wait.cjs')(p)}
 
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true,channel:'chrome'});
@@ -35,7 +35,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
    // Every token stays inside the prompt card, even when the equation wraps.
    assert(await p.locator('#focusEquation').evaluate(e=>e.scrollWidth<=e.clientWidth+1),activity+' prompt clipped');
    for(const id of ['focusEquation','skip','undo','end','sessionHome']){await p.locator('#'+id).scrollIntoViewIfNeeded();const b=await p.locator('#'+id).boundingBox();assert(b.y>=-1&&b.y+b.height<=height+1,id+' unreachable '+JSON.stringify(b))}
-   const value=String(await p.evaluate(()=>items[index].answer));for(const d of value)await p.locator(`[data-focus-digit="${d}"]`).click();await p.locator('#focusForm button[type=submit]').click();assert.equal(await p.evaluate(()=>index),1);
+   const value=String(await p.evaluate(()=>items[index].answer));for(const d of value)await p.locator(`[data-focus-digit="${d}"]`).click();await p.locator('#focusForm button[type=submit]').click();await require('./feedback-wait.cjs')(p);assert.equal(await p.evaluate(()=>index),1);
    await p.locator('#end').click();
   }
   await c.close();

@@ -19,7 +19,7 @@ async function choose(p,{activity='addition',mode='quick',view='focus',input='ke
  await p.locator('[data-next]').click();await p.locator(`[data-input="${input}"]`).click();await p.locator(`[data-view="${view}"]`).click();
  await p.locator('[data-start]').click();
 }
-async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter')}
+async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter');await require('./feedback-wait.cjs')(p)}
 
 async function create(p,name){await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill(name);await p.locator('#profileForm button').click();await p.locator('[data-quick]').waitFor()}
 async function flight(p,options={}){await choose(p,options);await answer(p,9999);await answer(p);await p.locator('#skip').click();await p.locator('#end').click()}
