@@ -53,3 +53,9 @@ All 43 relevant automated checks passed: 9 readability checks across six viewpor
 
 Real iPhone/Safari/Chrome validation of the larger typography remains pending; simulated devices and speech mocks do not establish physical-device acceptance.
 
+
+## Owner acceptance of larger text — 2026-11-14
+
+Commit `7e93dc1` was pushed to `v6-development`; the normal Netlify preview HTML and menu CSS were verified against the committed files. The owner subsequently reported: “Looks good on my iPhone in Chrome and Safari. The larger text is much easier to read.” This records physical iPhone Chrome/Safari visual and readability acceptance of the larger-text update. The prior 43 automated checks remain the automated evidence; no additional tests were run for this documentation update.
+
+This report does not establish a fresh exhaustive microphone/reconnection, permissions, export/reload, orientation, or accessibility regression pass. Android, tablets, and installed Home Screen behavior remain unverified for this increment. Earlier pending-deployment/readability statements above describe their historical checkpoints and are superseded by this acceptance.

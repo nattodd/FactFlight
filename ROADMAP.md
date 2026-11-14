@@ -12,7 +12,11 @@
 
 **Approved menu increment — 2026-11-14:** The owner approved the account-free tile Home and guided menu mockup, with Free Practice continuing until Finish. These are now integrated locally, including Quick Practice across all activities, disabled Coming Soon subjects, and guarded Home navigation. Optional learner profiles remain subsequent work; this supersedes the earlier plan to require a learner-first Home now. Verification and remaining device checks are recorded in [menu integration verification](docs/v6-menu-integration-verification.md).
 
+**Readability acceptance — 2026-11-14:** The larger-text update (`7e93dc1`) is owner-accepted on physical iPhone Chrome and Safari after 43 automated checks. This is visual/readability acceptance, not a new exhaustive device regression pass. Next proposed increments are branded Home Screen icons, learner-selection Home, and backup-safe local profiles. See [the next-phase plan](docs/v6-profiles-home-plan.md). Icon metadata is brought forward; offline caching and update handling remain separate.
+
 ## 1. Non-negotiable product principles
+
+**Branded icon increment — 2026-11-14:** Apple touch icon, favicon, and manifest metadata are implemented locally with root/subpath Chrome checks passing. Physical Home Screen acceptance remains pending; see [icon verification](docs/v6-home-screen-icon-verification.md). Offline caching and standalone launch changes remain deferred.
 
 1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.
 2. **Useful in 30 seconds.** Open → choose an activity → pick a small amount → start. Remember the last choices, but let anyone switch quickly.
@@ -182,7 +186,7 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 **Now:** Design and incrementally implement the complete v6 math/family experience: Home/navigation, Focus/Worksheet, Quick/Free/Timed/Challenge modes, original School Test, optional profiles/Guest, safe backups/import, separate progress, and expanded math activities with levels.
 
-**Next within v6:** follow the experience-plan milestones; implement backup-safe local profiles before connecting the expanded activity library. PWA/offline reliability remains a separate later milestone.
+**Next within v6:** the expanded activity library is integrated. Review and implement the learner Home/profile plan, including branded Home Screen icons and backup-safe separate learner progress. Offline reliability remains a separate later milestone.
 
 **After that:** toddler flashcards and sounds, sight words, games, and personalized review.
 
