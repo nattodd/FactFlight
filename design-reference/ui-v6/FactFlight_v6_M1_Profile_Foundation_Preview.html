@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fact Flight · Multiplication studio</title><meta name="application-version" content="6.0-m1-preview">
+<style>
+/* Approved source typography pending: system font fallback only. */
+:root{color-scheme:light;--bg:#f4f5ef;--card:#fff;--ink:#183a36;--muted:#687b76;--line:#dce3da;--accent:#276f59;--soft:#e8eedf;--active:#e6e9f0;--red:#b33747;--redbg:#fce7e9;--green:#216d49;--greenbg:#dcf3df;--shadow:0 16px 50px #173b3010} [data-theme=dark]{color-scheme:dark;--bg:#112320;--card:#1a302b;--ink:#edf3df;--muted:#acbeb6;--line:#344b42;--accent:#afe084;--soft:#293f30;--active:#3d4656;--red:#ff9ca6;--redbg:#512e36;--green:#b9f2be;--greenbg:#254b35;--shadow:none}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #b29aea;outline-offset:3px}button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:11px 17px;font-weight:600}.primary{background:var(--accent);color:var(--bg);border-color:transparent}.quiet{background:transparent}header{max-width:1400px;margin:auto;padding:25px 38px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;font:700 22px 'Space Grotesk',sans-serif}.logo{display:grid;place-items:center;background:var(--accent);color:var(--bg);width:40px;height:40px;border-radius:13px;transform:rotate(-6deg)}.topnav{display:flex;gap:8px}main{max-width:1400px;margin:auto;padding:35px 38px 60px}.eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:700;color:var(--muted)}h1,h2,h3{font-family:'Space Grotesk',sans-serif}h1{font-size:clamp(32px,4vw,49px);letter-spacing:-2px;margin:10px 0}h2{font-size:25px;margin:0 0 12px}h3{font-size:17px;margin:0 0 10px}p{line-height:1.6;color:var(--muted)}.hero{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.badge{background:var(--soft);padding:10px 15px;border-radius:30px;font-size:12px;font-weight:700}.layout{display:grid;grid-template-columns:285px minmax(0,1fr);gap:25px;align-items:start}.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}.settings{position:sticky;top:18px}.label{display:block;font-size:12px;font-weight:700;margin:23px 0 10px}.numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.number{font:600 23px 'Space Grotesk';padding:12px 0}.number.selected{background:var(--accent);color:var(--bg);border-color:var(--accent)}.segments{display:flex;gap:5px;background:var(--bg);padding:5px;border-radius:12px}.segments button{flex:1;font-size:12px;border:0;padding:10px 5px;background:transparent}.segments .selected{background:var(--card);box-shadow:0 2px 6px #0001}.wide{width:100%;margin-top:22px}.small{font-size:12px;line-height:1.6;color:var(--muted)}input,select{border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);padding:10px;width:100%}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:19px}.metric{padding:15px 20px;border:1px solid var(--line);border-radius:15px;background:var(--card)}.metric strong{display:block;font:600 28px 'Space Grotesk';margin-top:5px}.metric span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}.sheet{padding:23px}.sheetbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}.sheetbar h2{font-size:20px;margin:0}.progress{height:5px;border-radius:6px;background:var(--soft);margin:15px 0 23px;overflow:hidden}.progress div{height:100%;background:var(--accent);transition:width .2s}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.column{display:flex;flex-direction:column;gap:7px}.coltitle{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;padding:0 8px 5px}.fact{border:1px solid var(--line);border-radius:9px;min-height:40px;padding:7px 10px;display:flex;gap:9px;align-items:center;font:500 17px 'Space Grotesk';transition:background .15s}.fact .idx{font:10px 'DM Sans';color:var(--muted);width:15px}.fact .value{margin-left:auto;min-width:25px;text-align:center}.fact.active{background:var(--active);outline:2px solid var(--muted);outline-offset:1px}.fact.correct{background:var(--greenbg);color:var(--green);border-color:var(--green)}.fact.wrong{background:var(--redbg);color:var(--red);border-color:var(--red)}.fact.skipped{border-style:dashed;background:var(--active)}.shake{animation:shake .35s}@keyframes shake{25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}.speech{background:var(--soft);padding:14px 18px;border-radius:13px;display:flex;align-items:center;gap:12px;margin-bottom:18px}.dot{width:9px;height:9px;flex-shrink:0;background:var(--accent);border-radius:50%}.speech.live .dot{animation:pulse 1.3s infinite}.speech:not(.live) .dot{background:var(--muted)}.mic-status{display:inline-block;margin-bottom:5px;font-size:12px;font-weight:700;letter-spacing:.02em}.mic-status[data-state="connected"]{color:var(--green)}.mic-status[data-state="disconnected"]{color:var(--red)}.mic-status[data-state="not-connected"]{color:var(--muted)}@keyframes pulse{50%{opacity:.25}}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.controls input{width:120px}.controls button{font-size:12px;padding:9px 12px}.hidden{display:none!important}.empty{min-height:420px;display:flex;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,var(--soft),transparent 65%)}.orb{width:116px;height:116px;border-radius:32px;background:var(--soft);font:600 54px 'Space Grotesk';display:grid;place-items:center;margin:0 auto 24px;transform:rotate(-8deg)}.empty p{max-width:380px;margin:10px auto}.rule{border-top:1px solid var(--line);margin:23px 0 18px}.resultscore{font:600 65px 'Space Grotesk';letter-spacing:-3px}.resultgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:12px;text-align:left;border-bottom:1px solid var(--line)}th{font-size:11px;color:var(--muted)}.tablewrap{overflow:auto}.tag{color:var(--accent);font-size:12px;font-weight:700}dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:34px;width:min(460px,90vw);text-align:center}dialog::backdrop{background:#102c24aa;backdrop-filter:blur(5px)}.mic{font-size:38px;background:var(--soft);border-radius:50%;width:85px;height:85px;display:grid;place-items:center;margin:0 auto 22px}#micMessage{min-height:52px}footer{font-size:11px;color:var(--muted);margin-top:24px}details{margin-top:17px}summary{cursor:pointer;font-size:12px;color:var(--muted)}@media(max-width:900px){header,main{padding:20px}.layout{grid-template-columns:220px minmax(0,1fr)}.grid{gap:8px}.fact{font-size:14px;padding:7px 5px;gap:4px}.panel{padding:17px}.hero .badge{display:none}}@media(max-width:680px){.layout{grid-template-columns:1fr}.settings{position:static}.numbers{grid-template-columns:repeat(9,1fr);gap:4px}.number{font-size:18px}.hero{margin-bottom:20px}.grid{gap:7px}.fact{font-size:13px}.fact .idx{width:10px;font-size:8px}.fact .value{min-width:15px}.metrics{gap:7px}.metric{padding:12px}.resultgrid{grid-template-columns:repeat(2,1fr)}header{gap:10px}.brand{font-size:18px}.topnav button{padding:9px;font-size:12px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.speech-content{min-width:0;flex:1}.mic-topline{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:7px}.mic-status{display:inline-block;font-size:12px;font-weight:700;line-height:1.5}.mic-status[data-state="connected"]{color:var(--green)}.mic-status[data-state="disconnected"]{color:var(--red)}.mic-status[data-state="not-connected"]{color:var(--muted)}.mic-reconnect{font-size:12px;padding:7px 11px;background:var(--card);border:1px solid var(--line)}#prompt{display:block;line-height:1.45}#heard{overflow-wrap:anywhere}
+
+/* iOS voice-permission help: presentation only; speech-recognition logic is unchanged. */
+.voice-help{margin-top:12px;padding:11px 13px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:var(--card);color:var(--ink);font-size:12px;line-height:1.55;text-align:left}
+.voice-help b{display:block;margin-bottom:5px}
+.voice-help p{margin:0;color:var(--ink);font-size:12px;line-height:1.5}
+.voice-help ol{margin:7px 0 6px;padding-left:20px}
+.voice-help li+li{margin-top:5px}
+.voice-help .voice-help-note{color:var(--muted);margin-top:7px}
+.voice-help-inline{margin-top:9px}
+@media(max-width:680px){dialog{padding:20px;max-height:90dvh;overflow-y:auto}.voice-help{padding:10px}}
+
+/* Draft keyboard enhancement: field is anchored to the active problem, not at the bottom of the sheet. */
+.keyboard-tip{background:var(--soft);border-radius:12px;padding:10px 14px;margin-bottom:15px;color:var(--ink);font-size:12px;line-height:1.5}
+.inline-answer{display:none;align-items:center;gap:4px;margin-left:auto;flex:0 0 auto}
+.fact.keyboard-active .inline-answer{display:flex}
+.inline-answer input{width:50px;min-width:0;padding:5px 4px;border:2px solid var(--accent);border-radius:7px;background:var(--card);color:var(--ink);text-align:center;font-size:16px;font-weight:700;height:31px;touch-action:manipulation}
+.inline-answer input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.inline-answer button{min-width:30px;height:31px;padding:3px 5px;border-radius:7px;background:var(--accent);border-color:var(--accent);color:var(--bg);font-size:15px;line-height:1;touch-action:manipulation}
+.fact.keyboard-active{border-color:var(--accent);background:var(--active)}
+.fact.keyboard-active .value{margin-left:0}
+.keyboard-session #answer,.keyboard-session #footerAnswerSubmit{display:none!important}
+@media(max-width:1100px){
+ .fact.keyboard-active{flex-wrap:wrap;gap:4px 5px;align-content:center}
+ .fact.keyboard-active .inline-answer{order:3;flex:1 0 100%;margin-left:0;justify-content:flex-end}
+ .fact.keyboard-active .fact-equation{order:1}
+ .fact.keyboard-active .idx{order:0}
+ .fact.keyboard-active .value{order:2;margin-left:auto}
+}
+@media(max-width:680px){
+ .fact.keyboard-active{padding:6px 5px;min-height:75px}
+ .fact.keyboard-active .inline-answer{justify-content:space-between}
+ .fact.keyboard-active .inline-answer input{width:min(48px,62%);height:34px;font-size:16px}
+ .fact.keyboard-active .inline-answer button{min-width:27px;height:34px}
+}
+
+/* A dedicated touch keypad avoids iOS's number pad, which has no Return key. */
+.mobile-keypad{display:none;position:fixed;z-index:1000;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;padding:12px 18px calc(12px + env(safe-area-inset-bottom, 0px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;box-shadow:0 -8px 35px #0002}
+.mobile-keypad-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px 10px}
+.mobile-keypad-head span{font-size:12px;color:var(--muted);font-weight:700}
+.mobile-keypad-head strong{font:700 23px 'Space Grotesk',sans-serif;letter-spacing:-.5px}
+.mobile-keypad-head .mobile-typed{background:var(--bg);border:1px solid var(--line);border-radius:9px;min-width:57px;min-height:34px;padding:3px 10px;text-align:center;font-variant-numeric:tabular-nums}
+.mobile-keypad-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mobile-keypad-grid button{min-height:49px;padding:8px 6px;border-radius:11px;font:700 21px 'Space Grotesk',sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.mobile-keypad-grid button:active{background:var(--active)}
+.mobile-keypad-grid .key-enter{background:var(--accent);color:var(--bg);border-color:var(--accent);font:700 15px 'DM Sans',sans-serif}
+.mobile-keypad-grid .key-delete{font-size:21px}
+.mobile-keypad .keypad-hint{text-align:center;margin:7px 0 0;color:var(--muted);font-size:11px}
+@media(max-width:680px) and (pointer:coarse){
+ .mobile-keypad-open main{padding-bottom:calc(305px + env(safe-area-inset-bottom, 0px))}
+ .mobile-keypad-open .mobile-keypad:not(.hidden){display:block}
+ .mobile-keypad-open .fact.keyboard-active .inline-answer{display:none}
+ .mobile-keypad-open .fact.keyboard-active{min-height:40px;flex-wrap:nowrap;align-content:center}
+ .mobile-keypad-open .fact.keyboard-active .fact-equation{order:1}
+ .mobile-keypad-open .fact.keyboard-active .value{order:2;display:block;margin-left:auto;font-weight:700}
+}
+
+/* v6.0 Milestone 1 — approved Brand Kit palette, temporary system typography pending source font specification. */
+:root{--brand-yellow:#FBBF24;--brand-amber:#FCD873;--brand-black:#0B0B0F;--brand-cream:#FFF9E6;--brand-sky:#7DD3E9;--bg:#FFF9E6;--card:#FFFFFF;--ink:#0B0B0F;--muted:#4D4D50;--line:#D7D0BE;--accent:#8B5900;--soft:#FFF1BD;--active:#E1F4FA;--shadow:0 15px 42px #0B0B0F12;--focus-ring:#155E75;--radius-card:22px;--radius-control:13px;--space-unit:8px}
+[data-theme=dark]{--bg:#0B0B0F;--card:#1C1C21;--ink:#FFF9E6;--muted:#C6C5C9;--line:#55535C;--accent:#FCD873;--soft:#3C3020;--active:#233C42;--shadow:0 14px 40px #0003;--focus-ring:#7DD3E9;--red:#FFB4BC;--redbg:#4C2932;--green:#B9F2BE;--greenbg:#254B35}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100dvh}h1,h2,h3,.brand,.number,.metric strong,.resultscore,.fact,.orb{font-family:inherit}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
+button{min-height:44px;border-radius:var(--radius-control)}.primary{background:var(--brand-yellow);color:var(--brand-black);border-color:#B77B00}.primary:hover{background:var(--brand-amber)}.logo{background:transparent;transform:none;color:var(--ink);width:auto;height:auto;border-radius:0}.brand{font-size:20px;letter-spacing:.005em}.brand-title{font-weight:850}.brand-title em{font-style:normal;color:var(--accent)}.tagline{font-size:12px;color:var(--muted);font-weight:550;letter-spacing:0}.brand-ident{display:flex;flex-direction:column;gap:1px}.header-left{display:flex;align-items:center;gap:12px}header{max-width:1320px;padding:18px 32px;gap:12px;background:var(--bg)}main{max-width:1320px;padding:30px 32px 50px}.panel{border-radius:var(--radius-card)}.header-action{display:flex;gap:8px;align-items:center}.topnav button{white-space:nowrap}.topnav{align-items:center}.home-hero{text-align:center;max-width:670px;margin:18px auto 22px}.home-hero h1{font-size:clamp(31px,5vw,48px);letter-spacing:-1.5px;margin:4px 0}.home-hero p{margin:4px auto;max-width:570px}.profiles-shell{max-width:750px;margin:0 auto}.profiles-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0}.profile-tile{background:var(--card);padding:20px 10px 18px;min-height:162px;border:1px solid var(--line);border-radius:21px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:var(--shadow);transition:transform .15s}.profile-tile:hover{transform:translateY(-2px);border-color:var(--accent)}.profile-tile .avatar{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;color:#0B0B0F;font-size:29px;font-weight:850}.profile-tile .tile-name{font-size:16px;font-weight:750;max-width:100%;overflow-wrap:anywhere}.profile-tile.muted-tile{border-style:dashed;box-shadow:none;background:transparent}.profile-tile.muted-tile .avatar{color:var(--ink)!important}.profile-tile .tile-sub{font-size:11px;color:var(--muted)}.profile-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px auto 0}.wide-cta{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;margin:18px 0 5px;min-height:56px;font-size:17px}.home-foot{text-align:center;margin-top:14px;font-size:12px;color:var(--muted)}.section-card{max-width:900px;margin:12px auto}.section-head{display:flex;justify-content:space-between;align-items:start;gap:16px;margin-bottom:22px}.subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.subject-card{display:flex;align-items:center;text-align:left;gap:15px;min-height:110px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:19px}.subject-card .subject-icon{width:58px;height:58px;flex:0 0 58px;border-radius:16px;display:grid;place-items:center;background:var(--soft);font-size:26px;color:var(--ink)}.subject-card .subject-title{font-size:19px;font-weight:800;display:block}.subject-card .subject-sub{font-size:12px;display:block;color:var(--muted);margin-top:5px}.subject-card[disabled]{opacity:1;cursor:default;background:var(--bg);border-style:dashed}.subject-card[disabled] .subject-title{color:var(--muted)}.coming-label{display:inline-block;font-size:11px;font-weight:750;margin-top:8px;color:var(--muted)}.bread{font-size:12px;color:var(--muted);margin-bottom:12px}.nav-back{display:inline-flex;align-items:center;gap:7px}.profile-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}.profile-summary strong{overflow-wrap:anywhere}.profile-edit{font-size:12px;padding:8px 10px;min-height:38px}.manage-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.dialog-form{text-align:left;margin-top:15px}.dialog-form label{font-size:13px;font-weight:700;display:block;margin:12px 0 7px}.avatar-options{display:flex;gap:9px;flex-wrap:wrap}.avatar-option{width:46px;height:46px;min-height:46px;padding:0;border-radius:14px;position:relative}.avatar-option[aria-pressed=true]{outline:3px solid var(--focus-ring);outline-offset:2px}.avatar-note{color:var(--muted);font-size:12px;text-align:left}.error-text{color:var(--red);font-weight:700;font-size:13px;min-height:20px}.family-table{overflow-x:auto}.family-table table{min-width:550px}.family-empty{padding:15px;background:var(--soft);border-radius:13px}.home-decoration{width:48px;height:5px;background:var(--brand-yellow);border-radius:8px;margin:16px auto}.tiny-policy{margin:12px 0;font-size:12px;color:var(--muted)}.active-profile-pill{display:inline-block;border:1px solid var(--line);border-radius:22px;padding:8px 11px;font-size:12px;font-weight:700}.hero{margin-top:8px}.hero h1{font-size:clamp(25px,3.5vw,40px)}.badge{background:var(--soft);color:var(--ink)}.panel.sheet,.panel.settings{background:var(--card)}.fact.active{outline-color:var(--focus-ring)}.number.selected{background:var(--brand-yellow);color:var(--brand-black)}.mobile-keypad-grid .key-enter{background:var(--brand-yellow);color:var(--brand-black)}.inline-answer button{background:var(--brand-yellow);color:var(--brand-black)}.mic-status[data-state=connected]{font-weight:800}.hidden{display:none!important}
+@media(max-width:680px){header{padding:13px 16px}.brand{font-size:16px}.brand-ident .tagline{font-size:10px}.topnav{gap:4px}.topnav button{font-size:11px;min-height:41px;padding:8px}.topnav #practiceNav{display:none}main{padding:12px 15px 32px}.home-hero{margin-top:22px}.home-hero h1{font-size:31px}.profiles-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:17px 0}.profile-tile{min-height:140px;padding:12px 8px;gap:8px}.profile-tile .avatar{width:56px;height:56px}.home-hero p{font-size:13px}.wide-cta{min-height:52px}.subject-grid{grid-template-columns:1fr;gap:10px}.subject-card{min-height:86px;padding:14px}.subject-card .subject-icon{width:49px;height:49px;flex-basis:49px}.section-head{margin-bottom:15px}.section-head h1{font-size:28px;letter-spacing:-.8px}.hero{margin-top:12px}.profile-summary{align-items:start}.profile-edit{min-height:40px}}
+@media(max-width:390px){.brand{font-size:14px}.topnav button{padding:7px;font-size:10px}.home-hero h1{font-size:27px}.profile-tile .tile-name{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.profile-tile{transition:none}}
+</style></head><body>
+<header><div class="header-left"><div class="brand-ident"><div class="brand brand-title">Fact <em>Flight</em></div><span class="tagline">Little practice. Big confidence.</span></div></div><nav class="topnav" aria-label="Main navigation"><button type="button" id="homeNav" class="quiet">Home</button><button type="button" id="practiceNav" class="quiet hidden">Practice</button><button type="button" id="historyNav" class="quiet">Results</button><button type="button" id="theme" aria-label="Toggle light and dark theme">◐</button></nav></header>
+<main><section id="homeView" class="profiles-shell"><div class="home-hero"><div class="eyebrow">YOUR LEARNING SPACE</div><div class="home-decoration" aria-hidden="true"></div><h1>Who's ready to take flight?</h1><p>Pick a learner, or jump in as a guest. No sign-in, no fuss.</p></div><div id="homeProfileGrid" class="profiles-grid" aria-label="Choose a learner"></div><button id="homeResults" class="primary wide-cta" type="button">▥ &nbsp; Results &amp; Stats</button><p class="home-foot">Free to learn · No account needed · Progress stays on this device</p></section>
+<section id="subjectsView" class="hidden section-card"><div class="bread"><button id="subjectsBack" class="quiet nav-back" type="button">← All profiles</button></div><div class="section-head"><div><div class="eyebrow">CHOOSE YOUR ADVENTURE</div><h1 id="subjectGreeting">What will we learn?</h1><p>Pick a subject to start practicing.</p></div><div><span id="subjectProfile" class="active-profile-pill"></span><button id="manageProfileButton" type="button" class="quiet profile-edit">Edit profile</button></div></div><div class="subject-grid"><button id="mathSubject" class="subject-card" type="button"><span class="subject-icon">×</span><span><span class="subject-title">Math</span><span class="subject-sub">Build your number confidence</span></span></button><button disabled class="subject-card" type="button"><span class="subject-icon">Aa</span><span><span class="subject-title">Letters &amp; Sounds</span><span class="coming-label">COMING SOON</span></span></button><button disabled class="subject-card" type="button"><span class="subject-icon">◯</span><span><span class="subject-title">Colors &amp; Shapes</span><span class="coming-label">COMING SOON</span></span></button><button disabled class="subject-card" type="button"><span class="subject-icon">📖</span><span><span class="subject-title">Reading</span><span class="coming-label">COMING SOON</span></span></button></div></section>
+<section id="mathMenuView" class="hidden section-card"><div class="bread"><button id="mathBack" class="quiet nav-back" type="button">← Subjects</button></div><div class="section-head"><div><div class="eyebrow">MATH STUDIO</div><h1>Let's practice math.</h1><p>Multiplication School Test is available now. Eight activity categories and Focus View arrive in Milestone 2.</p></div></div><div class="subject-grid"><button id="openOriginalTest" class="subject-card" type="button"><span class="subject-icon">×</span><span><span class="subject-title">Multiplication</span><span class="subject-sub">Original 60-question School Test and free practice</span></span></button></div><p class="tiny-policy">Coming next: Number Bonds, Doubles, Halves, Addition, Subtraction, Division and Square Numbers, plus expanded Multiplication choices.</p></section>
+<section id="familyView" class="hidden section-card panel"></section>
+<section id="studentView" class="hidden section-card panel"></section>
+<section id="manageView" class="hidden section-card panel"></section>
+<div id="practiceShell" class="hidden"><div class="profile-summary"><button type="button" id="practiceBack" class="quiet nav-back">← Math menu</button><strong id="practiceProfileName" class="active-profile-pill"></strong></div><div class="hero"><div><div class="eyebrow">Little practice. Big confidence.</div><h1>Ready, set, multiply.</h1><p style="margin:8px 0">One fact at a time. Find your rhythm.</p></div><div class="badge">✦ &nbsp; YOUR MULTIPLICATION STUDIO</div></div>
+<div id="practiceView" class="layout"><aside class="panel settings"><h3>Your next flight</h3><div class="small">Pick a table. Say it out loud.</div><label class="label">01 &nbsp; CHOOSE YOUR TIMES TABLE</label><div id="numbers" class="numbers"></div><label class="label">02 &nbsp; SET YOUR PACE</label><div class="segments"><button id="testMode" class="selected">2-minute test</button><button id="practiceMode">Free practice</button></div><label class="label" for="inputMode">03 &nbsp; ANSWER WITH</label><select id="inputMode"><option value="voice">Microphone · say your answer</option><option value="keyboard">Keyboard · type your answer</option></select><div id="iosVoiceHint" class="voice-help hidden" role="note"></div><button id="start" class="primary wide">Start a session &nbsp; →</button><p class="small">60 facts · 3 columns · factors 1–10<br>Read down each column, then across.<br>Repeated facts have at least 3 others between them.</p><div class="rule"></div><h3>Small steps count.</h3><p class="small">Voice: say a number, or “skip.” Keyboard: type into the highlighted problem and tap ↵ (or Return) to answer.</p><details><summary>Parent settings & scoring</summary><p class="small"><b>Microphone permissions:</b> choose “Allow while visiting the site”, not “Allow this time”. This app keeps the same listening session from “ready” into the quiz. Chrome may still stop recognition. The app makes limited automatic reconnect attempts when the browser allows them. Safari may not reveal permission status; in that case, the app tries once before asking for a manual reconnect. Browser permission prompts cannot be bypassed. A hosted HTTPS page or localhost provides a stable site address for permissions. The app cannot override browser permission rules.</p><p class="small">First-try score counts facts answered correctly before any wrong answer or skip. Corrections are tracked separately.</p><label class="small" for="threshold">Pass target: first-try facts out of 60 (optional)</label><input id="threshold" type="number" min="1" max="60" placeholder="Teacher’s target not set"><p class="small">Voice recognition may use your browser’s online speech service. No audio is saved by this app. Results stay in this browser; export them to keep a backup.</p></details></aside>
+<section><div class="metrics"><div class="metric"><span id="timeLabel">Time remaining</span><strong id="clock">2:00</strong></div><div class="metric"><span>Correct so far</span><strong id="correctCount">0 <small style="font-size:15px;color:var(--muted)">/ 60</small></strong></div><div class="metric"><span>First try</span><strong id="firstCount">0</strong></div></div><div class="panel sheet"><div class="sheetbar"><h2 id="sheetTitle">The 2s · Multiplication facts</h2><span id="stage" class="tag">PRE-FLIGHT</span></div><div class="progress"><div id="bar" style="width:0%"></div></div><div id="empty" class="empty"><div><div class="orb">2×</div><h2>A little louder.<br>A little faster.</h2><p>Your facts will appear when you start. In voice mode, say <b>“ready”</b>. In keyboard mode, type directly beside each highlighted fact.</p><p class="small">The clock starts only when you’re ready.</p></div></div><div id="playArea" class="hidden"><div class="speech" id="speech"><span class="dot"></span><div class="speech-content"><div class="mic-topline"><span class="mic-status" id="micStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span><button type="button" id="micReconnectTop" class="mic-reconnect hidden">Reconnect microphone</button></div><b id="prompt">Listening…</b><div class="small" id="heard">Say one answer at a time.</div><div id="iosMicTroubleshoot" class="voice-help voice-help-inline hidden" role="note"></div></div></div><div id="keyboardTip" class="keyboard-tip hidden">⌨️ Type your answer in the highlighted fact, then tap <b>↵</b> or press Return. The answer box will follow each question.</div><div class="grid" id="grid"></div><form id="answerForm" class="controls"><input id="answer" inputmode="numeric" autocomplete="off" aria-label="Type an answer" placeholder="Answer"><button type="submit" id="footerAnswerSubmit">Answer ↵</button><button type="button" id="skip">Skip →</button><button type="button" id="undo">↶ Misheard / undo</button><button type="button" id="resume">Reconnect mic</button><button type="button" id="end">Finish session</button></form></div></div><footer id="saveStatus">Progress is saved on this device. No account needed for practice history.</footer></section></div>
+<section id="resultsView" class="hidden panel"></section><section id="historyView" class="hidden panel"></section></div>
+</main>
+<div id="mobileKeypad" class="mobile-keypad hidden" role="group" aria-label="Math answer number pad">
+  <div class="mobile-keypad-head"><span id="mobileKeypadFact">Answer the highlighted fact</span><strong class="mobile-typed" id="mobileKeypadValue" aria-live="off">?</strong></div>
+  <div class="mobile-keypad-grid">
+   <button type="button" data-digit="1">1</button><button type="button" data-digit="2">2</button><button type="button" data-digit="3">3</button>
+   <button type="button" data-digit="4">4</button><button type="button" data-digit="5">5</button><button type="button" data-digit="6">6</button>
+   <button type="button" data-digit="7">7</button><button type="button" data-digit="8">8</button><button type="button" data-digit="9">9</button>
+   <button type="button" data-action="delete" class="key-delete" aria-label="Delete last digit">⌫</button><button type="button" data-digit="0">0</button><button type="button" data-action="enter" class="key-enter">Enter ↵</button>
+  </div>
+  <div class="keypad-hint">Tap Enter to submit · Undo and Skip are below the worksheet</div>
+</div>
+<dialog id="profileDialog" aria-labelledby="profileDialogTitle"><h2 id="profileDialogTitle">Create a profile</h2><p class="small">Just a nickname. Nothing is shared online.</p><form id="profileForm" class="dialog-form"><label for="profileNickname">Nickname</label><input id="profileNickname" maxlength="24" autocomplete="off" required placeholder="e.g., Star Learner"><label>Choose a color</label><div id="avatarOptions" class="avatar-options" role="group" aria-label="Profile color"></div><p class="avatar-note">Your initials will appear on your profile card.</p><p id="profileError" class="error-text" role="alert"></p><div class="controls"><button type="submit" class="primary">Save profile</button><button id="closeProfileDialog" type="button">Cancel</button></div></form></dialog>
+<dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><p class="small">Uses your browser’s microphone. The timer has not started.</p><div id="iosMicDialogHelp" class="voice-help hidden" role="note"></div><button id="retryMic">Try microphone again</button> <button id="cancelMic" class="quiet">Cancel</button></dialog>
+<script>
+'use strict';
+const $=id=>document.getElementById(id), KEY='fact-flight-history-v1';let table=2,mode='test',phase='idle',items=[],index=0,started=0,turnStart=0,ticker=null,rec=null,recEpoch=0,history=[],undoStack=[],session=null,transitioning=false,advanceTimer=null;let storageOK=true;
+try{history=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(history))history=[];document.documentElement.dataset.theme=localStorage.getItem('fact-flight-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){storageOK=false}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function generate(n){
+ const result=[];
+ for(let round=0;round<6;round++){
+   const remaining=Array.from({length:10},(_,i)=>i+1);
+   while(remaining.length){
+     const recent=result.slice(-3).map(p=>p.factor);
+     const options=remaining.filter(f=>!recent.includes(f));
+     const factor=options[Math.floor(Math.random()*options.length)];
+     remaining.splice(remaining.indexOf(factor),1);
+     const reverse=round%2===1;
+     result.push({a:reverse?factor:n,b:reverse?n:factor,factor,answer:n*factor,status:'pending',attempts:[],skips:0,ms:0});
+   }
+ }
+ return result;
+}
+function parseNumber(raw){let s=raw.toLowerCase().replace(/[.,!?]/g,'').replace(/-/g,' ').trim().replace(/^(?:the answer is|answer is|it is|it's|its)\s+/, '').replace(/\s+/g,' ');if(/^\d{1,3}$/.test(s))return Number(s);const units=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];const aliases={to:2,too:2,for:4,ate:8};if(s in aliases)return aliases[s];if(units.includes(s))return units.indexOf(s);if(s==='one hundred'||s==='a hundred'||s==='hundred')return 100;const tens={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};let words=s.split(/\s+/);if(words[0] in tens){if(words.length===1)return tens[words[0]];if(words.length===2&&units.indexOf(words[1])>0&&units.indexOf(words[1])<10)return tens[words[0]]+units.indexOf(words[1])}return null}
+// Browser speech recognition sometimes prefixes punctuation or repeats one numeric answer
+// (for example "/16 16" or ":16"). Normalize *only* voice transcripts; keep
+// disagreements such as "16/18" invalid rather than guessing which number was spoken.
+function parseVoiceNumber(raw){
+ const straightforward=parseNumber(raw);
+ if(straightforward!==null)return straightforward;
+ const cleaned=String(raw).toLowerCase()
+   .replace(/^(?:the answer is|answer is|it is|it's|its)\s+/,'')
+   .replace(/[/:;：／\\|]+/g,' ')
+   .replace(/[.,!?]+/g,' ')
+   .replace(/\s+/g,' ').trim();
+ const simple=parseNumber(cleaned);
+ if(simple!==null)return simple;
+ const tokens=cleaned.split(' ');
+ if(tokens.length<2||tokens.length>4)return null;
+ const numbers=tokens.map(parseNumber);
+ return numbers.every(n=>n!==null&&n===numbers[0])?numbers[0]:null;
+}
+function duration(ms){let s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function first(p){return p.status==='correct'&&p.skips===0&&p.attempts.length===1&&p.attempts[0].correct}
+function busy(){return phase==='running'||phase==='checking'}
+function controls(disabled){document.querySelectorAll('.number,#testMode,#practiceMode,#inputMode,#threshold,#start').forEach(e=>e.disabled=disabled)}
+function show(view){['homeView','subjectsView','mathMenuView','familyView','studentView','manageView','practiceShell'].forEach(id=>$(id).classList.toggle('hidden',id!==view));if(['practiceView','resultsView','historyView'].includes(view)){$('practiceShell').classList.remove('hidden');['practiceView','resultsView','historyView'].forEach(id=>$(id).classList.toggle('hidden',id!==view))}else ['practiceView','resultsView','historyView'].forEach(id=>$(id).classList.add('hidden'));window.scrollTo({top:0,behavior:'auto'})}
+for(let n=2;n<=10;n++){let b=document.createElement('button');b.textContent=n;b.className='number'+(n===2?' selected':'');b.setAttribute('aria-pressed',n===2);b.onclick=()=>{table=n;document.querySelectorAll('.number').forEach(x=>{x.classList.toggle('selected',+x.textContent===n);x.setAttribute('aria-pressed',+x.textContent===n)});$('sheetTitle').textContent=`The ${n}s · Multiplication facts`;$('empty').querySelector('.orb').textContent=n+'×'};$('numbers').append(b)}
+function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test');$('practiceMode').classList.toggle('selected',m==='practice');$('timeLabel').textContent=m==='test'?'Time remaining':'Time elapsed';$('clock').textContent=m==='test'?'2:00':'0:00'}
+$('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
+$('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
+let micRetryTimer=null,micEverConnected=false,micState='not-connected';
+const isIOSDevice=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isChromeIOS=/CriOS/i.test(navigator.userAgent);
+function iosVoiceHelpHTML(){
+ if(isChromeIOS)return '<b>iPhone voice setup · Chrome</b><ol><li>Open <strong>Settings → Apps → Chrome</strong> and enable <strong>Microphone</strong>.</li><li>Open <strong>Settings → Privacy &amp; Security → Speech Recognition</strong> and enable <strong>Chrome</strong>.</li></ol><p class="voice-help-note">Return to Chrome and tap Reconnect microphone. Both permissions may be needed.</p>';
+ return '<b>iPhone voice setup · Safari</b><ol><li>In Safari, allow microphone access for this website (check the website microphone settings).</li><li>If Safari appears in <strong>Settings → Privacy &amp; Security → Speech Recognition</strong>, allow it there too.</li></ol><p class="voice-help-note">Return to Fact Flight and tap Reconnect microphone. iOS menus can vary by version.</p>';
+}
+function updateIOSVoiceGuidance(){
+ const enabled=isIOSDevice&&$('inputMode').value==='voice';
+ for(const id of ['iosVoiceHint','iosMicDialogHelp','iosMicTroubleshoot']){
+   const el=$(id);if(!el)continue;
+   if(!el.dataset.ready){el.innerHTML=iosVoiceHelpHTML();el.dataset.ready='1'}
+   const show=enabled&&(id!=='iosMicTroubleshoot'||(phase==='running'&&micState==='disconnected'));
+   el.classList.toggle('hidden',!show);
+ }
+}
+$('inputMode').addEventListener('change',updateIOSVoiceGuidance);
+updateIOSVoiceGuidance();
+function setMicStatus(state){
+ micState=state;
+ const names={'connected':'Connected','not-connected':'Not Connected','disconnected':'Disconnected'};
+ for(const id of ['micStatus','dialogMicStatus']){const el=$(id);if(el){el.dataset.state=state;el.textContent='Microphone: '+names[state]}}
+ $('speech').classList.toggle('live',state==='connected');
+ if($('resume'))$('resume').textContent=state==='connected'?'Restart microphone':'Reconnect microphone';
+ if($('micReconnectTop'))$('micReconnectTop').classList.toggle('hidden',state==='connected'||!(phase==='running'||phase==='checking'));
+ updateIOSVoiceGuidance();
+}
+function stopMic(){
+ recEpoch++;clearTimeout(micRetryTimer);micRetryTimer=null;
+ if(rec){rec.onstart=null;rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort()}catch(e){}rec=null}
+ setMicStatus('not-connected');
+}
+function micError(message){
+ if(phase==='checking')$('micMessage').textContent=message;
+ else if(phase==='running'){$('heard').textContent=message}
+}
+function connectMic(){
+ stopMic();
+ const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Speech){setMicStatus('not-connected');micError('Speech recognition is unavailable in this browser. Try Safari with current iOS, Chrome/Edge on desktop, or use keyboard answers.');return}
+ if(!window.isSecureContext){setMicStatus('not-connected');micError('Microphone needs an HTTPS website or localhost. Open the hosted link in Safari, not a messaging-app file preview.');return}
+ const epoch=recEpoch,recognizer=new Speech();rec=recognizer;
+ recognizer.lang='en-US';recognizer.continuous=true;recognizer.interimResults=true;recognizer.maxAlternatives=1;
+ let fatal=false,restarts=0,processed=new Set(),lastFinal='',lastFinalAt=-Infinity,hasStarted=false;
+ // Safari/iOS may occasionally show an interim number without ever finalizing it.
+ // Recover only a single stable numeric interim after a pause. Never apply it twice.
+ let interimTimer=null,pendingInterim=null;
+ function clearInterim(){
+   if(interimTimer!==null)clearTimeout(interimTimer);
+   interimTimer=null;pendingInterim=null;
+ }
+ function queueStableInterim(text, resultIndex){
+   const value=parseVoiceNumber(text);
+   if(phase!=='running'||value===null){clearInterim();return}
+   if(pendingInterim?.resultIndex===resultIndex&&pendingInterim?.text===text)return;
+   clearInterim();
+   const question=items[index];
+   pendingInterim={text,resultIndex,question};
+   interimTimer=setTimeout(()=>{
+     const pending=pendingInterim;
+     clearInterim();
+     if(!pending||epoch!==recEpoch||phase!=='running'||items[index]!==question||processed.has(resultIndex))return;
+     processed.add(resultIndex); // Ignore a late final for the same utterance.
+     lastFinal=text.toLowerCase().trim();lastFinalAt=performance.now();
+     $('heard').textContent=`Heard “${text}” (speech not finalized) → interpreted as ${value}`;
+     submit(value,text,'voice');
+   },1300);
+ }
+
+ recognizer.onstart=()=>{
+   if(epoch!==recEpoch)return;
+   micEverConnected=true;hasStarted=true;processed.clear();setMicStatus('connected');
+   if(phase==='checking')$('micMessage').textContent='Connected and listening. Say “ready.”';
+   else if(phase==='running')$('prompt').textContent=`${items[index].a} × ${items[index].b} = ?`;
+ };
+ recognizer.onresult=e=>{
+   if(epoch!==recEpoch)return;
+   for(let k=e.resultIndex;k<e.results.length;k++){
+     const result=e.results[k],text=result[0].transcript.trim();
+     if(!result.isFinal){
+       if(phase==='running'){
+         $('heard').textContent=`Hearing: “${text}”…`;
+         // Do not score partial recognition right away: 'four' may become 'fourteen'.
+         queueStableInterim(text,k);
+       }
+       continue;
+     }
+     clearInterim();
+     if(processed.has(k))continue;processed.add(k);
+     const normalized=text.toLowerCase().replace(/[.!?,]/g,'').trim(),now=performance.now();
+     if(normalized===lastFinal&&now-lastFinalAt<350)continue;
+     lastFinal=normalized;lastFinalAt=now;restarts=0;
+     if(phase==='checking'){
+       if(/^(?:i am |i'm |im )?ready$/.test(normalized)){
+         $('micDialog').close();begin();setMicStatus('connected');
+         $('heard').textContent='Listening — say one answer at a time.';
+       }else $('micMessage').textContent=`Heard “${text}”. Please say “ready.”`;
+     }else if(phase==='running'){
+       $('heard').textContent=`Heard: “${text}”`;
+       if(normalized==='skip')submit('skip',text,'voice');
+       else{
+         const value=parseVoiceNumber(text);
+         if(value===null){$('heard').textContent=`Heard “${text}” — say one number, or “skip”.`;session.unrecognized.push({text,at:now-started})}
+         else {
+           submit(value,text,'voice');
+           // Show the original recognition alongside the repaired number for transparency.
+           if(String(text).trim()!==String(value))$('heard').textContent=`Heard “${text}” → interpreted as ${value}`;
+         }
+       }
+     }
+     // Avoid applying batched speech results to consecutive math questions.
+     for(let j=k+1;j<e.results.length;j++)if(e.results[j].isFinal)processed.add(j);
+     break;
+   }
+ };
+ recognizer.onerror=e=>{
+   if(epoch!==recEpoch)return;
+   clearInterim();
+   const error=e.error||'unknown';
+   // 'no-speech' can be a routine session timeout. The onend handler handles it.
+   if(error==='no-speech')return;
+   if(['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(error))fatal=true;
+   // Do not auto-retry recognition service/network failures; they can cause prompt loops.
+   if(['network','aborted'].includes(error))fatal=true;
+   setMicStatus('disconnected');
+   micError(error==='not-allowed'||error==='service-not-allowed'
+     ?'Microphone access was denied or restricted. Check Safari website settings and tap Reconnect; keyboard still works.'
+     :`Microphone issue (${error}). Tap Reconnect or type an answer${phase==='running'?'; the timer continues':''}.`);
+ };
+ recognizer.onend=()=>{
+   clearInterim();
+   if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
+   setMicStatus('disconnected');
+   if(fatal){micError('Microphone disconnected. Tap Reconnect to try again; keyboard answers remain available.');return}
+   // A normal recognition session can end during silence, even when permission is still valid.
+   // Reconnect only after a session successfully started; never loop on initial permission failures.
+   if(!hasStarted){micError('Microphone did not connect. Tap Reconnect to try again.');return}
+   if(restarts>=12){micError('Listening stopped after repeated interruptions. Tap Reconnect to resume.');return}
+   restarts++;
+   micError('Listening paused — reconnecting automatically…');
+   micRetryTimer=setTimeout(()=>{
+     if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
+     try{recognizer.start()}catch(e){setMicStatus('disconnected');micError('Could not restart listening. Tap Reconnect to try again.')}
+   },Math.min(300+restarts*200,1500));
+ };
+ try{recognizer.start()}catch(e){setMicStatus('disconnected');micError('Could not start speech recognition. Tap Reconnect or choose Keyboard.')}
+}
+$('start').onclick=()=>{let t=$('threshold').value;if(t&&(!Number.isInteger(+t)||+t<1||+t>60)){$('threshold').reportValidity();return}controls(true);if($('inputMode').value==='keyboard'){begin();return}phase='checking';$('micMessage').textContent='Allow microphone access, then say “ready.”';$('micDialog').showModal();connectMic()};
+function cancelCheck(){stopMic();phase='idle';controls(false);$('micDialog').close()}
+$('cancelMic').onclick=cancelCheck;$('micDialog').addEventListener('cancel',e=>{e.preventDefault();cancelCheck()});$('retryMic').onclick=connectMic;$('resume').onclick=()=>{if(phase==='running')connectMic()};$('micReconnectTop').onclick=()=>{if(phase==='running')connectMic()};
+function begin(){clearTimeout(advanceTimer);transitioning=false;items=generate(table);index=0;undoStack=[];started=turnStart=performance.now();session={id:Date.now(),date:new Date().toISOString(),table,mode,input:$('inputMode').value,target:$('threshold').value?+$('threshold').value:null,unrecognized:[],invalidated:[],profileId:activeProfileId,activity:'multiplication',view:'worksheet'};phase='running';$('empty').classList.add('hidden');$('playArea').classList.remove('hidden');$('stage').textContent='IN FLIGHT';$('resume').classList.toggle('hidden',session.input!=='voice');$('micReconnectTop').classList.toggle('hidden',session.input!=='voice'||micState==='connected');$('playArea').classList.toggle('keyboard-session',session.input==='keyboard');$('speech').classList.toggle('hidden',session.input==='keyboard');$('keyboardTip').classList.toggle('hidden',session.input!=='keyboard');$('grid').innerHTML='';$('grid').dataset.keyboardSession='';$('historyNav').disabled=true;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=false);renderGrid();updateMetrics();ticker=setInterval(tick,100);if(session.input==='keyboard'){$('micReconnectTop').classList.add('hidden');configureKeyboardInput();focusInlineAnswer();}updateIOSVoiceGuidance();scrollToActiveFact(true);}
+
+const mobileKeypadMedia=window.matchMedia('(max-width: 680px) and (pointer: coarse)');
+function touchKeypadEnabled(){return mobileKeypadMedia.matches}
+function configureKeyboardInput(){
+ const show=phase==='running'&&session&&session.input==='keyboard'&&touchKeypadEnabled();
+ document.body.classList.toggle('mobile-keypad-open',!!show);
+ $('mobileKeypad').classList.toggle('hidden',!show);
+ for(const field of document.querySelectorAll('.inline-answer input')){
+  field.readOnly=!!show;field.setAttribute('inputmode',show?'none':'numeric');
+  if(show)field.blur();
+ }
+ $('keyboardTip').textContent=show
+  ?'⌨️ Use the number pad at the bottom of the screen. Tap Enter to submit; it will follow each fact.'
+  :'⌨️ Type your answer in the highlighted fact, then press Enter. The answer box will follow each question.';
+ syncMobileKeypad();
+}
+function syncMobileKeypad(){
+ if(!session||session.input!=='keyboard'||!items[index])return;
+ const p=items[index],field=$('inlineAnswer'+index);
+ $('mobileKeypadFact').textContent=`${p.a} × ${p.b} =`;
+ $('mobileKeypadValue').textContent=(field&&field.value)||'?';
+ const row=$('fact'+index);if(row&&touchKeypadEnabled())row.querySelector('.value').textContent=(field&&field.value)||'?';
+}
+$('mobileKeypad').addEventListener('click',e=>{
+ const button=e.target.closest('button');
+ if(!button||phase!=='running'||!session||session.input!=='keyboard'||!touchKeypadEnabled())return;
+ const field=$('inlineAnswer'+index);
+ if(!field)return;
+ if(button.dataset.digit!==undefined){
+  if(field.value.length<3)field.value+=button.dataset.digit;
+  syncMobileKeypad();
+ }else if(button.dataset.action==='delete'){
+  field.value=field.value.slice(0,-1);syncMobileKeypad();
+ }else if(button.dataset.action==='enter'){
+  const raw=field.value.trim(),number=parseNumber(raw);
+  if(number===null){$('mobileKeypadValue').textContent='?';return}
+  field.value='';submit(number,raw,'keyboard');syncMobileKeypad();
+ }
+});
+window.addEventListener('resize',()=>{
+ if(phase==='running'&&session&&session.input==='keyboard')configureKeyboardInput();
+});
+// Scroll to the first fact when the timer begins, including voice mode after "ready".
+// In phone keyboard mode, center in the portion of the screen above the custom keypad.
+function scrollToActiveFact(initial=false){
+ const activeIndex=index,sessionId=session?.id;
+ window.requestAnimationFrame(()=>{
+  if(phase!=='running'||index!==activeIndex||session?.id!==sessionId)return;
+  const el=$('fact'+activeIndex);if(!el)return;
+  if(session.input==='keyboard'&&touchKeypadEnabled()){
+   const keypad=$('mobileKeypad');
+   const available=Math.max(110,window.innerHeight-keypad.getBoundingClientRect().height);
+   const target=window.scrollY+el.getBoundingClientRect().top-available*.40;
+   window.scrollTo({top:Math.max(0,target),behavior:'auto'});
+  }else{
+   el.scrollIntoView({block:initial?'center':'nearest',behavior:initial?'smooth':(session.input==='keyboard'?'auto':'smooth')});
+  }
+ });
+}
+function focusInlineAnswer(){
+ if(phase!=='running'||!session||session.input!=='keyboard')return;
+ const target=$('inlineAnswer'+index);
+ if(target&&!touchKeypadEnabled())try{target.focus({preventScroll:true})}catch(e){target.focus()}
+}
+function renderGridKeyboard(){
+ const grid=$('grid');
+ // Keep the same DOM inputs alive across answers. This prevents full-grid replacement
+ // and gives mobile browsers a better chance of retaining the on-screen numeric keypad.
+ if(grid.dataset.keyboardSession!==String(session.id)||!grid.querySelector('.fact')){
+  grid.innerHTML='';grid.dataset.keyboardSession=String(session.id);
+  for(let c=0;c<3;c++){
+   const col=document.createElement('div');col.className='column';
+   col.innerHTML=`<div class="coltitle">Column ${c+1} ↓</div>`;
+   for(let i=c*20;i<c*20+20;i++){
+    const p=items[i],row=document.createElement('div');
+    row.id='fact'+i;row.className='fact';
+    row.innerHTML=`<span class="idx">${i+1}</span><span class="fact-equation">${p.a} × ${p.b} =</span><form class="inline-answer" autocomplete="off"><input id="inlineAnswer${i}" type="text" inputmode="numeric" enterkeyhint="go" maxlength="3" autocomplete="off" aria-label="Answer for ${p.a} times ${p.b}" placeholder="?"/><button type="submit" aria-label="Submit answer for problem ${i+1}">↵</button></form><span class="value">—</span>`;
+    row.querySelector('form').addEventListener('submit',e=>{
+     e.preventDefault();
+     if(phase!=='running'||index!==i)return;
+     const field=$('inlineAnswer'+i),raw=field.value.trim(),v=parseNumber(raw);
+     if(v===null){field.focus();return}
+     field.value='';submit(v,raw,'keyboard');
+    });
+    col.append(row);
+   }
+   grid.append(col);
+  }
+ }
+ for(let i=0;i<60;i++){
+  const p=items[i],row=$('fact'+i),active=phase==='running'&&i===index;
+  row.className='fact '+p.status+(active?' active keyboard-active':'');
+  row.querySelector('.value').textContent=p.status==='correct'?String(p.answer):p.status==='wrong'?String(p.attempts.at(-1).value):p.status==='skipped'?'↩':'—';
+  row.setAttribute('aria-label',`Problem ${i+1}: ${p.a} times ${p.b}, ${p.status}`);
+ }
+ if(phase==='running'){$('prompt').textContent=`${items[index].a} × ${items[index].b} = ?`;$('undo').disabled=!undoStack.length}
+ configureKeyboardInput();
+}
+function renderGrid(){
+ if(session&&session.input==='keyboard'){renderGridKeyboard();return}
+ $('grid').innerHTML='';
+ for(let c=0;c<3;c++){
+  const col=document.createElement('div');col.className='column';col.innerHTML=`<div class="coltitle">Column ${c+1} ↓</div>`;
+  for(let i=c*20;i<c*20+20;i++){
+   let p=items[i],row=document.createElement('div');row.id='fact'+i;
+   row.className='fact '+p.status+(phase==='running'&&i===index?' active':'');
+   row.innerHTML=`<span class="idx">${i+1}</span><span>${p.a} × ${p.b} =</span><span class="value">${p.status==='correct'?p.answer:p.status==='wrong'?p.attempts.at(-1).value:p.status==='skipped'?'↩':'—'}</span>`;
+   row.setAttribute('aria-label',`Problem ${i+1}: ${p.a} times ${p.b}, ${p.status}`);col.append(row)
+  }
+  $('grid').append(col)
+ }
+ if(phase==='running'){$('prompt').textContent=`${items[index].a} × ${items[index].b} = ?`;$('undo').disabled=!undoStack.length}
+}
+function tick(){if(phase!=='running')return;let elapsed=performance.now()-started;$('clock').textContent=duration(mode==='test'?Math.max(0,120000-elapsed):elapsed);if(mode==='test'&&elapsed>=120000)finish('time')}
+function updateMetrics(){$('correctCount').innerHTML=items.filter(p=>p.status==='correct').length+' <small style="font-size:15px;color:var(--muted)">/ 60</small>';$('firstCount').textContent=items.filter(first).length;$('bar').style.width=items.filter(p=>p.status==='correct').length/60*100+'%'}
+function submit(value,text,source){if(phase!=='running'||transitioning)return;if(mode==='test'&&performance.now()-started>=120000){finish('time');return}let p=items[index],now=performance.now();undoStack.push({index,p:structuredClone(p),action:{value,text,source,at:now-started}});p.ms+=now-turnStart;turnStart=now;if(value==='skip'){p.skips++;p.status=p.attempts.some(a=>!a.correct)?'wrong':'skipped';advance();return}let correct=value===p.answer;p.attempts.push({value,transcript:text,source,correct,at:now-started});p.status=correct?'correct':'wrong';renderGrid();$('fact'+index).classList.add('shake');updateMetrics();if(correct){const solvedIndex=index;advance();if(phase==='running')$('fact'+solvedIndex).classList.add('shake')}else{$('prompt').textContent='Not quite — give that one another try.';focusInlineAnswer()}}
+function advance(){let next=-1;for(let i=index+1;i<60;i++)if(items[i].status!=='correct'){next=i;break}if(next===-1){for(let i=0;i<=index;i++)if(items[i].status!=='correct'){next=i;break}}if(next===-1){finish('complete');return}index=next;turnStart=performance.now();renderGrid();updateMetrics();scrollToActiveFact();focusInlineAnswer()}
+$('answerForm').onsubmit=e=>{e.preventDefault();let v=parseNumber($('answer').value);if(v!==null){submit(v,$('answer').value,'keyboard');$('answer').value=''}};$('skip').onclick=()=>submit('skip','skip','button');$('undo').onclick=()=>{if(phase!=='running'||!undoStack.length)return;clearTimeout(advanceTimer);transitioning=false;let old=undoStack.pop();items[index].ms+=performance.now()-turnStart;let spent=items[old.index].ms;session.invalidated.push(old.action);items[old.index]=old.p;items[old.index].ms=Math.max(spent,old.p.ms);index=old.index;turnStart=performance.now();renderGrid();updateMetrics();$('heard').textContent='Last answer undone. Try that fact again.';scrollToActiveFact();focusInlineAnswer()};$('end').onclick=()=>{if(phase==='running')finish('manual')};
+function stats(s){return {first:s.items.filter(first).length,correct:s.items.filter(p=>p.status==='correct').length,wrong:s.items.filter(p=>p.status!=='correct'&&p.attempts.some(a=>!a.correct)).length,unanswered:s.items.filter(p=>p.status!=='correct'&&!p.attempts.some(a=>!a.correct)).length,errors:s.items.reduce((a,p)=>a+p.attempts.filter(x=>!x.correct).length,0),skips:s.items.reduce((a,p)=>a+p.skips,0)}}
+function finish(reason){if(phase!=='running')return;clearInterval(ticker);clearTimeout(advanceTimer);transitioning=false;let now=performance.now();if(items[index].status!=='correct')items[index].ms+=now-turnStart;phase='done';document.body.classList.remove('mobile-keypad-open');$('mobileKeypad').classList.add('hidden');if(session.input==='keyboard'&&document.activeElement?.blur)document.activeElement.blur();stopMic();session.elapsed=Math.min(now-started,mode==='test'?120000:Infinity);session.reason=reason;session.items=structuredClone(items);persistFinishedSession(session);$('saveStatus').textContent=activeProfileId==='guest'?'Guest session: results are temporary and not saved.':storageOK?'Saved to this learner on this browser. Export backups regularly.':'Saving is unavailable. Export this session before closing.';controls(false);$('historyNav').disabled=false;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=true);$('stage').textContent='FLIGHT COMPLETE';renderGrid();updateMetrics();$('clock').textContent=duration(mode==='test'?Math.max(0,120000-session.elapsed):session.elapsed);renderResult(session);show('resultsView');window.scrollTo({top:0,behavior:'smooth'})}
+function factsTable(s){return s.items.map((p,i)=>`<tr><td>${i+1}</td><td>${p.a} × ${p.b}</td><td>${p.answer}</td><td>${p.status==='correct'?(first(p)?'First try ✓':'Corrected ✓'):p.attempts.some(a=>!a.correct)?'Unresolved error':'Unanswered'}</td><td>${p.attempts.map(a=>escapeHTML(a.transcript)+(a.correct?' ✓':' ✕')).join(', ')||'—'}</td><td>${p.skips}</td><td>${(p.ms/1000).toFixed(1)}s</td></tr>`).join('')}
+function renderResult(s){let a=stats(s);$('resultsView').innerHTML=`<div class="eyebrow">${s.reason==='time'?'Time’s up':s.reason==='manual'?'Session ended':'All facts complete'} · ${s.table}s ${s.mode==='test'?'test':'practice'}</div><h1>Every try builds confidence.</h1><p>Here’s how this flight went.</p><div class="resultscore">${a.first}<span style="font-size:25px;color:var(--muted)"> / 60 first try</span></div><p>${s.target===null?'No pass target set — check with your teacher.':`${a.first>=s.target?'Target reached ✓':'Keep practicing'} · target ${s.target}/60 first try.`}</p><div class="resultgrid"><div class="metric"><span>Correct after retries</span><strong>${a.correct}/60</strong></div><div class="metric"><span>Unresolved wrong</span><strong>${a.wrong}</strong></div><div class="metric"><span>Unanswered</span><strong>${a.unanswered}</strong></div><div class="metric"><span>Total time</span><strong>${duration(s.elapsed)}</strong></div></div><p class="small">${a.errors} wrong attempts · ${a.skips} skips · ${s.invalidated.length} undone inputs · ${s.unrecognized.length} unrecognized phrases. First-try accuracy: ${Math.round(a.first/60*100)}%. Time includes listening and feedback.</p>${!storageOK?'<p style="color:var(--red)">Browser saving is unavailable. Export your results before closing.</p>':''}<div class="controls"><button class="primary" id="again">Practice again →</button><button id="seeProgress">See all progress</button><button id="exportOne">Export session JSON</button></div><details><summary>Review all 60 facts & spoken answers</summary><div class="tablewrap"><table><thead><tr><th>#</th><th>Fact</th><th>Answer</th><th>Result</th><th>Attempts</th><th>Skips</th><th>Active time</th></tr></thead><tbody>${factsTable(s)}</tbody></table></div></details>`;$('again').onclick=()=>{if(!activeProfileId||activeProfileId!==s.profileId){renderFamily();return}resetPracticeUI();show('practiceView')};if(!activeProfileId||activeProfileId!==s.profileId)$('again').textContent='Back to all results';$('seeProgress').onclick=()=>{renderFamily()};$('exportOne').onclick=()=>download(`fact-flight-${s.id}.json`,JSON.stringify(s,null,2),'application/json')}
+function patterns(sessions=history){let map={};for(let s of sessions)for(let p of s.items){let key=s.table+'×'+p.factor,m=map[key]||(map[key]={table:s.table,factor:p.factor,seen:0,first:0,wrong:0,skips:0,ms:0,attempts:[]});if(p.attempts.length||p.skips){m.seen++;m.first+=first(p)?1:0;m.wrong+=p.attempts.filter(a=>!a.correct).length;m.skips+=p.skips;m.ms+=p.ms;for(let a of p.attempts)if(!a.correct)m.attempts.push(a.value)}}return Object.values(map).sort((a,b)=>(b.wrong+b.skips)-(a.wrong+a.skips))}
+function renderLegacyHistory(){let total=history.reduce((n,s)=>n+stats(s).first,0);$('historyView').innerHTML=`<div class="sheetbar"><div><div class="eyebrow">The bigger picture</div><h1>Your practice, taking flight.</h1></div><button id="back">← Practice</button></div><div class="metrics"><div class="metric"><span>Sessions</span><strong>${history.length}</strong></div><div class="metric"><span>First-try facts</span><strong>${total}</strong></div><div class="metric"><span>Practice time</span><strong>${duration(history.reduce((n,s)=>n+s.elapsed,0))}</strong></div></div><h2>Facts to focus on</h2><p class="small">Both multiplication orders are grouped together. Untouched facts are excluded. Start with the most errors and skips.</p><div class="tablewrap"><table><thead><tr><th>Fact</th><th>Seen</th><th>First-try %</th><th>Wrong attempts</th><th>Skips</th><th>Avg active time</th><th>Wrong answers heard</th></tr></thead><tbody>${patterns().map(m=>`<tr><td><b>${m.table} × ${m.factor}</b></td><td>${m.seen}</td><td>${Math.round(m.first/m.seen*100)}%</td><td>${m.wrong}</td><td>${m.skips}</td><td>${(m.ms/m.seen/1000).toFixed(1)}s</td><td>${m.attempts.slice(-12).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="7">Your first session will start your story here.</td></tr>'}</tbody></table></div><h2 style="margin-top:30px">Flight log</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Table / mode</th><th>First try</th><th>Final correct</th><th>Time</th><th></th></tr></thead><tbody>${history.map((s,i)=>{let a=stats(s);return `<tr><td>${new Date(s.date).toLocaleString()}</td><td>${s.table}s · ${s.mode}</td><td>${a.first}/60</td><td>${a.correct}/60</td><td>${duration(s.elapsed)}</td><td><button data-review="${i}">Review</button></td></tr>`}).join('')}</tbody></table></div><div class="controls"><button id="exportAll">Export full history JSON</button><button id="exportCSV">Export attempts CSV</button></div><p class="small">Saved only in this browser on this device. Clearing browser data removes saved progress. Export includes per-question attempts, recognized words, timing, skips, and corrections.</p>`;$('back').onclick=()=>show('practiceView');$('exportAll').onclick=()=>download('fact-flight-history.json',JSON.stringify(history,null,2),'application/json');$('exportCSV').onclick=exportCSV;document.querySelectorAll('[data-review]').forEach(b=>b.onclick=()=>{renderResult(history[+b.dataset.review]);show('resultsView')})}
+function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportCSV(){let rows=[['session','date','table','mode','question','fact','expected','status','skips','active_seconds','attempt','answer','correct','recognized','source','elapsed_seconds']];for(let s of history)s.items.forEach((p,i)=>{const list=p.attempts.length?p.attempts:[null];list.forEach((a,j)=>rows.push([s.id,s.date,s.table,s.mode,i+1,`${p.a} x ${p.b}`,p.answer,p.status,p.skips,(p.ms/1000).toFixed(2),a?j+1:'',a?.value??'',a?.correct??'',a?.transcript??'',a?.source??'',a?(a.at/1000).toFixed(2):'']))});download('fact-flight-attempts.csv',rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv')}
+
+/* Milestone 1 profile and navigation shell. Legacy v5 history stays read-only. */
+const PROFILE_KEY='fact-flight-profiles-v6',SESSION_KEY='fact-flight-sessions-v6';
+const avatarColors=['#FBBF24','#FCD873','#7DD3E9','#FFF9E6'];
+let familyReadOnly=false;let profiles=[],namedSessions=[],guestSessions=[],activeProfileId=null,editingProfileId=null,selectedAvatar=avatarColors[0],reviewReturn='familyView';
+function loadFamilyData(){
+ try{
+  const rawProfiles=localStorage.getItem(PROFILE_KEY),rawSessions=localStorage.getItem(SESSION_KEY);
+  if(rawProfiles!==null){const value=JSON.parse(rawProfiles);if(!Array.isArray(value)||value.length>5||!value.every(p=>p&&typeof p.id==='string'&&typeof p.nickname==='string'&&p.nickname.length<=24&&avatarColors.includes(p.color)))throw Error('Invalid profile storage');profiles=value}
+  if(rawSessions!==null){const value=JSON.parse(rawSessions);if(!Array.isArray(value)||!value.every(s=>s&&typeof s.profileId==='string'&&Array.isArray(s.items)))throw Error('Invalid session storage');namedSessions=value}
+ }catch(e){storageOK=false;familyReadOnly=true;console.warn('Profile data unavailable; existing records locked against overwrite.',e);profiles=[];namedSessions=[]}
+}
+function persistProfiles(next){if(familyReadOnly){alert('Existing stored family data could not be read. No changes will be saved to avoid overwriting it.');return false}try{localStorage.setItem(PROFILE_KEY,JSON.stringify(next));profiles=next;return true}catch(e){storageOK=false;alert('Could not save profiles on this device. Nothing was changed.');return false}}
+function persistFinishedSession(s){
+ if(s.profileId==='guest'){guestSessions.unshift(s);return}
+ if(!s.profileId||!profiles.some(p=>p.id===s.profileId)){storageOK=false;console.error('Session has no valid named-profile owner; not saved.');return}
+ if(familyReadOnly){storageOK=false;return}const next=[s,...namedSessions];try{localStorage.setItem(SESSION_KEY,JSON.stringify(next));namedSessions=next}catch(e){storageOK=false;console.warn('Session storage failed; export this session to keep it.',e)}
+}
+function profileById(id){return profiles.find(p=>p.id===id)}
+function getStudentSessions(id){return namedSessions.filter(s=>s.profileId===id)}
+function currentStudentName(){return activeProfileId==='guest'?'Guest':profileById(activeProfileId)?.nickname||'Learner'}
+function safeName(name){return escapeHTML(name)}
+function confirmLeave(){
+ if(phase==='checking'){if(!window.confirm('Cancel microphone setup and leave?'))return false;cancelCheck()}
+ if(phase==='running'){if(!window.confirm('Finish this session and leave? Your progress so far will be scored.'))return false;finish('manual')}
+ return true
+}
+function clearGuest(){guestSessions=[];if(activeProfileId==='guest'){session=null;items=[];undoStack=[];phase='idle'}}
+function navigateHome(){if(!confirmLeave())return;clearGuest();activeProfileId=null;resetPracticeUI();renderHome();show('homeView')}
+function resetPracticeUI(){
+ if(phase==='running'||phase==='checking')return;
+ $('empty').classList.remove('hidden');$('playArea').classList.add('hidden');$('stage').textContent='PRE-FLIGHT';
+ $('clock').textContent=mode==='test'?'2:00':'0:00';$('correctCount').innerHTML='0 <small style="font-size:15px;color:var(--muted)">/ 60</small>';$('firstCount').textContent='0';$('bar').style.width='0%';
+}
+function chooseProfile(id){if(!confirmLeave())return;if(activeProfileId==='guest')clearGuest();if(id!=='guest'&&!profileById(id))return;activeProfileId=id;resetPracticeUI();$('saveStatus').textContent=id==='guest'?'Guest mode: your results are temporary and never saved.':'Progress belongs to this learner and stays in this browser.';$('subjectProfile').textContent=currentStudentName();$('manageProfileButton').classList.toggle('hidden',id==='guest');$('subjectGreeting').textContent=id==='guest'?'Welcome, Guest!':`Welcome, ${currentStudentName()}!`;show('subjectsView')}
+function renderHome(){
+ const grid=$('homeProfileGrid');grid.innerHTML=profiles.map(p=>`<button type="button" class="profile-tile" data-profile="${escapeHTML(p.id)}" aria-label="Practice as ${safeName(p.nickname)}"><span class="avatar" style="background:${p.color}">${safeName(p.nickname.slice(0,1).toUpperCase())}</span><span class="tile-name">${safeName(p.nickname)}</span><span class="tile-sub">Tap to start</span></button>`).join('');
+ if(familyReadOnly)grid.insertAdjacentHTML('beforeend','<p class="error-text">Stored family data could not be read. The original data is unchanged. Saving is disabled to prevent overwriting it.</p>');if(profiles.length<5&&!familyReadOnly)grid.insertAdjacentHTML('beforeend','<button type="button" id="createProfile" class="profile-tile muted-tile"><span class="avatar" style="background:var(--soft)">+</span><span class="tile-name">Create Profile</span><span class="tile-sub">Nickname only</span></button>');
+ grid.insertAdjacentHTML('beforeend','<button type="button" id="guestProfile" class="profile-tile muted-tile"><span class="avatar" style="background:var(--active)">☆</span><span class="tile-name">Continue as Guest</span><span class="tile-sub">Not saved</span></button>');
+ grid.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));
+ if($('createProfile'))$('createProfile').onclick=()=>openProfileDialog();$('guestProfile').onclick=()=>chooseProfile('guest');
+}
+function openProfileDialog(id=null){
+ editingProfileId=id;const p=id?profileById(id):null;
+ if(!p&&profiles.length>=5){alert('This device already has five student profiles.');return}
+ selectedAvatar=p?.color||avatarColors[0];$('profileNickname').value=p?.nickname||'';$('profileError').textContent='';
+ $('profileDialogTitle').textContent=p?'Edit profile':'Create a profile';renderAvatarOptions();$('profileDialog').showModal();$('profileNickname').focus();
+}
+function renderAvatarOptions(){$('avatarOptions').innerHTML=avatarColors.map((c,i)=>`<button type="button" class="avatar-option" aria-label="Color choice ${i+1}" aria-pressed="${selectedAvatar===c}" style="background:${c};color:#0B0B0F">${selectedAvatar===c?'✓':''}</button>`).join('');[...$('avatarOptions').children].forEach((b,i)=>b.onclick=()=>{selectedAvatar=avatarColors[i];renderAvatarOptions()})}
+$('profileForm').addEventListener('submit',e=>{
+ e.preventDefault();const nickname=$('profileNickname').value.trim().replace(/\s+/g,' ');
+ if(!nickname||nickname.length>24){$('profileError').textContent='Use a nickname of 1–24 characters.';return}
+ if(profiles.some(p=>p.id!==editingProfileId&&p.nickname.toLocaleLowerCase()===nickname.toLocaleLowerCase())){$('profileError').textContent='That nickname is already being used.';return}
+ const next=editingProfileId?profiles.map(p=>p.id===editingProfileId?{...p,nickname,color:selectedAvatar}:p):[...profiles,{id:(globalThis.crypto?.randomUUID?.()||'p-'+Date.now()+'-'+Math.random().toString(36).slice(2)),nickname,color:selectedAvatar,createdAt:new Date().toISOString()}];
+ if(!persistProfiles(next))return;$('profileDialog').close();if(activeProfileId===editingProfileId&&editingProfileId){$('subjectProfile').textContent=nickname}renderHome();if($('manageView')&&!$('manageView').classList.contains('hidden'))renderManage();
+});
+$('closeProfileDialog').onclick=()=>$('profileDialog').close();
+function renderManage(){const p=profileById(activeProfileId);if(!p){navigateHome();return}const count=getStudentSessions(p.id).length;
+ $('manageView').innerHTML=`<button id="manageBack" class="quiet nav-back">← Subjects</button><div class="eyebrow" style="margin-top:20px">PROFILE SETTINGS</div><h1>${safeName(p.nickname)}</h1><p>Nickname-only profile. Results stay in this browser.</p><div class="manage-row"><button id="editName">Edit nickname or color</button><button id="deleteProfile" style="color:var(--red)">Delete profile &amp; history</button></div><p class="small">${count} saved session${count===1?'':'s'} on this profile. Deletion cannot be undone. Export/backups are part of Milestone 4.</p>`;
+ $('manageBack').onclick=()=>show('subjectsView');$('editName').onclick=()=>openProfileDialog(p.id);
+ $('deleteProfile').onclick=()=>{
+  if(familyReadOnly)return;if(!window.confirm(`Delete profile “${p.nickname}” and all ${count} saved sessions? This cannot be undone.`))return;
+  // Two keys are independently written; restore the original session key if the profile write fails.
+  const nextSessions=namedSessions.filter(s=>s.profileId!==p.id),nextProfiles=profiles.filter(x=>x.id!==p.id);
+  try{
+   const oldSessions=localStorage.getItem(SESSION_KEY);localStorage.setItem(SESSION_KEY,JSON.stringify(nextSessions));
+   try{localStorage.setItem(PROFILE_KEY,JSON.stringify(nextProfiles))}catch(e){if(oldSessions===null)localStorage.removeItem(SESSION_KEY);else localStorage.setItem(SESSION_KEY,oldSessions);throw e}
+   namedSessions=nextSessions;profiles=nextProfiles;activeProfileId=null;renderHome();show('homeView');
+  }catch(e){storageOK=false;alert('Profile deletion failed; please check browser storage. No successful deletion was confirmed.')}
+ };
+}
+function renderFamily(){if(!confirmLeave())return;if(activeProfileId==='guest'){clearGuest();activeProfileId=null}
+ const namedTotal=namedSessions.length,legacyTotal=history.length;
+ $('familyView').innerHTML=`<button id="familyBack" class="quiet nav-back">← Home</button><div class="eyebrow" style="margin-top:18px">FAMILY OVERVIEW</div><h1>Results &amp; Stats</h1><p>Saved sessions by learner. Guest activity never appears here.</p><div class="metrics"><div class="metric"><span>Learners</span><strong>${profiles.length}</strong></div><div class="metric"><span>Named sessions</span><strong>${namedTotal}</strong></div><div class="metric"><span>Legacy unassigned</span><strong>${legacyTotal}</strong></div></div><h2>Choose a learner</h2><div class="family-table"><table><thead><tr><th>Student</th><th>Sessions</th><th>First-try facts</th><th>Details</th></tr></thead><tbody>${profiles.map(p=>{const sessions=getStudentSessions(p.id);return `<tr><td><b>${safeName(p.nickname)}</b></td><td>${sessions.length}</td><td>${sessions.reduce((n,s)=>n+stats(s).first,0)}</td><td><button data-student="${p.id}">View</button></td></tr>`}).join('')||'<tr><td colspan="4">Create a profile to start saving progress.</td></tr>'}</tbody></table></div><div class="rule"></div><h2>Older sessions</h2><p class="small">${legacyTotal} pre-v6 sessions remain unassigned. Their original browser storage is unchanged.</p><button id="openLegacy">Review Legacy / Unassigned History</button><p class="tiny-policy">Detailed family analytics and full family backups arrive in Milestones 3–4.</p>`;
+ $('familyBack').onclick=navigateHome;$('openLegacy').onclick=()=>{renderLegacyHistory();show('historyView');$('back').onclick=()=>renderFamily();$('exportCSV').onclick=()=>exportCSV(history,'fact-flight-legacy-attempts.csv')};
+ $('familyView').querySelectorAll('[data-student]').forEach(b=>b.onclick=()=>renderStudent(b.dataset.student));show('familyView');
+}
+function renderStudent(id){const p=profileById(id);if(!p)return;const list=getStudentSessions(id),firstTotal=list.reduce((n,s)=>n+stats(s).first,0);
+ $('studentView').innerHTML=`<button id="studentBack" class="quiet nav-back">← All results</button><div class="eyebrow" style="margin-top:18px">STUDENT RESULTS</div><h1>${safeName(p.nickname)}</h1><div class="metrics"><div class="metric"><span>Sessions</span><strong>${list.length}</strong></div><div class="metric"><span>First try</span><strong>${firstTotal}</strong></div><div class="metric"><span>Time</span><strong>${duration(list.reduce((n,s)=>n+s.elapsed,0))}</strong></div></div><p class="small">Milestone 1 session history. Detailed trend reporting comes in Milestone 3.</p><div class="family-table"><table><thead><tr><th>Date</th><th>Activity</th><th>First try</th><th>Time</th><th>Review</th></tr></thead><tbody>${list.map((s,i)=>`<tr><td>${new Date(s.date).toLocaleString()}</td><td>${s.table}s multiplication</td><td>${stats(s).first}/60</td><td>${duration(s.elapsed)}</td><td><button data-review-student="${i}">Review</button></td></tr>`).join('')||'<tr><td colspan="5">No saved sessions yet.</td></tr>'}</tbody></table></div>`;
+ $('studentBack').onclick=renderFamily;$('studentView').querySelectorAll('[data-review-student]').forEach(b=>b.onclick=()=>{renderResult(list[+b.dataset.reviewStudent]);show('resultsView');reviewReturn='studentView'});show('studentView');
+}
+function renderHistory(){renderFamily()}
+$('homeResults').onclick=renderFamily;
+$('homeNav').onclick=navigateHome;$('historyNav').onclick=renderFamily;
+$('practiceNav').onclick=()=>{if(activeProfileId){if(confirmLeave())show('practiceView')}else navigateHome()};
+$('subjectsBack').onclick=navigateHome;$('manageProfileButton').onclick=()=>{renderManage();show('manageView')};$('mathSubject').onclick=()=>show('mathMenuView');$('mathBack').onclick=()=>show('subjectsView');
+$('openOriginalTest').onclick=()=>{$('practiceProfileName').textContent=currentStudentName();resetPracticeUI();show('practiceView')};
+$('practiceBack').onclick=()=>{if(!confirmLeave())return;resetPracticeUI();show('mathMenuView')};
+// Explicit navigation from a historical session prevents a stale practice screen from leaking into Guest state.
+loadFamilyData();renderHome();show('homeView');
+
+window.addEventListener('beforeunload',e=>{if(phase==='running'){e.preventDefault();e.returnValue=''}});
+</script></body></html>

@@ -1,0 +1,27 @@
+/* Fact Flight brand concept tokens — derived from selected Brand Kit v2.
+   These are proposed UI mappings, NOT audited final app styles.
+   No font is assumed or remotely loaded. */
+:root {
+  --ff-brand-yellow: #FBBF24;
+  --ff-brand-soft-amber: #FCD873;
+  --ff-brand-near-black: #0B0B0F;
+  --ff-brand-off-white: #FFF9E6;
+  --ff-brand-sky-blue: #7DD3E9;
+  --ff-ui-bg: #FFF9E6;
+  --ff-ui-surface: #FFFFFF; /* proposed neutral, not a brand swatch */
+  --ff-ui-text: #0B0B0F;
+  --ff-ui-primary-bg: #FBBF24;
+  --ff-ui-primary-text: #0B0B0F;
+  --ff-ui-focus-ring: #0B0B0F;
+  --ff-ui-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+[data-theme="dark"] {
+  --ff-ui-bg: #19191D; /* proposed dark canvas, not from original board */
+  --ff-ui-surface: #28282E; /* proposed surface */
+  --ff-ui-text: #FFF9E6;
+  --ff-ui-primary-bg: #FBBF24;
+  --ff-ui-primary-text: #0B0B0F;
+  --ff-ui-focus-ring: #FCD873;
+}
+/* Rule: never use yellow or sky blue alone as ordinary text on off-white.
+   Use text/icons/patterns in addition to color for correct/wrong quiz states. */

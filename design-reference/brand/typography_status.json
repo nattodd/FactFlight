@@ -1,0 +1,19 @@
+{
+  "logo_wordmark": {
+    "font_family": null,
+    "font_source": "unknown",
+    "status": "unavailable_in_raster_source",
+    "recommended_asset": "horizontal_color_source_traced.svg",
+    "text_is_outlined_in_source_trace": true
+  },
+  "ui_typography": {
+    "status": "not_finalized",
+    "temporary_privacy_first_stack": "system-ui, -apple-system, \"Segoe UI\", sans-serif",
+    "candidates_for_later_review": [
+      "Nunito Sans",
+      "Fredoka"
+    ],
+    "note": "Candidate families are NOT identified as the original logo font. No font files supplied."
+  },
+  "source_reference": "FactFlight_BrandKit_v2.png"
+}
