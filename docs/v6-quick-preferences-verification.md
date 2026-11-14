@@ -20,3 +20,7 @@ The original implementation request did not authorize a commit, push or deployme
 ## Owner acceptance and preview approval
 
 The owner tested the Quick Practice changes locally and confirmed that they work and improve usability. Browser/device details were not specified. The owner approved committing and pushing the configurable-session and Quick Practice increments together to `v6-development` for testing at the normal Netlify preview address. Physical iPhone acceptance remains pending.
+
+## Combined preview device acceptance — 2026-11-14
+
+The owner tested deployed commit `693affa` and explicitly confirmed Windows Chrome, iPhone Safari, and iPhone Chrome passed the full release checklist: original School Test and expanded math; speech ready/answers/reconnect; keypad/keyboard fallback; timed and Free Practice; Skip/Undo/Finish/Home; Focus and Worksheet; scoring/activity totals; and saved results after reload. This is owner-reported manual verification. Android and physical tablets remain unverified. Specific enlarged-text, screen-reader, operating-system permission-reset and every orientation combination were not individually attested.

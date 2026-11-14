@@ -24,6 +24,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Added brand-kit FF Home Screen icon metadata, a branded favicon, and a web manifest with relative paths for root and subpath hosting. This increment retains browser display mode and does not add offline caching.
 
 ### Changed
+- Facts to focus on and Flight log now show three rows initially, with independent Show all/Show fewer controls. Full history, filtering, review and exports remain available.
+- Clarified incorrect-answer values with explicit “Answer:” labels and an expandable explanation of encounters, averages and attempt counts; the values include speech, keyboard and keypad submissions.
+- Updated application metadata to `6.0.0-rc.1` for release-candidate testing; this is not a production release.
 - Focus problems now shake and turn red after wrong answers, briefly turn green with “Correct!” before advancing, and flash grey-blue when final speech cannot be interpreted. Wrong-answer red remains until Skip/correction; unclear speech briefly overlays it, then restores red. Feedback includes symbols/text and respects reduced-motion preferences.
 - Correct Focus answers remain visible for 350 milliseconds, with repeat input guarded during the transition. Skip, Undo, Finish, scoring and timer expiry remain supported; completion time is captured at the final correct answer.
 - Duplicate-only imports now explicitly say “Profile already exists” and show an “Already imported” disabled action. Imports using an older nickname keep the current local name for the matching learner ID.
@@ -44,8 +47,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Added theme-aware focus indicators and correct/wrong answer symbols alongside color feedback.
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
+### Fixed
+- Practice again now restores the reviewed flight’s activity, level, count, time limit, input and goal instead of using an unrelated recent setup. Missing older settings have explicit defaults shown before starting; no saved history is rewritten.
+- Results and Progress now export restore-compatible learner backups, including all learner flights and unsaved-flight recovery. Previous progress archives and CSV remain separate.
+
 ### Documentation
-- Recorded owner browser acceptance of configurable sessions and local acceptance of the remembered Quick Practice shortcut; physical iPhone verification of these increments remains pending.
+- Audited the v6 candidate against main/v5.0, reconciled current documentation, and recorded release-readiness findings and remaining gates. No production release was made.
+- Recorded owner acceptance of configurable sessions and remembered Quick Practice at `693affa`, including the full release checklist on Windows Chrome, iPhone Safari and iPhone Chrome.
 - Recorded owner acceptance of red/green/grey-blue answer feedback on desktop and physical iPhone using speech and keypad.
 - Recorded owner acceptance of learner renaming and duplicate-import messaging on physical iPhone Chrome and Safari, with progress intact.
 - Recorded owner acceptance of learner import/restore on physical iPhone Chrome and Safari, including duplicates and preservation of another learner’s progress.

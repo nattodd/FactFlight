@@ -47,6 +47,8 @@ renderResult=function(s){
  storageOK=true;engineResult(s);$('resultsView').dataset.sessionId=String(s.id);
  const note=document.createElement('p');note.id='profileSaveStatus';note.setAttribute('role','status');note.textContent=s.guest?'Guest results are temporary and are not saved. They clear on reload or Change learner.':(unsaved.has(s.id)?saveStates.get(s.id):null)||(s.learnerId?'Saved for '+(family.profiles.some(p=>p.id===s.learnerId)?name(s.learnerId):s.learnerName||'Learner')+'.':'Previous progress · kept separate from learner profiles.');$('resultsView').querySelector('h1').after(note);
  if(s.guest)$('exportOne').remove();
+ else if(s.learnerId){$('exportOne').textContent='Export learner backup JSON';$('exportOne').onclick=()=>backupFromReport(s.learnerId,s)}
+ else $('exportOne').textContent='Export previous flight archive JSON';
  if((s.learnerId||'previous')!==active&&!s.guest)$('again').remove();
  $('seeProgress').textContent=s.guest?'Guest results':'See learner progress';$('seeProgress').onclick=()=>progress(s.guest?'guest':s.learnerId||'previous');
  $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
@@ -55,7 +57,8 @@ const engineHistory=renderHistory;
 renderHistory=function(activity=null){engineHistory(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
  if(viewing==='guest'){$('exportAll').remove();$('exportCSV').remove();$('historyView').lastElementChild.textContent='Guest results clear on reload or Change learner. To save future flights, use Change learner → Create Profile before starting.'}
  else if(viewing==='previous'&&!previousReadable){$('historyView').insertAdjacentHTML('afterbegin','<p role="alert">Previous history could not be read. Original data has not been changed.</p>')}
- else {$('exportAll').textContent=viewing==='previous'?'Export previous history JSON':'Export learner history JSON'}
+ else if(viewing==='previous'){$('exportAll').textContent='Export previous history archive JSON';$('historyView').lastElementChild.textContent+=' Previous progress archives cannot be restored with Import learner.'}
+ else {const owner=viewing;$('exportAll').textContent='Export learner backup JSON';$('exportAll').onclick=()=>backupFromReport(owner);$('historyView').lastElementChild.textContent+=' JSON backup includes all of this learner’s flights, including unsaved results, and restores through Manage learners → Import learner.'}
 };
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;if('learner'in d)select(d.learner);if('createProfile'in d)FlightMenu.profiles('createProfile');if('changeLearner'in d)change();if('profileCancel'in d)FlightMenu.home();if('profileStats'in d)progress(d.profileStats)});
 $('menuView').addEventListener('submit',async e=>{if(e.target.id!=='profileForm')return;e.preventDefault();const form=e.target,button=form.querySelector('button'),value=$('nickname').value;button.disabled=true;try{const p=await store.add(value);refresh();select(p.id)}catch(err){if(form.isConnected){$('profileError').textContent=err.message;button.disabled=false}}});
@@ -66,6 +69,17 @@ function hasSelection(force=false){
 }
 function manage(){
  refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Change a learner’s name, export, restore, or remove their profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-rename-profile="${esc(p.id)}" ${storeError?'disabled':''}>Change Learner Name</button><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
+}
+function backupFromReport(id,recovery=null){
+ try{exportProfile(id)}catch(e){
+  // A profile deleted in another tab must not strand an unsaved flight or be recreated automatically.
+  if(recovery&&unsaved.has(recovery.id)){
+   const profile={id,name:recovery.learnerName||'Learner'},sessions=[...unsaved.values()].filter(s=>s.learnerId===id);
+   download(`fact-flight-recovery-${id}.json`,JSON.stringify({format:'fact-flight-learner-export',version:1,exportedAt:new Date().toISOString(),profile,sessions},null,2),'application/json');
+   $('profileSaveStatus').textContent='Recovery backup exported with unsaved flights only. Saved learner data could not be read; it has not been changed.';return;
+  }
+  const note=document.createElement('p');note.setAttribute('role','alert');note.textContent='Could not export backup: '+e.message;$( $('resultsView').classList.contains('hidden')?'historyView':'resultsView').append(note);
+ }
 }
 function exportProfile(id){
  if(busy())return;refresh();if(storeError)throw Error(storeError);const profile=family.profiles.find(p=>p.id===id);if(!profile)throw Error('This learner no longer exists. Refresh the list.');
@@ -103,7 +117,7 @@ $('menuView').addEventListener('click',async e=>{const button=e.target.closest('
 
 function importStart(){
  importCandidate=null;importReview=null;
- return `<button class="quiet back" data-nav="manageLearners">← Manage learners</button><h1>Import a learner</h1><p>Choose a JSON file created with Manage learners → Export results JSON.</p><div class="profile-form"><label for="learnerImportFile">Learner backup file</label><input id="learnerImportFile" type="file" accept=".json,application/json"><p id="importFileStatus" role="status"></p><p>You will review the learner and flight counts before saving. The file stays on this device.</p><p>CSV, individual-flight exports, and the older Progress history exports are not supported by this importer.</p></div>`;
+ return `<button class="quiet back" data-nav="manageLearners">← Manage learners</button><h1>Import a learner</h1><p>Choose a learner backup from Results, Progress, or Manage learners.</p><div class="profile-form"><label for="learnerImportFile">Learner backup file</label><input id="learnerImportFile" type="file" accept=".json,application/json"><p id="importFileStatus" role="status"></p><p>You will review the learner and flight counts before saving. The file stays on this device.</p><p>CSV, previous-history archives, and older single-flight or Progress-array exports are not supported by this importer.</p></div>`;
 }
 async function prepareReview(stillCurrent=()=>true){
  await Promise.all(pendingWrites.values());

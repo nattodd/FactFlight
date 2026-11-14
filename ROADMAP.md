@@ -14,6 +14,12 @@
 
 **Readability acceptance — 2026-11-14:** The larger-text update (`7e93dc1`) is owner-accepted on physical iPhone Chrome and Safari after 43 automated checks. This is visual/readability acceptance, not a new exhaustive device regression pass. Next proposed increments are branded Home Screen icons, learner-selection Home, and backup-safe local profiles. See [the next-phase plan](docs/v6-profiles-home-plan.md). Icon metadata is brought forward; offline caching and update handling remain separate.
 
+## Current release-readiness status — 2026-11-14
+
+The current candidate is `693affa`. The owner confirms the full manual release checklist passed on Windows Chrome, iPhone Safari and iPhone Chrome. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. Earlier increment paragraphs describe historical states; this section supersedes their pending-device and future-feature wording.
+
+The [release-readiness audit](docs/v6-release-readiness-audit.md) recommends fixing older-flight Practice again setup and clarifying/unifying restorable JSON exports before release. No merge, tag, production deployment or release is approved. Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
+
 ## 1. Non-negotiable product principles
 
 **Branded icon increment — 2026-11-14:** Apple touch icon, favicon, and manifest metadata are implemented locally with root/subpath Chrome checks passing. Physical Home Screen acceptance remains pending; see [icon verification](docs/v6-home-screen-icon-verification.md). Offline caching and standalone launch changes remain deferred.
@@ -186,7 +192,7 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 **Now:** Design and incrementally implement the complete v6 math/family experience: Home/navigation, Focus/Worksheet, Quick/Free/Timed/Challenge modes, original School Test, optional profiles/Guest, safe backups/import, separate progress, and expanded math activities with levels.
 
-**Next within v6:** the expanded activity library is integrated. Review and implement the learner Home/profile plan, including branded Home Screen icons and backup-safe separate learner progress. Offline reliability remains a separate later milestone.
+**Next within v6:** resolve the release-audit findings, verify the fixes locally and on preview, and prepare a reviewed release checklist. Learner Home/profiles, icons, individual-learner backup/restore and configurable modes are implemented. Offline reliability remains a separate later milestone.
 
 **After that:** toddler flashcards and sounds, sight words, games, and personalized review.
 
@@ -228,3 +234,7 @@ Keep content separate from presentation. Example: the same letter card can be sh
 **Quick Practice shortcut increment:** Implemented per-learner last-started Quick choices, a Home summary, fresh-question Start again, and Change options. Other modes preserve the shortcut; Guest choices are temporary. Preferences use separate per-learner browser keys, leaving history/profile schemas unchanged. Browser acceptance of the preceding configurable-session increment was reported by the owner; physical-device acceptance of both increments remains pending. See [Quick shortcut verification](docs/v6-quick-preferences-verification.md).
 
 **Combined preview approval:** Owner accepted the configurable-session and Quick Practice updates locally and approved committing/pushing both together to `v6-development` for normal-address Netlify testing. Physical iPhone acceptance remains pending.
+
+**Release-fix implementation:** R1 historical-flight replay and R2 restore-compatible report backups are implemented locally, with `6.0.0-rc.1` metadata. Existing saved formats/ownership remain unchanged; missing older replay metadata is explained at setup. Verification and remaining preview acceptance are tracked in [release-fix verification](docs/v6-release-fixes-verification.md). No production release is approved.
+
+**Progress readability follow-up:** Facts to focus on and Flight log now have independent three-row previews and expand/collapse controls. Incorrect submitted values are explicitly labeled separately from attempt counts, with definitions under About these numbers. Scoring, speech interpretation and saved history are unchanged; local checks are recorded in [progress verification](docs/v6-progress-disclosure-verification.md). Device acceptance remains pending.

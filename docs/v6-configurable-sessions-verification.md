@@ -29,3 +29,7 @@ After a separately approved preview push, test one- and five-minute sessions wit
 The owner tested the configurable-session changes in their browser and reported that they work. Browser name and detailed coverage were not specified; physical iPhone review remains pending.
 
 The owner subsequently approved committing and pushing this increment together with the remembered Quick Practice shortcut to the normal Netlify preview for phone review.
+
+## Combined preview device acceptance — 2026-11-14
+
+The owner tested deployed commit `693affa` and explicitly confirmed Windows Chrome, iPhone Safari, and iPhone Chrome passed the full release checklist: original School Test and expanded math; speech ready/answers/reconnect; keypad/keyboard fallback; timed and Free Practice; Skip/Undo/Finish/Home; Focus and Worksheet; scoring/activity totals; and saved results after reload. This is owner-reported manual verification. Android and physical tablets remain unverified. Specific enlarged-text, screen-reader, operating-system permission-reset and every orientation combination were not individually attested.

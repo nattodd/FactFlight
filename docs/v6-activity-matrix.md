@@ -1,6 +1,6 @@
-# v6 activity and level matrix — proposed
+# v6 activity and level matrix
 
-Date: 2026-11-14. All ranges below are proposals for owner review, not implemented production capabilities. Levels describe content, not ages, grades, achievements or required learning paths. Every level is immediately selectable.
+Current status — 2026-11-14: the ranges below are implemented in the v6 development app and match `scripts/math-activities.js`. The public main branch remains v5.0. Earlier prototype/integration notes below are historical; the current app has both views, continuous Free Practice, configurable Timed/Custom Test and remembered Quick. Levels describe content, not ages, grades, achievements or required learning paths. Every level is immediately selectable.
 
 | Activity | Level 1 | Level 2 | Level 3 | Level 4 | Level 5 |
 |---|---|---|---|---|---|
