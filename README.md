@@ -91,4 +91,6 @@ Built with HTML, CSS, and vanilla JavaScript. Hosted for free using GitHub Pages
 
 ## Status
 
+Fact Flight is independently developed with AI-assisted design, implementation, and testing using OpenAI's ChatGPT and Codex.
+
 Actively developed as a personal educational project. Version 5 includes an improved mobile numeric keypad, inline answer entry, voice auto-scrolling, and more resilient spoken-number parsing.
