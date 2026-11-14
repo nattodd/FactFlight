@@ -16,7 +16,14 @@
    if(!locks?.request)throw Error('Safe saving is unavailable in this browser. Try an updated browser, or continue as Guest.');
    return locks.request(KEY,()=>{const data=read();const result=change(data);validate(data);storage.setItem(KEY,JSON.stringify(data));return result});
   }
-  return {read,
+  const snapshot=(data,id)=>JSON.stringify({profile:data.profiles.find(p=>p.id===id),sessions:data.sessions.filter(s=>s.learnerId===id)});
+  return {read,snapshot,
+   remove:(id,expected)=>update(data=>{
+    if(!data.profiles.some(p=>p.id===id))throw Error('This learner no longer exists. Close this confirmation and refresh the list.');
+    if(snapshot(data,id)!==expected)throw Error('This learner’s results changed in another tab. Close this confirmation and review the updated flight count before deleting.');
+    data.sessions=data.sessions.filter(s=>s.learnerId!==id);
+    data.profiles=data.profiles.filter(p=>p.id!==id);
+   }),
    add:name=>update(data=>{const profile={id:crypto.randomUUID(),name:name.trim().slice(0,24)||`Learner ${data.profiles.length+1}`};data.profiles.push(profile);return profile}),
    save:record=>update(data=>{const existing=data.sessions.find(s=>s.id===record.id);if(existing){if(JSON.stringify(existing)!==JSON.stringify(record))throw Error('A different flight has this ID. Nothing was replaced.');return}data.sessions.unshift(structuredClone(record))})
   };

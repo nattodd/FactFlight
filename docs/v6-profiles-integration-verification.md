@@ -44,3 +44,9 @@ The owner approved committing and pushing this increment to `v6-development` for
 5. Check large text, long names, scrolling, keyboard focus, portrait/landscape and Home Screen launch. Do not assume installed-context data is shared with browser tabs.
 
 Android/tablet physical checks and assistive-technology review remain unverified. No production release is proposed or authorized.
+
+## Owner device acceptance — 2026-11-14
+
+Following deployment of `0ceae90`, the owner reported successful profile testing on physical iPhone Chrome and Safari: “everything works,” progress stays separate, and Guest does not save. This records acceptance of those profile/retention behaviors. It does not independently establish every detailed microphone, export, orientation, installed-context, or accessibility check listed above. The 78 automated checks remain separate evidence.
+
+Profile deletion is not implemented. A proposed follow-up is Parent corner → Manage learners, with profile-specific export and explicit confirmation showing the learner name and number of flights to be removed. Other learners and Previous progress must remain unchanged. No deletion or storage change was performed while recording this acceptance.
