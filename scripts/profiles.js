@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),esc=escapeHTML;
 const previous=history.slice(),previousReadable=historyReadable;
 let active=null,viewing=null,guest=[],store=null,storeError='',family={version:1,profiles:[],sessions:[]};
 const unsaved=new Map(),saveStates=new Map(),pendingWrites=new Map();
-let deleteTarget=null,managementMessage="";
+let deleteTarget=null,managementMessage="",importCandidate=null,importReview=null;
 try{store=FlightProfileStore.create(localStorage,navigator.locks);family=store.read()}catch(e){storeError=e.message}
 function refresh(){try{if(!store)throw Error('Browser storage is unavailable.');family=store.read();storeError=''}catch(e){storeError=e.message}return family}
 function name(id){return id==='guest'?'Guest':id==='previous'?'Previous progress':family.profiles.find(p=>p.id===id)?.name||'Learner'}
@@ -50,14 +50,14 @@ function hasSelection(force=false){
  return active!==null;
 }
 function manage(){
- refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Export a learner’s results or remove their profile from this browser.</p><p class="notice">Deletion cannot be undone here. Export first if you want to keep a copy. Backup import/restore is not available yet.</p><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
+ refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Export, restore, or remove a learner profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
 }
 function exportProfile(id){
  if(busy())return;refresh();if(storeError)throw Error(storeError);const profile=family.profiles.find(p=>p.id===id);if(!profile)throw Error('This learner no longer exists. Refresh the list.');
  download(`fact-flight-learner-${profile.id}.json`,JSON.stringify({format:'fact-flight-learner-export',version:1,exportedAt:new Date().toISOString(),profile,sessions:records(id)},null,2),'application/json');
 }
 const deleteDialog=document.createElement('dialog');deleteDialog.id='deleteLearnerDialog';deleteDialog.setAttribute('aria-labelledby','deleteLearnerTitle');
-deleteDialog.innerHTML=`<h2 id="deleteLearnerTitle">Delete learner?</h2><p id="deleteLearnerSummary"></p><p>This permanently removes the profile and its results from this browser. Other learners and Previous progress stay untouched.</p><p>Export a copy first if needed. Import/restore is not available yet.</p><button id="exportBeforeDelete">Export results JSON</button><p id="deleteLearnerError" role="alert"></p><div class="controls"><button id="cancelDeleteLearner" autofocus>Keep learner</button><button id="confirmDeleteLearner">Delete profile & results</button></div>`;
+deleteDialog.innerHTML=`<h2 id="deleteLearnerTitle">Delete learner?</h2><p id="deleteLearnerSummary"></p><p>This permanently removes the profile and its results from this browser. Other learners and Previous progress stay untouched.</p><p>Export a copy first if needed. A Manage learners JSON export can be restored using Import learner.</p><button id="exportBeforeDelete">Export results JSON</button><p id="deleteLearnerError" role="alert"></p><div class="controls"><button id="cancelDeleteLearner" autofocus>Keep learner</button><button id="confirmDeleteLearner">Delete profile & results</button></div>`;
 document.body.append(deleteDialog);
 async function confirmDeletion(id){
  if(busy()){requestSessionExit();return}
@@ -84,6 +84,44 @@ $('menuView').addEventListener('click',async e=>{const button=e.target.closest('
  try{if(button.dataset.exportProfile)exportProfile(button.dataset.exportProfile);if(button.dataset.deleteProfile)await confirmDeletion(button.dataset.deleteProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}
 });
 
-window.FlightProfiles={entry,create,identity,picker,progress,manage,hasSelection,isGuest:()=>active==='guest'};
+
+function importStart(){
+ importCandidate=null;importReview=null;
+ return `<button class="quiet back" data-nav="manageLearners">← Manage learners</button><h1>Import a learner</h1><p>Choose a JSON file created with Manage learners → Export results JSON.</p><div class="profile-form"><label for="learnerImportFile">Learner backup file</label><input id="learnerImportFile" type="file" accept=".json,application/json"><p id="importFileStatus" role="status"></p><p>You will review the learner and flight counts before saving. The file stays on this device.</p><p>CSV, individual-flight exports, and the older Progress history exports are not supported by this importer.</p></div>`;
+}
+async function prepareReview(stillCurrent=()=>true){
+ await Promise.all(pendingWrites.values());
+ if(!stillCurrent())return;
+ if(unsaved.size)throw Error('Some flights in this tab have not saved. Export those results before reloading and importing a learner.');
+ if(!store)throw Error('Browser storage is unavailable.');
+ importReview=store.review(importCandidate);FlightMenu.profiles('reviewImport');
+}
+function reviewScreen(){
+ if(!importCandidate||!importReview)return importStart();
+ const r=importReview,blocked=r.conflicts.length>0,nothing=r.existing&&r.newSessions.length===0;
+ return `<button class="quiet back" data-nav="importLearner">← Choose another file</button><h1>Review learner import</h1><section class="profile-form"><h2>${esc(importCandidate.profile.name)}</h2><p>${r.existing?'Add new flights to the existing learner with this ID.':'Restore this learner as a separate profile.'}</p>${r.sameName?'<p class="notice">Another learner has the same name but a different ID. These profiles will stay separate.</p>':''}<dl class="import-counts"><div><dt>New flights</dt><dd>${r.newSessions.length}</dd></div><div><dt>Duplicate flights skipped</dt><dd>${r.duplicates}</dd></div><div><dt>Conflicts</dt><dd>${r.conflicts.length}</dd></div></dl>${blocked?`<p role="alert">Import is blocked. Existing data will not be overwritten. Choose a backup without these conflicts.</p><ul class="import-conflicts">${r.conflicts.map(c=>`<li>${esc(c.reason)}<br><small>Record ID: ${esc(c.id)}</small></li>`).join('')}</ul>`:''}<p>Other learners and Previous progress will remain unchanged.</p>${nothing&&!blocked?'<p>All of these flights are already saved. There is nothing new to import.</p>':''}<p id="importSaveStatus" role="alert"></p><div class="manage-actions"><button data-nav="manageLearners">Cancel</button><button data-review-import>Review again</button><button class="primary" data-confirm-import ${blocked||nothing?'disabled':''}>${r.existing?'Import new flights':'Restore learner'}</button></div></section>`;
+}
+$('menuView').addEventListener('change',async e=>{
+ if(e.target.id!=='learnerImportFile')return;const input=e.target,file=input.files[0];if(!file)return;
+ try{
+  if(file.size>20*1024*1024)throw Error('This file is too large. Choose a learner JSON export smaller than 20 MB.');
+  $('importFileStatus').textContent='Reading backup…';const text=await file.text();if(!input.isConnected)return;
+  importCandidate=FlightProfileStore.parseExport(text);await prepareReview(()=>input.isConnected);
+ }catch(err){importCandidate=null;importReview=null;if(input.isConnected)$('importFileStatus').textContent=err.message}
+});
+$('menuView').addEventListener('click',async e=>{
+ const button=e.target.closest('button');if(!button||button.disabled)return;
+ if('reviewImport'in button.dataset){try{await prepareReview(()=>button.isConnected)}catch(err){if($('importSaveStatus'))$('importSaveStatus').textContent=err.message}return}
+ if(!('confirmImport'in button.dataset)||!importCandidate||!importReview||busy())return;
+ button.disabled=true;const candidate=importCandidate,review=importReview;
+ try{
+  if(unsaved.size)throw Error('Some flights have not saved. Export those results before importing.');
+  const restored=await store.restore(candidate,review.fingerprint);
+  refresh();managementMessage=`${candidate.profile.name}: ${restored.added} flights imported; ${restored.duplicates} duplicates skipped.`;
+  importCandidate=null;importReview=null;FlightMenu.profiles('manageLearners');
+ }catch(err){if($('importSaveStatus'))$('importSaveStatus').textContent=err.message;/* Require another review after failure. */}
+});
+
+window.FlightProfiles={entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();

@@ -25,3 +25,9 @@ The initial management run had one test-selector ambiguity because a save warnin
 Actual iPhone Chrome/Safari and Home Screen testing of management is pending. After an approved preview push, use disposable test profiles to check export downloads, cancel, confirmation scrolling/focus, deletion/reload, and preservation of a second learner's results. Real microphone/permissions, Android/tablet behavior, and assistive technology were not verified by these automated checks. The prior owner acceptance of profiles remains distinct from this new management increment.
 
 The owner approved committing and pushing this increment to `v6-development` for testing at the normal Netlify preview address. Physical-device acceptance remains pending.
+
+## Owner acceptance — 2026-11-14
+
+After deployment of `8d73b25`, the owner tested exporting and deleting profiles on physical iPhone Chrome and Safari, reported that everything works, and confirmed another learner’s progress remained intact. This records acceptance of management/export/deletion on those browsers. It does not imply separate Android, tablet, or exhaustive microphone/installed-context verification.
+
+For the owner's storage-size question, isolated synthetic all-correct keyboard flights measured 1,251 / 4,141 / 11,949 / 23,178 bytes of compact session JSON for 5 / 20 / 60 / 120 questions. Pretty-printed session JSON measured 2,070 / 7,225 / 21,073 / 41,362 bytes. These exclude the small profile/export envelope and browser database overhead; attempts, recognized text, skips and undo can increase size. No real user history was inspected.

@@ -9,6 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Added
+- Added Manage learners → Import learner for JSON files exported by Manage learners, with a review of the learner, new flights, skipped duplicates, and conflicts before saving.
+- Restore preserves learner/flight IDs and detailed results, skips identical flights regardless of JSON property order, and blocks conflicts without overwriting records. Other learners and Previous progress remain unchanged; changed data in another tab requires another review.
 - Added Parent corner → Manage learners with profile-specific JSON export and a separate confirmation showing the learner name and flight count before deleting their profile and results. Other learners and Previous progress remain unchanged.
 - Deletion rechecks the learner’s records under the cross-tab write lock; changed results require a fresh confirmation, and failed writes preserve the original data. Removing the active learner returns Home to learner selection.
 - Added the learner-first Home with optional nickname profiles, Create Profile, Guest, and Results & Stats. Home keeps the current learner; Change learner returns to selection.
@@ -36,6 +38,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Recorded owner acceptance of profile export and deletion on physical iPhone Chrome and Safari, including preservation of another learner’s progress.
 - Recorded owner acceptance of learner profiles on physical iPhone Chrome and Safari, including separate progress and non-saving Guest behavior.
 - Refined the learner Home mockup so Home retains the current learner or Guest and returns to activity selection; Change learner opens the profile picker.
 - Recorded owner acceptance of the branded iPhone Home Screen icon and launch; added a separate learner Home mockup with sample profiles, profile creation, Guest, and learner-specific Results & Stats navigation. No working-app or storage changes.
