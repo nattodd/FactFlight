@@ -1,0 +1,19 @@
+{
+  "colors": {
+    "golden_yellow": "#FBBF24",
+    "soft_amber": "#FCD873",
+    "near_black": "#0B0B0F",
+    "off_white": "#FFF9E6",
+    "sky_blue": "#7DD3E9",
+    "dark_background": "#19191D"
+  },
+  "wcag_contrast_examples": {
+    "near_black_on_golden_yellow": 11.77,
+    "near_black_on_soft_amber": 14.23,
+    "near_black_on_off_white": 18.66,
+    "golden_yellow_on_off_white": 1.59,
+    "sky_blue_on_off_white": 1.61,
+    "off_white_on_dark_background": 16.65,
+    "golden_yellow_on_dark_background": 10.5
+  }
+}

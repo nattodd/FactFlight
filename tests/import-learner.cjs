@@ -1,0 +1,81 @@
+// Integrated app tests: isolated contexts, synthetic history, no real microphone.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const root=path.resolve(__dirname,'..'),output=process.env.FF_TEST_OUTPUT||require('node:os').tmpdir();fs.mkdirSync(output,{recursive:true});
+const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
+const results=[],errors=[];let browser,url;
+async function test(name,fn){if(process.env.FF_TEST_FILTER&&!name.includes(process.env.FF_TEST_FILTER))return;try{await fn();results.push({name,status:'PASS'})}catch(e){results.push({name,status:'FAIL',error:e.stack})}console.log(JSON.stringify(results.at(-1)))}
+async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);return [c,p]}
+
+async function choose(p,{activity='addition',mode='quick',view='focus',input='keypad',level=0,count=5,table=2}={}){
+ if(await p.locator('[data-learner]').count())await p.locator('[data-learner]:not([data-learner=guest])').first().click();
+ await p.locator('#homeNav').click();
+ if(mode==='school'){await p.locator('[data-math]').click();await p.locator('[data-school]').click();await p.locator(`[data-table="${table}"]`).click()}
+ else {
+  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await p.locator(`[data-activity="${activity}"]`).click();
+  if(mode!=='quick')await p.locator(`[data-mode="${mode}"]`).click();
+  await p.locator(`[data-level="${level}"]`).click();if(!['free','test'].includes(mode))await p.locator(`[data-count="${count}"]`).click();
+ }
+ await p.locator('[data-next]').click();await p.locator(`[data-input="${input}"]`).click();await p.locator(`[data-view="${view}"]`).click();
+ await p.locator('[data-start]').click();
+}
+async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter');await require('./feedback-wait.cjs')(p)}
+
+async function create(p,name){await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill(name);await p.locator('#profileForm button').click();await p.locator('[data-quick]').waitFor()}
+async function flight(p,options={}){await choose(p,options);await answer(p,9999);await answer(p);await p.locator('#skip').click();await p.locator('#end').click()}
+async function saved(p,n){await p.waitForFunction(n=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===n,n)}
+
+async function manage(p){await p.locator('#homeNav').click();await p.locator('[data-nav=parents]').click();await p.locator('[data-nav=manageLearners]').click()}
+async function remove(p,id){await manage(p);await p.locator(`[data-delete-profile="${id}"]`).click();await p.locator('#deleteLearnerDialog').waitFor()}
+
+async function backup(p,id){await manage(p);const [d]=await Promise.all([p.waitForEvent('download'),p.locator(`[data-export-profile="${id}"]`).click()]);return JSON.parse(fs.readFileSync(await d.path(),'utf8'))}
+async function upload(p,data){await manage(p);await p.locator('[data-nav=importLearner]').click();await p.locator('#learnerImportFile').setInputFiles({name:'learner.json',mimeType:'application/json',buffer:Buffer.from(typeof data==='string'?data:JSON.stringify(data))})}
+async function seed(p){await create(p,'Alex');await flight(p);await saved(p,1);const id=await p.evaluate(()=>session.learnerId);return backup(p,id)}
+async function confirm(p){await p.locator('[data-confirm-import]').click();await p.getByRole('heading',{name:'Manage learners',exact:true}).waitFor()}
+(async()=>{
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true,channel:'chrome'});
+ await test('Export/delete/restore round trip preserves profile, complete results and reload analytics',async()=>{
+  const [c,p]=await page();const data=await seed(p);await p.locator(`[data-delete-profile="${data.profile.id}"]`).click();await p.locator('#confirmDeleteLearner').click();await p.getByText('No learner profiles yet.').waitFor();const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await upload(p,data);await p.getByRole('heading',{name:'Review learner import'}).waitFor();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await confirm(p);const restored=await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')));assert.deepEqual(restored.profiles,[data.profile]);assert.deepEqual(restored.sessions,data.sessions);await p.reload();await p.locator(`[data-learner="${data.profile.id}"]`).click();await p.locator('#historyNav').click();assert.equal(await p.evaluate(()=>stats(history[0]).correct),1);await c.close();
+ });
+ await test('Cancel makes no writes; duplicates ignore property order and new flights merge once',async()=>{
+  const [c,p]=await page();const data=await seed(p);const fresh=structuredClone(data.sessions[0]);fresh.id=require('crypto').randomUUID();data.sessions=[Object.fromEntries(Object.entries(data.sessions[0]).reverse()),fresh,fresh];const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await upload(p,data);await p.locator('[data-confirm-import]').waitFor();assert.deepEqual(await p.locator('.import-counts dd').allTextContents(),['1','2','0']);await p.locator('#menuView .profile-form [data-nav=manageLearners]').click();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await upload(p,data);await confirm(p);await saved(p,2);await upload(p,data);assert(await p.locator('[data-confirm-import]').isDisabled());assert.deepEqual(await p.locator('.import-counts dd').allTextContents(),['0','3','0']);await c.close();
+ });
+ await test('Restoring one learner preserves another learner and both Previous progress keys',async()=>{
+  const [c,p]=await page();const data=await seed(p);await p.locator('#homeNav').click();await p.locator('[data-change-learner]').click();await create(p,'Sam');await flight(p,{activity:'squares'});await saved(p,2);const before=await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')));const other=before.sessions.filter(s=>s.learnerId!==data.profile.id);await p.evaluate(()=>{localStorage.setItem(KEY,'[ {"preserve":"original"} ]');localStorage.setItem(MATH_KEY,'[ {"preserve":"math"} ]')});const fresh=structuredClone(data.sessions[0]);fresh.id=require('crypto').randomUUID();data.sessions.push(fresh);await upload(p,data);await confirm(p);const after=await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')));assert.deepEqual(after.profiles,before.profiles);assert.deepEqual(after.sessions.filter(s=>s.learnerId!==data.profile.id),other);assert.deepEqual(await p.evaluate(()=>[localStorage.getItem(KEY),localStorage.getItem(MATH_KEY)]),['[ {"preserve":"original"} ]','[ {"preserve":"math"} ]']);await c.close();
+ });
+ await test('Changed results, changed profile details, and conflicting duplicate IDs block all writes',async()=>{
+  const [c,p]=await page();const data=await seed(p);const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));
+  for(const alter of [d=>{d.sessions[0].elapsed+=1},d=>{d.profile.extra='Conflicting metadata'},d=>{const copy=structuredClone(d.sessions[0]);copy.elapsed+=2;d.sessions.push(copy)}]){const changed=structuredClone(data);alter(changed);await upload(p,changed);await p.locator('[data-confirm-import]').waitFor();assert(await p.locator('[data-confirm-import]').isDisabled());assert((await p.locator('.import-conflicts').innerText()).length>0);assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before)}await c.close();
+ });
+ await test('Same nickname different ID stays separate; flight-ID ownership collision is flagged',async()=>{
+  const [c,p]=await page();const data=await seed(p);const copy=structuredClone(data);copy.profile.id=require('crypto').randomUUID();for(const s of copy.sessions)s.learnerId=copy.profile.id;await upload(p,copy);await p.getByText('This flight ID belongs to another learner.',{exact:false}).waitFor();assert(await p.locator('[data-confirm-import]').isDisabled());copy.sessions[0].id=require('crypto').randomUUID();await upload(p,copy);await p.getByText('Another learner has the same name',{exact:false}).waitFor();await confirm(p);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles.length),2);await c.close();
+ });
+ await test('Malformed, incompatible, mixed-owner, injected, and incomplete exports are rejected',async()=>{
+  const [c,p]=await page();const data=await seed(p);const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));const bad=[ '{broken',[],{...data,version:99},{...data,format:'other'}, {...data,profile:{...data.profile,id:'guest'}} ];
+  for(const alter of [d=>d.sessions[0].learnerId='wrong',d=>delete d.sessions[0].items[0].attempts,d=>d.sessions[0].items[0].answer='<img src=x>',d=>d.sessions[0].items[0].attempts[0].value='<script>',d=>d.sessions[0].activity='__proto__']){const copy=structuredClone(data);alter(copy);bad.push(copy)}
+  for(const item of bad){await upload(p,item);await p.waitForFunction(()=>document.querySelector('#importFileStatus')?.textContent.includes('JSON')||document.querySelector('#importFileStatus')?.textContent.includes('supported'));assert.equal(await p.locator('[data-confirm-import]').count(),0);assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before)}await c.close();
+ });
+ await test('Changed storage requires fresh review; failed quota write preserves everything',async()=>{
+  const [c,p]=await page();const data=await seed(p);data.sessions[0].id=require('crypto').randomUUID();await upload(p,data);await p.locator('[data-confirm-import]').waitFor();await p.evaluate(async()=>FlightProfileStore.create(localStorage,navigator.locks).add('Another tab'));const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('[data-confirm-import]').click();await p.getByText('Saved data changed after your review.',{exact:false}).waitFor();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await p.locator('[data-review-import]').click();await p.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('Quota full')}});await p.locator('[data-confirm-import]').click();await p.getByText('Quota full',{exact:true}).waitFor();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await c.close();
+ });
+ await test('Empty learner restore and file text escaping',async()=>{
+  const [c,p]=await page();await create(p,'<img src=x>');const data=await p.evaluate(()=>({format:'fact-flight-learner-export',version:1,exportedAt:new Date().toISOString(),profile:JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles[0],sessions:[]}));await p.evaluate(()=>localStorage.removeItem('fact-flight-family-v1'));await p.reload();await upload(p,data);await p.locator('[data-confirm-import]').waitFor();assert.equal(await p.locator('#menuView .profile-form img').count(),0);await confirm(p);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles.length),1);await c.close();
+ });
+ await test('All eight activities and School with undo/skip detail pass export validation',async()=>{
+  const [c,p]=await page();await create(p,'All activities');for(const activity of ['addition','subtraction','multiplication','division','bonds','doubles','halves','squares']){await choose(p,{activity});await answer(p,999);await p.locator('#undo').click();await answer(p);await p.locator('#skip').click();await p.locator('#end').click()}await flight(p,{mode:'school'});await saved(p,9);const id=await p.evaluate(()=>session.learnerId);const data=await backup(p,id);await upload(p,data);await p.locator('[data-confirm-import]').waitFor();assert.deepEqual(await p.locator('.import-counts dd').allTextContents(),['0','9','0']);await c.close();
+ });
+
+ await test('Mock speech transcripts and unrecognized phrases survive learner restore',async()=>{
+  const [c,p]=await page();await create(p,'Voice');await p.addInitScript(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});await p.reload();await choose(p,{mode:'school',input:'voice'});let index=0;const say=text=>p.evaluate(({text,index})=>{const r=[{transcript:text}];r.isFinal=true;testRecognition.onresult({resultIndex:index,results:Array(index+1).fill(r)})},{text,index:index++});await say('ready');await say('hello airplane');await say(String(await p.evaluate(()=>items[0].answer)));await p.locator('#end').click();await saved(p,1);const id=await p.evaluate(()=>session.learnerId);const data=await backup(p,id);assert.equal(data.sessions[0].unrecognized.length,1);assert.equal(data.sessions[0].items[0].attempts[0].source,'voice');await p.evaluate(()=>localStorage.removeItem('fact-flight-family-v1'));await p.reload();await upload(p,data);await confirm(p);assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions),data.sessions);await c.close();
+ });
+ await test('Concurrent restores cannot duplicate flights or overwrite a newer review',async()=>{
+  const [c,p]=await page();const data=await seed(p);data.sessions[0].id=require('crypto').randomUUID();const q=await c.newPage();await q.goto(url);await Promise.all([upload(p,data),upload(q,data)]);await Promise.all([p.locator('[data-confirm-import]').waitFor(),q.locator('[data-confirm-import]').waitFor()]);  // Use the actual review screens for confirmation (the review snapshot is deliberately private).
+  await Promise.all([p.locator('[data-confirm-import]').click(),q.locator('[data-confirm-import]').click()]);await p.waitForFunction(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===2);await Promise.race([p.getByText('Saved data changed after your review.',{exact:false}).waitFor(),q.getByText('Saved data changed after your review.',{exact:false}).waitFor()]);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),2);await c.close();
+ });
+
+ for(const [width,height] of [[320,568],[390,844],[844,390],[1440,1000]])await test(`Import review layout ${width}x${height}`,async()=>{
+  const [c,p]=await page({viewport:{width,height}});const data=await seed(p);data.sessions[0].id=require('crypto').randomUUID();await upload(p,data);await p.locator('[data-confirm-import]').waitFor();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.locator('[data-confirm-import]').scrollIntoViewIfNeeded();assert(await p.locator('[data-confirm-import]').evaluate(e=>{const r=e.getBoundingClientRect();return r.top>=-1&&r.bottom<=innerHeight+1}));if(width===390)await p.screenshot({path:path.join(output,'import-review-phone.png'),fullPage:true});await c.close();
+ });
+ await test('No page errors',async()=>assert.deepEqual(errors,[]));
+ await browser.close();server.close();fs.writeFileSync(path.join(output,'import-results.json'),JSON.stringify(results,null,2));if(results.some(r=>r.status==='FAIL'))process.exitCode=1;
+})().catch(e=>{console.error(e);server.close();process.exitCode=1});

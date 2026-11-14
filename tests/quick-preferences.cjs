@@ -1,0 +1,49 @@
+// Integrated app tests: isolated contexts, synthetic history, no real microphone.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const root=path.resolve(__dirname,'..'),output=process.env.FF_TEST_OUTPUT||require('node:os').tmpdir();fs.mkdirSync(output,{recursive:true});
+const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
+const results=[],errors=[];let browser,url;
+async function test(name,fn){if(process.env.FF_TEST_FILTER&&!name.includes(process.env.FF_TEST_FILTER))return;try{await fn();results.push({name,status:'PASS'})}catch(e){results.push({name,status:'FAIL',error:e.stack})}console.log(JSON.stringify(results.at(-1)))}
+async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator("[data-create-profile]").click();await p.locator("#nickname").fill("Test learner");await p.locator("#profileForm button").click();await p.locator("[data-quick]").waitFor();return [c,p]}
+
+async function choose(p,{activity='addition',mode='quick',view='focus',input='keypad',level=0,count=5,table=2,minutes=2}={}){
+ if(await p.locator('[data-learner]').count())await p.locator('[data-learner]:not([data-learner=guest])').first().click();
+ await p.locator('#homeNav').click();
+ if(mode==='school'){await p.locator('[data-math]').click();await p.locator('[data-school]').click();await p.locator(`[data-table="${table}"]`).click()}
+ else {
+  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await p.locator(`[data-activity="${activity}"]`).click();
+  if(mode!=='quick')await p.locator(`[data-mode="${mode}"]`).click();
+  await p.locator(`[data-level="${level}"]`).click();if(mode!=='free')await p.locator(`[data-count="${count}"]`).click();
+ }
+ if(['timed','test'].includes(mode))await p.locator(`[data-minutes="${minutes}"]`).click();
+ await p.locator('[data-next]').click();await p.locator(`[data-input="${input}"]`).click();await p.locator(`[data-view="${view}"]`).click();
+ await p.locator('[data-start]').click();
+}
+async function answer(p,value){const field=p.locator(await p.evaluate(()=>activeView==='focus')?'#focusAnswer':'.keyboard-active input');await field.fill(String(value??await p.evaluate(()=>items[index].answer)));await field.press('Enter');await require('./feedback-wait.cjs')(p)}
+
+
+async function home(p){await p.locator('#end').click();await p.locator('#resultHome').click()}
+(async()=>{
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true,channel:'chrome'});
+ await test('First setup, direct fresh start, reload, and non-Quick isolation',async()=>{
+  const [c,p]=await page();assert.equal(await p.locator('[data-quick-start]').count(),0);await choose(p,{activity:'division',level:3,count:10,view:'worksheet'});const first=await p.evaluate(()=>JSON.stringify(items.map(x=>x.text)));await home(p);assert((await p.locator('.quick').innerText()).includes('Division · Level 4 · 10 questions'));await p.locator('[data-quick-start]').click();assert.equal(await p.evaluate(()=>phase),'running');assert.notEqual(await p.evaluate(()=>JSON.stringify(items.map(x=>x.text))),first);assert.deepEqual(await p.evaluate(()=>[session.activity,session.level,items.length,activeView,session.input]),['division',3,10,'worksheet','keyboard']);await home(p);
+  await choose(p,{mode:'test',activity:'squares',minutes:5,count:30});await home(p);assert((await p.locator('.quick').innerText()).includes('Division · Level 4 · 10 questions'));await p.reload();await p.locator('[data-learner]:not([data-learner=guest])').click();assert((await p.locator('.quick').innerText()).includes('Division · Level 4 · 10 questions'));await p.locator('[data-quick]').click();await p.locator('[data-activity=division]').click();assert.equal(await p.locator('[data-level="3"]').getAttribute('aria-pressed'),'true');assert.equal(await p.locator('[data-count="10"]').getAttribute('aria-pressed'),'true');await c.close();
+ });
+ await test('Learners keep independent choices; Guest remembers only until switch or reload',async()=>{
+  const [c,p]=await page();await choose(p,{activity:'bonds',count:15});await home(p);await p.locator('[data-change-learner]').click();await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill('Second');await p.locator('#profileForm button').click();assert.equal(await p.locator('[data-quick-start]').count(),0);await choose(p,{activity:'squares',count:20});await home(p);await p.locator('[data-change-learner]').click();await p.locator('[data-learner]').filter({hasText:'Test learner'}).click();assert((await p.locator('.quick').innerText()).includes('Number bonds'));await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();const before=await p.evaluate(()=>JSON.stringify({...localStorage}));await choose(p,{activity:'halves'});await home(p);assert((await p.locator('.quick').innerText()).includes('Halves'));assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage})),before);await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();assert.equal(await p.locator('[data-quick-start]').count(),0);await choose(p);await home(p);await p.reload();await p.locator('[data-learner=guest]').click();assert.equal(await p.locator('[data-quick-start]').count(),0);await c.close();
+ });
+ await test('Voice shortcut waits for ready; cancellation does not replace remembered setup',async()=>{
+  const [c,p]=await page();await p.addInitScript(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});await p.reload();await choose(p,{activity:'addition'});await home(p);await choose(p,{activity:'squares',input:'voice'});await p.locator('#cancelMic').click();await p.locator('#homeNav').click();assert((await p.locator('.quick').innerText()).includes('Addition'));await choose(p,{activity:'division',input:'voice',count:10});const say=text=>p.evaluate(text=>{const r=[{transcript:text}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})},text);await say('ready');await home(p);assert((await p.locator('.quick').innerText()).includes('Voice'));await p.locator('[data-quick-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');await say('ready');assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>items.length),10);await c.close();
+ });
+ await test('Invalid preferences fall back safely; failed save is temporary and explained',async()=>{
+  const [c,p]=await page();await p.evaluate(()=>{const id=JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles[0].id;localStorage.setItem('fact-flight-quick-v1:'+id,JSON.stringify({version:1,activity:'<script>',level:0,count:5,input:'keypad',view:'focus',target:''}))});await p.locator('#homeNav').click();assert.equal(await p.locator('[data-quick-start]').count(),0);await p.evaluate(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith('fact-flight-quick-v1:'))throw Error('quota');return original.call(this,k,v)}});await choose(p,{activity:'doubles'});await home(p);assert((await p.locator('.quick').innerText()).includes('Doubles'));assert((await p.locator('#menuView').innerText()).includes('could not be saved'));await c.close();
+ });
+ await test('Deleting learner removes their saved preferences',async()=>{
+  const [c,p]=await page();await choose(p);await home(p);const key=await p.evaluate(()=>Object.keys(localStorage).find(k=>k.startsWith('fact-flight-quick-v1:')));await p.locator('[data-nav=parents]').click();await p.locator('[data-nav=manageLearners]').click();await p.locator('[data-delete-profile]').click();await p.locator('#confirmDeleteLearner').click();await p.waitForFunction(key=>localStorage.getItem(key)===null,key);await c.close();
+ });
+ for(const [width,height] of [[320,568],[390,844],[844,390],[1440,1000]])await test(`Remembered shortcut layout ${width}x${height}`,async()=>{
+  const [c,p]=await page({viewport:{width,height}});await choose(p,{activity:'multiplication',level:4,count:20});await home(p);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.locator('[data-quick-start]').scrollIntoViewIfNeeded();if(width===390)await p.screenshot({path:path.join(output,'quick-home-phone.png'),fullPage:true});await c.close();
+ });
+ await test('No page errors',()=>assert.deepEqual(errors,[]));fs.writeFileSync(path.join(output,'quick-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
+})().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});

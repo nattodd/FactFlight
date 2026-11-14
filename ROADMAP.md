@@ -1,0 +1,246 @@
+# Fact Flight — Product & Development Roadmap
+
+**Vision:** *Little practice. Big confidence.* A free, account-free, family-friendly learning app that opens instantly on a phone, tablet, or computer. Practice should fit into real life: five minutes at a sibling's practice, a waiting room, or around the kitchen table.
+
+**Approved stable release:** `v6.0.0` on `main`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6-development`. All milestones below are proposed scope, not promised dates.
+
+**Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
+
+**Implementation order revision — 2026-11-14:** At the owner's request, integrate the reviewed math activities into the working `index.html` first for testing at the normal Netlify address. The uncommitted interim Home has been set aside. Learner-first Home will follow phone review using the supplied desktop/mobile reference images. The math integration is implemented locally with verification in [the math integration record](docs/v6-math-integration-verification.md); this does not complete Focus, stream-based modes, profiles, or the full v6 program.
+
+**Focus increment:** After successful owner voice/math testing, Focus/Worksheet presentation is integrated locally for all activities, including School Test. Both render the existing session model; history schemas are unchanged. See [Focus verification](docs/v6-focus-verification.md). Physical-device review of this new presentation remains pending; learner-first Home is still deferred.
+
+**Approved menu increment — 2026-11-14:** The owner approved the account-free tile Home and guided menu mockup, with Free Practice continuing until Finish. These are now integrated locally, including Quick Practice across all activities, disabled Coming Soon subjects, and guarded Home navigation. Optional learner profiles remain subsequent work; this supersedes the earlier plan to require a learner-first Home now. Verification and remaining device checks are recorded in [menu integration verification](docs/v6-menu-integration-verification.md).
+
+**Readability acceptance — 2026-11-14:** The larger-text update (`7e93dc1`) is owner-accepted on physical iPhone Chrome and Safari after 43 automated checks. This is visual/readability acceptance, not a new exhaustive device regression pass. Next proposed increments are branded Home Screen icons, learner-selection Home, and backup-safe local profiles. See [the next-phase plan](docs/v6-profiles-home-plan.md). Icon metadata is brought forward; offline caching and update handling remain separate.
+
+## Current release-readiness status — 2026-11-14
+
+The current candidate is `693affa`. The owner confirms the full manual release checklist passed on Windows Chrome, iPhone Safari and iPhone Chrome. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. Earlier increment paragraphs describe historical states; this section supersedes their pending-device and future-feature wording.
+
+The [release-readiness audit](docs/v6-release-readiness-audit.md) recommends fixing older-flight Practice again setup and clarifying/unifying restorable JSON exports before release. No merge, tag, production deployment or release is approved. Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
+
+## 1. Non-negotiable product principles
+
+**Branded icon increment — 2026-11-14:** Apple touch icon, favicon, and manifest metadata are implemented locally with root/subpath Chrome checks passing. Physical Home Screen acceptance remains pending; see [icon verification](docs/v6-home-screen-icon-verification.md). Offline caching and standalone launch changes remain deferred.
+
+1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.
+2. **Useful in 30 seconds.** Open → choose an activity → pick a small amount → start. Remember the last choices, but let anyone switch quickly.
+3. **One app for many ages.** Toddlers get touch-first pictures and sounds; older kids get fluency, typing, and voice practice.
+4. **Private by default.** Results remain on the device unless a parent deliberately exports them. Profiles use optional nicknames; never require a child's real name.
+5. **Parent-controlled, child-friendly.** Settings and detailed reports are available but never block a quick practice session.
+6. **Do not break what works.** Keep the verified v5 microphone behavior, timers, original math test, analytics, and browser compatibility.
+7. **Free and maintainable.** Prefer a static GitHub Pages site with HTML/CSS/JavaScript and local data. No paid backend required.
+
+## 2. The experience: from scrolling worksheet to an app-like interface
+
+### Landing screen (all devices)
+
+- Four main destinations: **Math**, **Letters & Sounds**, **Colors & Shapes**, and **Reading**. Show only available modules; label future modules clearly rather than showing dead buttons.
+- A prominent **Quick Practice** path: select **5, 10, 15, or 20 questions/cards**; optionally repeat the last activity with one tap.
+- Optional student selection: **Guest** works immediately; local nicknames can be selected or added later.
+- Minimal navigation: Home, Practice, Progress, and a tucked-away Parent/Settings area.
+
+### Phone: focused, minimal-scroll practice
+
+- **One active prompt/card per screen**, not a long page of rows. Large equation, word, color, picture, or letter is centered.
+- Fixed, thumb-friendly answer area: custom numeric keypad for math, multiple-choice/tap options for preschool, and voice where appropriate.
+- Visible but compact progress (e.g., `3 / 10`), timer when enabled, and a clear Skip/Undo option.
+- Automatically advance after a correct answer; provide gentle feedback for errors. No navigating/scrolling to find the active question.
+- Avoid obscuring the prompt with the keyboard, browser bars, or iPhone safe-area/home indicator. Support portrait and landscape.
+- **School Worksheet view** remains optionally available, but **Focus view** is the phone default.
+
+### Tablet: adaptive practice
+
+- In portrait, favor the same focused-card experience as phones, with larger buttons and artwork.
+- In landscape, use more horizontal space for a card + answer pad or an optional worksheet overview.
+- Large targets for young children; no tiny controls or unnecessary scrolling.
+
+### Desktop: two complementary views
+
+- **Focus view** for fast individual questions and activities.
+- **Worksheet view** for the familiar 60-fact, three-column school assessment. Preserve the tested voice auto-scroll and inline keyboard behavior here.
+
+### App-like browser delivery
+
+- Add a **Progressive Web App (PWA)** manifest, icons, and standalone/home-screen presentation so the site feels native when installed.
+- Add an update indicator so families know when a newer release is available; ensure updating does not wipe stored progress.
+- Add offline caching of the app shell, basic facts, images, and approved audio where practical. **Browser speech recognition may still require network access.**
+- Keep normal browser access fully supported; installation is always optional.
+
+## 3. Practice modes (shared across subjects)
+
+| Mode | Experience | Default use |
+|---|---|---|
+| **Quick Practice** | **5 / 10 / 15 / 20** questions or cards; no required timer | Waiting rooms, practices, short breaks |
+| **Free Practice** | Continue at your own pace, with optional pause/finish | Learning a new concept |
+| **Timed Practice** | Choose a duration and set of facts | Building speed after accuracy |
+| **School Test** | Preserve **60 multiplication facts / 2 minutes / 3 columns**, with a focused-screen option on mobile | Rehearsing the actual classroom assessment |
+| **Smart Review** *(later)* | More frequent practice of missed or slow items | Strengthening weak spots |
+| **Game Mode** *(later)* | Short challenges, animations, and gentle rewards | Fun without pressure or streaks |
+
+For every mode, support **Tap/Keypad** as a reliable input. Offer **Voice** only when the activity and browser support it; never make voice mandatory.
+
+## 4. Subject library
+
+| Subject | First activities | Interaction / feedback |
+|---|---|---|
+| **Math** | Addition, subtraction, multiplication, division; choose fact family/range; whole-number problems initially | Voice or keypad; accurate first-try and timing analytics |
+| **Letters & Sounds** | Uppercase/lowercase letter recognition; letter name; phonics sound; letter-to-picture association | Tap, listen, match; very large controls |
+| **Colors & Shapes** | Identify and match colors; recognize common shapes; select a requested item | Tap choices, picture feedback, spoken prompt |
+| **Reading** | Sight-word cards, word recognition, beginner spelling, word-to-picture matching | Listen, flip/reveal, tap, optionally type or speak |
+| **Future library** | Counting, numbers, patterns, time, money, vocabulary, geography | Reuse the same card/quiz engine |
+
+**Audio design:** Spoken instructions and word examples can use browser text-to-speech as an initial implementation, but **letter phonemes should use curated, accurate audio**. A letter *name* is not the same as its phonetic *sound*. Images and audio must be properly licensed or original.
+
+## 5. Release roadmap
+
+### v5.0 — Stable baseline (complete)
+
+- Verified multiplication worksheet, two-minute test and free practice, speech recognition, custom mobile keypad, auto-scroll, light/dark theme, local analytics and exports.
+- Tagged GitHub release gives us a known working version to restore.
+
+### v6 — Complete math and family experience (CURRENT PROGRAM)
+
+**Build:**
+- New responsive, app-like home/navigation shell and **Focus view** (default on phones/tablets).
+- **Quick Practice: 5, 10, 15, 20** items, plus existing free/timed practice.
+- Addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares; descriptive levels and selectable ranges/fact families. Starter problems use nonnegative whole-number answers. Exact level boundaries remain proposed in the activity matrix.
+- Quick, free, timed, and configurable challenge modes; explicit skip/revisit, finish, results, and return-Home behavior.
+- Keep the **original 60-question / two-minute multiplication School Test** as a distinct mode.
+- Reuse existing microphone, keypad, scoring, and progress mechanisms; adapt their presentation without unnecessarily rewriting their proven core logic.
+- Clear return-to-home and end-session actions; no scrolling to answer.
+
+**Done when:** Users can start the agreed math activities and levels in a few taps, complete Quick Practice in mobile Focus View, and still run the original multiplication test with equivalent scoring and voice behavior. Optional learners have distinct progress, Guest works immediately under the approved retention policy, backups restore correctly, and existing v5 history survives. All required release/device regression gates pass.
+
+**Implementation sequence:** approve the experience design → integrate Home/navigation → shared Focus/Worksheet presentation → modes → backup-safe profiles/local progress → expanded activity library → full validation. Brand foundation is implemented and owner-accepted; this does not mark the complete v6 program finished.
+
+### Within v6 — Family usability + reliable local progress
+
+**Build:**
+- Optional **Guest** and multiple **local student nicknames**; one-tap switching.
+- Separate progress per student, subject, and mode; parent-friendly view of missed facts, time, and improvement.
+- **Import and export** of data (not just export), plus documented backups.
+- Versioned data schema and migration of `fact-flight-history-v1` **without deleting or mixing existing records**.
+- Guest retention and legacy ownership must be explicitly approved; do not silently discard or assign existing account-free history.
+
+**Separate later delivery milestone:** PWA installation polish, update notice, and basic offline caching for non-voice activities. These do not block reviewing the math/family design and require their own validation.
+
+**Done when:** Multiple children can use one device without mixing scores, while guests can practice immediately. Previously saved sessions still display correctly.
+
+### v6.2 — Early learning: letters, sounds, colors, and shapes
+
+**Build:**
+- Big **A / a** cards, pictures, letter names, and curated letter sounds.
+- Colors and shapes with touch-to-answer and listen-and-choose activities.
+- Parent-led flashcard mode plus optional child-led tap mode; no timers by default.
+- Quick Practice works with **5 / 10 / 15 / 20 cards**, not just math.
+
+**Done when:** A two-year-old can participate with a parent using large cards, clear sounds, minimal reading, and no fine-motor demands.
+
+### v6.3 — Early reading and sight words
+
+**Build:**
+- Beginner sight-word decks, reveal/flip cards, spoken examples, and short matching exercises.
+- Optional spelling/typing for older children.
+- Local progress by deck; simple parent view of words needing review.
+
+**Done when:** A parent can open a 10-word session in seconds without creating an account or preparing physical cards.
+
+### v6.4 — Playful practice + smarter review
+
+**Build:**
+- Optional short game modes (e.g., friendly missions, picture reveals, stars earned *during a session*).
+- Target frequently missed or slow facts/words; keep scoring transparent and allow manual choice instead.
+- No daily streak pressure, notification campaigns, premium currency, or ads.
+
+**Done when:** Games increase enjoyment without becoming a requirement to access practice or reports.
+
+### v7+ — Content expansion (only if useful)
+
+- More flashcard packs (counting, clocks, money, vocabulary, science, geography).
+- Parent-created card decks or importing a simple CSV/JSON list.
+- Optional shareable content packs **without** sharing children's progress.
+- Consider any cloud sync only if families genuinely need it; keep local-only mode available.
+
+## 6. Technical foundation to avoid rebuilding each subject
+
+Use one shared **activity engine** rather than independent pages for each subject. Each activity defines:
+
+- **Content:** problem/card, answer(s), image/audio, difficulty/fact group.
+- **Presentation:** focused card, worksheet, multiple choice, matching, flashcard reveal.
+- **Input:** keypad/keyboard, tap, voice when supported.
+- **Feedback:** correct, retry, reveal, skip, encouraging audio/animation.
+- **Results:** student (optional), subject, activity, attempts, correctness, timing, and local date.
+
+Keep content separate from presentation. Example: the same letter card can be shown in normal practice, Quick Practice, or a matching game without duplicating the lesson.
+
+**Data/privacy safeguards:** Local storage remains the default; do not introduce accounts or remote analytics by accident. Avoid storing unnecessary raw speech transcripts, especially for children. Add storage export/import before migrating to more complex profiles. The GitHub Pages and Netlify test sites will remain separate storage origins.
+
+## 7. Development, testing, and release process
+
+1. Keep **`main` = stable production**, currently tagged `v5.0`.
+2. Build in **`v6-development`**; avoid committing untested features to `main`.
+3. Test on Netlify or a separate preview deployment. Verify **Windows Chrome, iPhone Safari, iPhone Chrome**, and eventually **Android Chrome and tablets** (Android not yet verified).
+4. For each release, test voice, keypad/touch, scrolling/focus, timer, screen rotation, session history, and clearing/reloading the page. Test offline mode separately once added.
+5. Before migration, export existing v5 history; test upgrade with a copy of real saved data.
+6. Merge a reviewed/tested version into `main`; verify production; then create the matching version tag/release.
+
+**Release rule:** No update should remove the ability to open Fact Flight and start multiplication practice immediately. Every module should also have a clear keyboard/touch fallback when voice recognition is unavailable.
+
+## 8. Priority order and what NOT to build yet
+
+**Now:** Design and incrementally implement the complete v6 math/family experience: Home/navigation, Focus/Worksheet, Quick/Free/Timed/Challenge modes, original School Test, optional profiles/Guest, safe backups/import, separate progress, and expanded math activities with levels.
+
+**Next within v6:** resolve the release-audit findings, verify the fixes locally and on preview, and prepare a reviewed release checklist. Learner Home/profiles, icons, individual-learner backup/restore and configurable modes are implemented. Offline reliability remains a separate later milestone.
+
+**After that:** toddler flashcards and sounds, sight words, games, and personalized review.
+
+**Deliberately deferred:** Mandatory accounts, subscriptions, advertising, cloud databases, social features, daily streaks, and complicated curricula. These conflict with the simple family-use goal.
+
+## 9. How we will judge success
+
+- A parent can hand the phone to a child and start a 5-question practice with minimal taps.
+- A toddler can use letter/color cards with a parent without reading instructions.
+- The app remains usable on a phone without vertical scrolling during a focused activity.
+- The original school-style multiplication test still works and existing progress is safe.
+- Every activity has a useful non-microphone input; speech remains an enhancement.
+- No child or parent must register, pay, or surrender personal information to use the core application.
+
+---
+
+*This document is a living product roadmap. Add discoveries and adjust release boundaries on `v6-development`; preserve the stable v5 release as a fallback.*
+
+**Learner Home review — 2026-11-14:** Owner accepted the branded icon and app launch from the physical iPhone Home Screen. The [learner Home mockup](design-reference/ui-v6/v6-learner-home-preview.html) is ready for design review. It uses memory-only sample profiles/results; real learner storage, Guest retention, and data migration remain unimplemented.
+
+**Learner integration — 2026-11-14:** The reviewed learner Home is now integrated locally with nickname creation/selection, profile-owned new flights, learner-filtered results/exports, and temporary non-saving Guest use. Existing history remains unchanged under Previous progress. Owner confirmed there is no current history requiring backup; synthetic legacy copies are used for compatibility checks. See [profile integration verification](docs/v6-profiles-integration-verification.md). Physical-device acceptance remains pending. Rename/delete, full-family import/restore and deliberate old-history assignment remain separate work; this does not mark the complete family-data milestone finished.
+
+**Profile device acceptance — 2026-11-14:** Owner tested `0ceae90` on physical iPhone Chrome and Safari and confirmed that profiles work, progress stays separate, and Guest does not save. Profile deletion is still unimplemented; proposed next management flow is Parent corner → Manage learners, with per-profile export and explicit scoped deletion confirmation. This acceptance does not mark all family-data or release regression gates complete.
+
+**Manage learners increment — 2026-11-14:** Parent corner now includes local profile-specific export and confirmed deletion, with name/count review, cross-tab conflict detection, and preservation of other learners and Previous progress. No schema migration was needed. Physical-device acceptance remains pending. Rename and import/restore remain future work. See [management verification](docs/v6-manage-learners-verification.md).
+
+**Manage learners device acceptance — 2026-11-14:** Owner tested export and profile deletion at `8d73b25` on iPhone Chrome and Safari and confirmed that the other learner’s progress remains intact. Import/restore and profile renaming remain outstanding.
+
+**Learner restore increment — 2026-11-14:** Version-1 Manage learners JSON exports can now be reviewed and restored locally. Exact duplicates are skipped, conflicts block saving, and writes recheck the review under the family-store lock. Other learners and Previous progress are preserved. Owner confirmed no current history required backup; synthetic exports and legacy copies were used in tests. Device acceptance remains pending. Full-family backups, legacy export import/assignment, and profile renaming remain separate milestones. See [restore verification](docs/v6-import-learner-verification.md).
+
+**Restore acceptance and learner names — 2026-11-14:** Owner accepted import/restore at `695854d` on iPhone Chrome and Safari. Change Learner Name and clearer duplicate-import messaging are now implemented locally. Renaming leaves IDs and flight records unchanged; an older nickname in an import does not overwrite the current local name. Device acceptance of these follow-ups remains pending. Full-family backups and Previous progress assignment remain future work.
+
+**Answer-feedback increment — 2026-11-14:** Owner accepted nickname changes and duplicate-import messaging at `31bb944` on iPhone Chrome and Safari. At the owner’s request, Focus now provides prominent red/green/grey-blue answer feedback with symbols and a short correct-answer hold. Physical-device acceptance of feedback remains pending; see [feedback verification](docs/v6-answer-feedback-verification.md).
+
+**Answer-feedback acceptance:** Owner accepted `256160c` on desktop and physical iPhone with speech and keypad. Browser names and exhaustive edge-case coverage were not specified. The next proposed increment is configurable Timed Practice and Test/challenge setup, preserving the fixed original School Test, followed by a v6 scope audit and consolidated release regression. Full-family backup and deliberate Previous progress assignment remain separate proposed data-management increments; offline caching and early-learning modules remain deferred.
+
+**Configurable sessions increment:** Timed Practice and Custom Test now offer 5/10/15/20/30/60 questions and 1/2/5-minute limits in the working app. School Test stays fixed at 60 facts/two minutes. New flights carry optional practice-type/time-limit metadata; existing records are not migrated or rewritten. Owner confirmed no history required backup. Local verification and remaining physical-device checks are recorded in [configurable session verification](docs/v6-configurable-sessions-verification.md). This increment has not been pushed or accepted on physical devices.
+
+**Quick Practice shortcut increment:** Implemented per-learner last-started Quick choices, a Home summary, fresh-question Start again, and Change options. Other modes preserve the shortcut; Guest choices are temporary. Preferences use separate per-learner browser keys, leaving history/profile schemas unchanged. Browser acceptance of the preceding configurable-session increment was reported by the owner; physical-device acceptance of both increments remains pending. See [Quick shortcut verification](docs/v6-quick-preferences-verification.md).
+
+**Combined preview approval:** Owner accepted the configurable-session and Quick Practice updates locally and approved committing/pushing both together to `v6-development` for normal-address Netlify testing. Physical iPhone acceptance remains pending.
+
+**Release-fix implementation:** R1 historical-flight replay and R2 restore-compatible report backups are implemented locally, with `6.0.0-rc.1` metadata. Existing saved formats/ownership remain unchanged; missing older replay metadata is explained at setup. Verification and remaining preview acceptance are tracked in [release-fix verification](docs/v6-release-fixes-verification.md). No production release is approved.
+
+**Progress readability follow-up:** Facts to focus on and Flight log now have independent three-row previews and expand/collapse controls. Incorrect submitted values are explicitly labeled separately from attempt counts, with definitions under About these numbers. Scoring, speech interpretation and saved history are unchanged; local checks are recorded in [progress verification](docs/v6-progress-disclosure-verification.md). Device acceptance remains pending.
+
+**Release-fix preview acceptance — 2026-11-14:** Owner reports `63650a0` looks as expected on desktop and iOS. R1 replay, R2 report backup consistency, candidate metadata and compact Progress are implemented and preview-accepted. This is not a new exhaustive or browser-itemized regression report. Next is final release preparation and explicit production approval; no production release has been authorized.
+
+**Release preparation:** Proposed `6.0.0` notes and a concrete promotion/backup/rollback plan are prepared locally in [the release plan](docs/v6-release-plan.md). Final version metadata is staged locally; no production action is approved or complete.
+
+**v6.0.0 production approval — 2026-11-14:** Owner confirmed no history needs preserving and explicitly authorized final release commits, merge/push to main and publication of v6.0.0 with its tag. The release scope is the accepted math/family experience, including the audited replay/backup fixes and compact Progress. Deferred work remains listed above. See [release notes](docs/v6-release-notes.md) and [execution plan](docs/v6-release-plan.md).

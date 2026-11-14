@@ -6,6 +6,20 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Features
 
+This section describes Fact Flight v6.0.0. The public GitHub Pages site serves the stable release; Netlify remains the development preview.
+
+The app opens with a learner picker. Select or create an optional nickname profile, or continue as Guest. After selection, Home returns to that learner’s activity menu; Change learner returns to the picker. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are local to this browser and device; no sign-in or cloud account is created.
+
+Quick Practice offers 5/10/15/20 questions without a timer. After the first Quick flight starts, Home shows that learner’s choices and offers Start again with fresh questions or Change options. Activity, level, count, input, view and optional goal are remembered locally per learner; other modes do not replace them. Voice still waits for “ready.” Guest remembers choices only until reload or Change learner. These disposable preferences are separate from result backups and are removed when the learner is deleted. Free Practice continues until you choose Finish. Timed Practice and Custom Test offer 5/10/15/20/30/60 questions with a 1-, 2-, or 5-minute limit. Both finish when all questions are correct, time expires, or you choose Finish. Custom Test defaults to 60 questions and two minutes; Timed Practice defaults to 20 questions and two minutes. The clock starts after “ready” for voice, or when starting with keypad/keyboard. New flight reviews and exports retain the chosen practice type and time limit; older records remain readable without being rewritten. The original School Test remains a distinct multiplication preset with tables 2–10, 60 facts, and its original generator and scoring.
+
+Choose Focus or Worksheet before starting. In Focus, wrong answers shake the problem card red until skipped or corrected; correct answers shake green with a “Correct!” label for 350 milliseconds before advancing. Unrecognized final speech flashes grey-blue without counting as a wrong answer. Feedback uses symbols/text as well as color, and reduced-motion settings disable shaking. Skip, Undo, Finish, and Home are available during sessions. Home or other navigation asks whether to keep practicing or finish and review results; the clock and microphone continue while deciding. Results include Return Home. Practice again restores the reviewed flight’s settings rather than the last unrelated setup. The current flight retains its selected view while open; older/reloaded flights do not store a view, so the setup explicitly asks you to review Focus/Worksheet. Older records without a practice type reopen as fixed timed/untimed sets, and older untimed School worksheets stay untimed. Free Practice skips move forward and remain in results for review; finite sessions retain the existing revisit-unresolved behavior.
+
+New flights save to the learner selected when the flight starts. Results & Stats is filtered by learner and activity. Facts to focus on and Flight log initially show three rows; expand each independently to see the full list. “Recent incorrect values” lists submitted answer values, not the number of mistakes; Wrong attempts supplies that count. Guest flights are temporary: they can be reviewed while using Guest but are never saved or exported, and clear on reload or Change learner. Create/select a profile before starting to save future flights; Guest results do not transfer.
+
+Existing original and expanded-math history stays untouched under Previous progress. It is not automatically assigned to a learner. Learner JSON backups from Results, Progress, and Manage learners use the same restorable format and include all of that learner’s flights, even from an activity-filtered report, plus any unsaved flights available in this tab. CSV remains an analysis export for the displayed history; Previous progress has its own archive exports. Export files include learner identity and the existing per-question detail. Profiles and sessions use a separate versioned local store with cross-tab write locking. If saving fails, a profile flight stays available in memory for export; an explicit error replaces the saved message. Use **Parent corner → Manage learners** to change a learner’s nickname without changing their ID or progress, export an individual profile and its results, or delete it after reviewing the name and flight count in a separate confirmation. Deletion only affects that learner in this browser; other learners and Previous progress remain unchanged. The management export contains the profile plus its sessions, including any unsaved flights available in this tab. Use **Parent corner → Manage learners → Import learner** to restore a JSON file exported from Manage learners. Review the learner, new flights, duplicates and conflicts before saving. Identical flights are skipped; conflicting IDs block the entire import without overwriting anything. Matching names alone never merge profiles. The importer accepts the version-1 learner backup from Results, Progress or Manage learners, including empty profiles; it does not accept CSV, previous-history archives, older single-flight/Progress arrays, or full-family backups. A duplicate-only review says “Profile already exists” and “Already imported.” If a backup uses an older nickname for the same learner ID, import keeps the current local name. Full-family backup/restore and deliberate assignment of Previous progress remain future increments.
+
+Local automated profile/menu regressions are recorded in `docs/v6-profiles-integration-verification.md`. The owner accepted separate profile progress and non-saving Guest behavior on iPhone Chrome and Safari. The owner also accepted export/deletion on iPhone Chrome and Safari. The owner accepted import/restore on iPhone Chrome and Safari, including duplicate skipping and preservation of another learner. The owner accepted learner renaming and the clearer import message on iPhone Chrome and Safari, with progress intact. The owner also accepted red/green/grey-blue answer feedback on desktop and iPhone using speech and keypad; browser names were not specified for that feedback check.
+
 - 60-question multiplication fluency quizzes covering factors 1–10
 - Two-minute timed tests and untimed practice
 - Spoken answers using browser speech recognition or typed answers using a keyboard
@@ -19,7 +33,7 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Try Fact Flight
 
-**[Launch Fact Flight](https://nattodd.github.io/FactFlight/)**
+**[Launch stable Fact Flight](https://nattodd.github.io/FactFlight/)** · **[Test the v6 preview](https://factflight-preview.netlify.app/)**
 
 No downloads or accounts required. For the best experience, open Fact Flight directly in a browser, not inside a messaging-app preview. Safari and Chrome on iPhone have both been tested for voice practice, with the appropriate permissions enabled.
 
@@ -74,16 +88,16 @@ Android generally does **not** have the same separate, system-wide **Speech Reco
 ## Privacy
 
 - Fact Flight does not require accounts or upload quiz performance data to a server. Practice results are stored **locally in the browser** on the device where they were recorded.
-- Different browsers and devices maintain separate histories; results do not automatically synchronize. Clearing browser data can erase local progress. Use **Progress → Export full history JSON** to keep a backup.
+- Different browsers and devices maintain separate histories; results do not automatically synchronize. Clearing browser data can erase local progress. Use **Export learner backup JSON** in Results or Progress, or **Parent corner → Manage learners → Export results JSON**, for a backup that Import learner can restore. Previous progress and older single-flight/Progress-array exports remain separate archives.
 - The app does **not** store microphone audio recordings. It does store recognized text from answer attempts and unrecognized phrases with session results locally; exported histories may include those transcripts.
 - Depending on the browser and platform, speech recognition may use an online service to process audio. Review browser privacy settings if this is a concern.
 
 ## Planned Enhancements
 
-- Addition, subtraction, and division practice
-- Multiple student profiles
-- Customizable question counts and difficulty levels
-- Expanded progress analytics and personalized review
+- Full-family backups and deliberate assignment of Previous progress
+- Offline caching and update notices
+- Early-learning and reading activities
+- Personalized review and optional games
 
 ## Technology
 
@@ -91,4 +105,6 @@ Built with HTML, CSS, and vanilla JavaScript. Hosted for free using GitHub Pages
 
 ## Status
 
-Actively developed as a personal educational project. Version 5 includes an improved mobile numeric keypad, inline answer entry, voice auto-scrolling, and more resilient spoken-number parsing.
+Fact Flight is independently developed with AI-assisted design, implementation, and testing using OpenAI's ChatGPT and Codex.
+
+Actively developed as a personal educational project. Version 6.0.0 adds the math and family experience described above while preserving the original School Test. Version 5.0 remains the tagged rollback baseline.
