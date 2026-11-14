@@ -18,7 +18,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Added the v6 product and development roadmap on the `v6-development` branch.
 - Established this changelog to track changes before the next approved release.
 - Recorded brand-foundation implementation, owner feedback, static checks, and outstanding device regression checks in [the milestone verification record](docs/v6-milestone-1-verification.md).
-- Added an isolated browser regression suite and recorded 18 passing automated Windows Chrome checks; real microphone and physical-device verification remain pending.
+- Added an isolated browser regression suite and recorded 18 passing automated Windows Chrome checks, followed by owner acceptance after browser and iPhone testing. Detailed manual regression results remain partially unverified.
 
 > **Release status:** No v6 application features have been released. Planned features belong in `ROADMAP.md` until implemented and verified. The `main` branch remains the production version.
 

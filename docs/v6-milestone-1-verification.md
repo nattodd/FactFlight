@@ -2,7 +2,7 @@
 
 Record date: 2026-11-14
 
-Status: Implemented locally on `v6-development`; 18 automated Windows Chrome checks passed, plus the owner-reported smoke check. Physical-device and real-microphone regression verification remains pending. Not released or deployed.
+Status: Brand changes accepted by the owner after browser and iPhone testing; 18 automated Windows Chrome checks passed. Commit `8d2abcb` was pushed to `v6-development` with approval for the connected Netlify preview. Detailed manual regression coverage remains partially unverified. Not released to production.
 
 This record covers the application's brand foundation, not the separate profile-foundation prototype in `design-reference/ui-v6/`. Prototype test claims do not count as application verification.
 
@@ -18,6 +18,8 @@ This record covers the application's brand foundation, not the separate profile-
 The owner reported: “the app still works, the colors have changed, the logo is in the top left.”
 
 This confirms the visible palette/logo change and a general functional smoke check. Browser/device, input mode, tested session flows, theme switching, and persistence details were not specified. It is not recorded as a full browser regression pass.
+
+After the approved commit/push, the owner reported on 2026-11-14: “i tested on both browser and iphone and the changes are good.” This records acceptance of the brand changes following browser and physical iPhone testing. Exact browser names/versions, orientations, and individual checklist results were not supplied; it does not establish that every microphone, storage, or accessibility check passed.
 
 ## Automated static checks — passed
 
@@ -67,9 +69,9 @@ Use a separately installed Playwright package and browser. Set `NODE_PATH` to it
 
 ## Preview workflow and remaining manual checks
 
-The owner confirmed that Netlify is connected to the v6 branch and that a commit is needed for preview testing. Commit/push approval is still required under AGENTS.md. No commit, push, or deployment has been performed. Include the HTML, stylesheet, and runtime SVG together; uploading only HTML would omit required assets. Keep production `main` untouched.
+The owner confirmed that Netlify is connected to the v6 branch. With explicit approval, commit `8d2abcb` was pushed to `origin/v6-development`, including HTML, stylesheet, runtime SVG, tests, changelog, and this record. Netlify's deployment status/URL was not independently inspected. The owner subsequently reported successful browser and iPhone testing. Production `main` was untouched, and `design-reference/` was left uncommitted.
 
-The owner has an iPhone available. The following checklist must be completed separately in **iPhone Safari and iPhone Chrome**, and actual microphone checks also remain for **Windows Chrome**:
+The owner has completed a general browser/iPhone check. Detailed results for the following checklist still need recording separately in **iPhone Safari and iPhone Chrome**, and actual microphone checks also remain unverified for **Windows Chrome**:
 
 1. Open the updated Netlify preview. Confirm the logo, both themes, readable controls, and theme persistence after reload. Record browser/OS and portrait/landscape results.
 2. In voice School Test, grant permissions if needed. Confirm the clock waits for “ready,” then starts; answer several facts aloud, try a wrong answer followed by correction, Skip, and Undo. Verify the displayed totals.
@@ -83,14 +85,14 @@ Remaining matrix:
 | Environment | Automated status | Manual/device status |
 |---|---|---|
 | Windows Chrome | 18 checks passed, headless | Real microphone, permission/reconnection behavior, complete manual keyboard/accessibility checks pending |
-| iPhone Safari | Not run in Safari | Owner testing pending |
-| iPhone Chrome | Chromium viewport emulation only | Owner testing pending |
+| iPhone Safari | Not run in Safari | iPhone changes accepted; Safari-specific checklist results not specified |
+| iPhone Chrome | Chromium viewport emulation only | iPhone changes accepted; Chrome-specific checklist results not specified |
 | Android Chrome | Chromium viewport emulation only | Physical device unverified |
 | Tablets, both orientations | Chromium viewport emulation only | Physical devices unverified |
-| Netlify HTTPS preview | Not deployed/tested | Pending approved commit/push and preview availability |
+| Netlify HTTPS preview | Approved branch push completed; deployment not independently inspected | Subsequent browser/iPhone acceptance reported; tested URL not specified |
 
 Netlify and GitHub Pages have separate storage origins. Synthetic test records demonstrate the tested persistence behavior; representative real v5 history copies still need verification. No migration is part of this milestone.
 
 ## Completion boundary
 
-Implementation and documentation are recorded. Full milestone acceptance remains pending the manual and preview checks above. The v6.0 roadmap milestone is not marked complete. Home/navigation, Focus View, Quick Practice, profiles, data migration, and PWA work are outside this first milestone.
+Brand implementation is accepted for continued development based on automated checks and owner feedback. This is not full release-regression sign-off; the detailed checks above remain unverified where results were not supplied. The v6.0 roadmap milestone is not marked complete. Home/navigation, Focus View, Quick Practice, profiles, data migration, and PWA work are outside this first milestone.
