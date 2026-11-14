@@ -9,6 +9,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Changed
+- Integrated addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares into the working app, with five whole-number levels and 5/10/15/20/30/60-question sets using existing timed/untimed worksheet sessions.
+- Kept the original 60-question School Test as a separate choice. New activities use balanced shuffled fact pools with repeat spacing and fresh selection for each session.
+- Extended keyboard/keypad and spoken-number parsing to four-digit answers; kept the existing microphone ready/reconnect lifecycle.
+- Excluded untouched facts from fact-pattern statistics so unattempted rows do not display invalid percentages.
+- Added activity summaries and filtered flight review to Progress, with activity-aware fact reporting and exports. New activity sessions save separately from original history; both appear in Progress and exports.
 - Applied the selected brand palette to light and dark themes and added an interim horizontal logo on a cream header backing.
 - Replaced remotely loaded fonts with system fonts.
 - Added theme-aware focus indicators and correct/wrong answer symbols alongside color feedback.

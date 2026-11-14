@@ -37,3 +37,7 @@ The experience preview exposes all eight activity cards and five level labels ea
 - Decide whether zero/one multiplication families should be independently selectable outside School Test.
 - The five-level whole-number ladder is implemented in the design preview for review. Confirm mixed operations, square roots, missing-total bonds, negatives/fractions/decimals, and custom teacher targets separately before adding them to scope.
 - Treat “etc.” as an extension list to approve, not permission to add arbitrary activity types or an unbounded curriculum.
+
+## Working-app integration — 2026-11-14
+
+The five-level whole-number pools are now integrated locally into `index.html` through `scripts/math-activities.js`. All eight activities use the existing worksheet/input/scoring engine with finite 5/10/15/20/30/60-question sets, untimed or with a two-minute limit. School remains its original separate preset. This increment does not implement the prototype's streaming Free/Timed modes, one-pass Quick behavior, or Focus View. Four-digit keyboard/keypad answers and spoken whole numbers through 2,500 have automated coverage; physical microphone verification remains pending.

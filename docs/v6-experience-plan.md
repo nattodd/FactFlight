@@ -133,3 +133,9 @@ All 15 Chrome prototype checks passed, including a deterministic synthetic multi
 
 The owner accepted the math options, five-level progression, question variety, and results review, and approved committing this design checkpoint and beginning Home/navigation integration. Guest retention and storage migration policies still require their separate review. Prototype acceptance does not constitute production/device regression approval.
 
+
+### Implementation sequence correction — 2026-11-14
+
+The owner requested integrating the math options into the working app for normal-address Netlify testing before further Home work. The interim uncommitted multiplication-only Home has been set aside. After math phone testing, use the supplied learner-first desktop/mobile Home references, with brand, short introduction, named learner selection/create profile, Guest, and Results & Stats. Profile storage and Guest policies still require their own review.
+
+The math integration adapts the reviewed pure fact-pool/selection functions into a separately tested module; it retains the working session engine, microphone lifecycle, attempt records, and original School generator. This supersedes the earlier blanket proposal not to copy any prototype logic. No prototype persistence, scoring, timer, or profile code was adopted. See the math integration verification record for scope and storage isolation.

@@ -8,7 +8,7 @@ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const context=vm.createContext({});
 vm.runInContext(script.slice(script.indexOf('function questionPool('),script.indexOf('function start(')),context);
-const {questionPool,createQuestionSource}=context;
+const {questionPool,createQuestionSource}=process.env.FF_TEST_APP_MATH?require('../scripts/math-activities.js'):context;
 function rng(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}}
 let sequences=0;
 function check(settings,pool,seed,full=false){

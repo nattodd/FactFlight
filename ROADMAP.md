@@ -6,6 +6,8 @@
 
 **Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
 
+**Implementation order revision — 2026-11-14:** At the owner's request, integrate the reviewed math activities into the working `index.html` first for testing at the normal Netlify address. The uncommitted interim Home has been set aside. Learner-first Home will follow phone review using the supplied desktop/mobile reference images. The math integration is implemented locally with verification in [the math integration record](docs/v6-math-integration-verification.md); this does not complete Focus, stream-based modes, profiles, or the full v6 program.
+
 ## 1. Non-negotiable product principles
 
 1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.
