@@ -6,9 +6,13 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Features
 
-The v6 development preview at the normal Netlify address now includes an Activity selector in the working worksheet: addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares, each with five levels. Choose 5/10/15/20/30/60 questions and either a two-minute limit or untimed practice. The original School Test remains a separate choice with its existing 60 facts and three columns. New activities use one readable worksheet column on phones. Choose Focus or Worksheet before starting any activity, including School Test. Focus shows one question with the keypad and recognized speech; new activities default to Focus on phones, while School defaults to its original worksheet. The learner-first Home remains deferred.
+The v6 development app opens with tile-based Home navigation. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are not part of this increment.
 
-New activity results save locally alongside the original history in a separate storage key; Progress and full-history exports include both. There is no history migration or profile assignment. Back up before updating if you have existing history. The owner reported successful voice and new-activity testing for the math integration. Physical-device verification of the subsequent Focus presentation remains pending.
+Quick Practice offers 5/10/15/20 questions without a timer. Free Practice continues until you choose Finish. Timed Practice uses a selected finite set with a two-minute limit; Test is a 60-question, two-minute preset for the selected activity. The original School Test remains a distinct multiplication preset with tables 2–10, 60 facts, and its original generator and scoring.
+
+Choose Focus or Worksheet before starting. Skip, Undo, Finish, and Home are available during sessions. Home or other navigation asks whether to keep practicing or finish and review results; the clock and microphone continue while deciding. Results include Return Home. Free Practice skips move forward and remain in results for review; finite sessions retain the existing revisit-unresolved behavior.
+
+New activity results save locally alongside the original history in a separate storage key; Progress and full-history exports include both. There is no history migration or profile assignment. Back up before updating if you have existing history. The owner reported successful voice and new-activity testing for the math integration. The owner also reported successful phone use of Focus. Physical-device verification of the new menus and continuous Free Practice remains pending.
 
 - 60-question multiplication fluency quizzes covering factors 1–10
 - Two-minute timed tests and untimed practice

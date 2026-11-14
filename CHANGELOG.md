@@ -9,6 +9,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Changed
+- Replaced the public dropdown setup with the approved tile-based Home and guided activity, mode, level, input, and view menus. Quick Practice supports all eight math activities; future subjects are disabled Coming Soon tiles.
+- Free Practice now continues until Finish, using a continuous randomized fact source. Skip advances; Undo retains the generated next question. Saved results include attempted/skipped questions, not the unseen final prompt.
+- Added in-session Home and guarded navigation: continue the current flight or finish and review saved results before returning Home. Existing speech, School Test, Focus/Worksheet, history stores, and exports remain available.
 - Added a pre-session Focus/Worksheet selector for all eight math activities and the original School Test. New activities default to Focus on phones; School retains its worksheet default and can also run in Focus.
 - Focus shows one equation with a responsive keypad, question position, timer, Skip/Undo/Finish controls, and recognized speech text. It reuses existing questions, scoring, microphone behavior, and saved results without a storage-schema change.
 - Integrated addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares into the working app, with five whole-number levels and 5/10/15/20/30/60-question sets using existing timed/untimed worksheet sessions.
@@ -22,6 +25,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Added a separate tile-menu design mockup for review: account-free Home, Quick Practice across all eight activities, guided mode/level/input/view choices, and disabled Coming Soon subject tiles. The working app is unchanged.
 - Revised the planned v6 scope to include profiles, Guest, backup/import, expanded math activities and levels; added an experience plan and proposed activity matrix.
 - Added a separate clickable experience-design preview with sample learners, activity setup, Focus/Worksheet sessions, results, and backup-review examples. It does not change the running application or access saved app data.
 - Improved question variety in the design preview: full level pools, balanced shuffled rounds, and at least three intervening equations between repeated facts when possible, including across streamed batches. Added generator coverage and spacing checks; the running application's generator is unchanged.

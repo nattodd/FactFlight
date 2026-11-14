@@ -10,6 +10,8 @@
 
 **Focus increment:** After successful owner voice/math testing, Focus/Worksheet presentation is integrated locally for all activities, including School Test. Both render the existing session model; history schemas are unchanged. See [Focus verification](docs/v6-focus-verification.md). Physical-device review of this new presentation remains pending; learner-first Home is still deferred.
 
+**Approved menu increment — 2026-11-14:** The owner approved the account-free tile Home and guided menu mockup, with Free Practice continuing until Finish. These are now integrated locally, including Quick Practice across all activities, disabled Coming Soon subjects, and guarded Home navigation. Optional learner profiles remain subsequent work; this supersedes the earlier plan to require a learner-first Home now. Verification and remaining device checks are recorded in [menu integration verification](docs/v6-menu-integration-verification.md).
+
 ## 1. Non-negotiable product principles
 
 1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.

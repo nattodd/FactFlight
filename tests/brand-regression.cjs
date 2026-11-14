@@ -15,11 +15,11 @@ const test = async (name, fn) => {
   console.log(JSON.stringify(results.at(-1)));
 };
 const server = http.createServer((req, res) => {
-  const files = { '/scripts/math-activities.js': 'scripts/math-activities.js', '/': 'index.html', '/styles/brand.css': 'styles/brand.css', '/assets/brand/horizontal.svg': 'assets/brand/horizontal.svg' };
+  const files = { '/styles/menus.css': 'styles/menus.css', '/scripts/menus.js': 'scripts/menus.js', '/scripts/math-activities.js': 'scripts/math-activities.js', '/': 'index.html', '/styles/brand.css': 'styles/brand.css', '/assets/brand/horizontal.svg': 'assets/brand/horizontal.svg' };
   const file = files[req.url];
   if (!file) { res.writeHead(404); return res.end(); }
   res.setHeader('Content-Type', file.endsWith('.js') ? 'application/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : 'text/html');
-  res.end(fs.readFileSync(path.join(root, file)));
+  const content=fs.readFileSync(path.join(root,file));res.end(file==='index.html'?require('./engine-fixture.cjs')(content):content);
 });
 let browser;
 (async () => {
