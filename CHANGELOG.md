@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Revised the planned v6 scope to include profiles, Guest, backup/import, expanded math activities and levels; added an experience plan and proposed activity matrix.
+- Added a separate clickable experience-design preview with sample learners, activity setup, Focus/Worksheet sessions, results, and backup-review examples. It does not change the running application or access saved app data.
+- Improved question variety in the design preview: full level pools, balanced shuffled rounds, and at least three intervening equations between repeated facts when possible, including across streamed batches. Added generator coverage and spacing checks; the running application's generator is unchanged.
+- Added an R3 revision marker to the preview and verified randomized repeat-session order through Practice again for all eight activities with unchanged settings.
+- Expanded the design preview to five whole-number levels per activity, with harder operand ranges, four-digit answer entry, and an R4 marker. Updated the level matrix and added advanced arithmetic, diversity, and layout checks; production activities remain unchanged.
+- Added an R5 activity-level Progress overview to the preview: learner-specific flight counts, correct/incorrect outcomes, first-attempt correct totals, and drill-down to each activity's flight history. Wrong attempts and unanswered questions are reported separately.
 - Added the v6 product and development roadmap on the `v6-development` branch.
 - Established this changelog to track changes before the next approved release.
 - Recorded brand-foundation implementation, owner feedback, static checks, and outstanding device regression checks in [the milestone verification record](docs/v6-milestone-1-verification.md).

@@ -4,6 +4,8 @@
 
 **Current stable baseline:** `v5.0` on `main` (multiplication fact fluency). **Development branch:** `v6-development`. All milestones below are proposed scope, not promised dates.
 
+**Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
+
 ## 1. Non-negotiable product principles
 
 1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.
@@ -82,26 +84,31 @@ For every mode, support **Tap/Keypad** as a reliable input. Offer **Voice** only
 - Verified multiplication worksheet, two-minute test and free practice, speech recognition, custom mobile keypad, auto-scroll, light/dark theme, local analytics and exports.
 - Tagged GitHub release gives us a known working version to restore.
 
-### v6.0 — App foundation + all four math operations (FIRST PRIORITY)
+### v6 — Complete math and family experience (CURRENT PROGRAM)
 
 **Build:**
 - New responsive, app-like home/navigation shell and **Focus view** (default on phones/tablets).
 - **Quick Practice: 5, 10, 15, 20** items, plus existing free/timed practice.
-- Addition, subtraction, multiplication, division; selectable ranges/fact families and nonnegative/integer-only starter problems.
+- Addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares; descriptive levels and selectable ranges/fact families. Starter problems use nonnegative whole-number answers. Exact level boundaries remain proposed in the activity matrix.
+- Quick, free, timed, and configurable challenge modes; explicit skip/revisit, finish, results, and return-Home behavior.
 - Keep the **original 60-question / two-minute multiplication School Test** as a distinct mode.
 - Reuse existing microphone, keypad, scoring, and progress mechanisms; adapt their presentation without unnecessarily rewriting their proven core logic.
 - Clear return-to-home and end-session actions; no scrolling to answer.
 
-**Done when:** Users can start any math operation in a few taps, complete Quick Practice on mobile without page scrolling, and still run the original multiplication test with equivalent scoring and voice behavior. Existing v5 history survives.
+**Done when:** Users can start the agreed math activities and levels in a few taps, complete Quick Practice in mobile Focus View, and still run the original multiplication test with equivalent scoring and voice behavior. Optional learners have distinct progress, Guest works immediately under the approved retention policy, backups restore correctly, and existing v5 history survives. All required release/device regression gates pass.
 
-### v6.1 — Family usability + reliable local progress
+**Implementation sequence:** approve the experience design → integrate Home/navigation → shared Focus/Worksheet presentation → modes → backup-safe profiles/local progress → expanded activity library → full validation. Brand foundation is implemented and owner-accepted; this does not mark the complete v6 program finished.
+
+### Within v6 — Family usability + reliable local progress
 
 **Build:**
 - Optional **Guest** and multiple **local student nicknames**; one-tap switching.
 - Separate progress per student, subject, and mode; parent-friendly view of missed facts, time, and improvement.
 - **Import and export** of data (not just export), plus documented backups.
 - Versioned data schema and migration of `fact-flight-history-v1` **without deleting or mixing existing records**.
-- PWA installation polish, update notice, and basic offline caching for non-voice activities.
+- Guest retention and legacy ownership must be explicitly approved; do not silently discard or assign existing account-free history.
+
+**Separate later delivery milestone:** PWA installation polish, update notice, and basic offline caching for non-voice activities. These do not block reviewing the math/family design and require their own validation.
 
 **Done when:** Multiple children can use one device without mixing scores, while guests can practice immediately. Previously saved sessions still display correctly.
 
@@ -167,9 +174,9 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 ## 8. Priority order and what NOT to build yet
 
-**Now:** v6.0 app-like interface, Quick Practice (5/10/15/20), all four math operations, preserve the school test.
+**Now:** Design and incrementally implement the complete v6 math/family experience: Home/navigation, Focus/Worksheet, Quick/Free/Timed/Challenge modes, original School Test, optional profiles/Guest, safe backups/import, separate progress, and expanded math activities with levels.
 
-**Next:** optional student profiles, migration-safe local progress, PWA/offline reliability.
+**Next within v6:** follow the experience-plan milestones; implement backup-safe local profiles before connecting the expanded activity library. PWA/offline reliability remains a separate later milestone.
 
 **After that:** toddler flashcards and sounds, sight words, games, and personalized review.
 
