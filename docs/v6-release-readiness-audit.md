@@ -2,7 +2,7 @@
 
 ## Follow-up implementation status
 
-The owner authorized the required fixes. R1/R2 and release-candidate metadata are now implemented locally; see [release-fix verification](v6-release-fixes-verification.md). The findings below describe the audited `693affa` candidate and remain historical evidence. Preview/device acceptance of the fixes and production approval are still separate gates.
+The owner authorized the required fixes. R1/R2 and release-candidate metadata are now implemented locally; see [release-fix verification](v6-release-fixes-verification.md). The findings below describe the audited `693affa` candidate and remain historical evidence. The owner subsequently accepted the `63650a0` preview appearance/behavior on desktop and iOS. This is not a separately itemized full regression or backup-round-trip report. The original findings have been addressed; final release preparation and explicit production approval remain.
 
 ## Recommendation
 

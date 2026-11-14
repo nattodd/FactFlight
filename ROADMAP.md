@@ -2,7 +2,7 @@
 
 **Vision:** *Little practice. Big confidence.* A free, account-free, family-friendly learning app that opens instantly on a phone, tablet, or computer. Practice should fit into real life: five minutes at a sibling's practice, a waiting room, or around the kitchen table.
 
-**Current stable baseline:** `v5.0` on `main` (multiplication fact fluency). **Development branch:** `v6-development`. All milestones below are proposed scope, not promised dates.
+**Approved stable release:** `v6.0.0` on `main`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6-development`. All milestones below are proposed scope, not promised dates.
 
 **Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
 
@@ -238,3 +238,9 @@ Keep content separate from presentation. Example: the same letter card can be sh
 **Release-fix implementation:** R1 historical-flight replay and R2 restore-compatible report backups are implemented locally, with `6.0.0-rc.1` metadata. Existing saved formats/ownership remain unchanged; missing older replay metadata is explained at setup. Verification and remaining preview acceptance are tracked in [release-fix verification](docs/v6-release-fixes-verification.md). No production release is approved.
 
 **Progress readability follow-up:** Facts to focus on and Flight log now have independent three-row previews and expand/collapse controls. Incorrect submitted values are explicitly labeled separately from attempt counts, with definitions under About these numbers. Scoring, speech interpretation and saved history are unchanged; local checks are recorded in [progress verification](docs/v6-progress-disclosure-verification.md). Device acceptance remains pending.
+
+**Release-fix preview acceptance — 2026-11-14:** Owner reports `63650a0` looks as expected on desktop and iOS. R1 replay, R2 report backup consistency, candidate metadata and compact Progress are implemented and preview-accepted. This is not a new exhaustive or browser-itemized regression report. Next is final release preparation and explicit production approval; no production release has been authorized.
+
+**Release preparation:** Proposed `6.0.0` notes and a concrete promotion/backup/rollback plan are prepared locally in [the release plan](docs/v6-release-plan.md). Final version metadata is staged locally; no production action is approved or complete.
+
+**v6.0.0 production approval — 2026-11-14:** Owner confirmed no history needs preserving and explicitly authorized final release commits, merge/push to main and publication of v6.0.0 with its tag. The release scope is the accepted math/family experience, including the audited replay/backup fixes and compact Progress. Deferred work remains listed above. See [release notes](docs/v6-release-notes.md) and [execution plan](docs/v6-release-plan.md).

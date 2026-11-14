@@ -6,9 +6,9 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Features
 
-This section describes the v6 development preview. The public GitHub Pages site remains v5.0 until a separately approved production release.
+This section describes Fact Flight v6.0.0. The public GitHub Pages site serves the stable release; Netlify remains the development preview.
 
-The v6 development app opens with a learner picker. Select or create an optional nickname profile, or continue as Guest. After selection, Home returns to that learner’s activity menu; Change learner returns to the picker. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are local to this browser and device; no sign-in or cloud account is created.
+The app opens with a learner picker. Select or create an optional nickname profile, or continue as Guest. After selection, Home returns to that learner’s activity menu; Change learner returns to the picker. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are local to this browser and device; no sign-in or cloud account is created.
 
 Quick Practice offers 5/10/15/20 questions without a timer. After the first Quick flight starts, Home shows that learner’s choices and offers Start again with fresh questions or Change options. Activity, level, count, input, view and optional goal are remembered locally per learner; other modes do not replace them. Voice still waits for “ready.” Guest remembers choices only until reload or Change learner. These disposable preferences are separate from result backups and are removed when the learner is deleted. Free Practice continues until you choose Finish. Timed Practice and Custom Test offer 5/10/15/20/30/60 questions with a 1-, 2-, or 5-minute limit. Both finish when all questions are correct, time expires, or you choose Finish. Custom Test defaults to 60 questions and two minutes; Timed Practice defaults to 20 questions and two minutes. The clock starts after “ready” for voice, or when starting with keypad/keyboard. New flight reviews and exports retain the chosen practice type and time limit; older records remain readable without being rewritten. The original School Test remains a distinct multiplication preset with tables 2–10, 60 facts, and its original generator and scoring.
 
@@ -107,4 +107,4 @@ Built with HTML, CSS, and vanilla JavaScript. Hosted for free using GitHub Pages
 
 Fact Flight is independently developed with AI-assisted design, implementation, and testing using OpenAI's ChatGPT and Codex.
 
-Actively developed as a personal educational project. Version 5 includes an improved mobile numeric keypad, inline answer entry, voice auto-scrolling, and more resilient spoken-number parsing.
+Actively developed as a personal educational project. Version 6.0.0 adds the math and family experience described above while preserving the original School Test. Version 5.0 remains the tagged rollback baseline.

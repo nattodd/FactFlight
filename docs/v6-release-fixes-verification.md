@@ -25,3 +25,7 @@ No commit, push, merge or production release has been made. The owner previously
 ## Preview approval
 
 The owner approved committing and pushing the release fixes and compact Progress updates together to `v6-development` for testing at the normal Netlify preview address. Physical-device acceptance of these changes and production release approval remain separate pending gates.
+
+## Owner preview acceptance — 2026-11-14
+
+After deployment of `63650a0`, the owner reported that the updates look as expected on desktop and iOS. This records acceptance of the reviewed preview changes, not a new exhaustive regression or separately itemized backup round trip. Browser names were not repeated for this acceptance. The prior full Windows Chrome/iPhone Safari/iPhone Chrome checklist on `693affa` remains separate evidence. Android and physical tablets remain unverified. Production release has not been approved.

@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+## [6.0.0] - 2026-11-14
+
 ### Added
 - Quick Practice remembers each learner’s last started Quick setup, displays its activity, level, count, input and view on Home, and offers Start again with fresh questions or Change options. Other modes do not replace the shortcut. Guest choices clear on reload or Change learner.
 - Added 1-, 2-, and 5-minute choices and 5/10/15/20/30/60-question sets to Timed Practice and Custom Test. Setup and repeat-session review show the selected choices; the original School Test stays fixed at 60 multiplication facts and two minutes.
@@ -52,6 +54,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Results and Progress now export restore-compatible learner backups, including all learner flights and unsaved-flight recovery. Previous progress archives and CSV remain separate.
 
 ### Documentation
+- Prepared local 6.0.0 release notes, deployment/backup/rollback checklist and final version metadata; release notes remain Unreleased pending explicit production approval.
+- Recorded owner desktop/iOS preview acceptance of the release fixes and compact Progress updates at `63650a0`; production release remains unapproved.
 - Audited the v6 candidate against main/v5.0, reconciled current documentation, and recorded release-readiness findings and remaining gates. No production release was made.
 - Recorded owner acceptance of configurable sessions and remembered Quick Practice at `693affa`, including the full release checklist on Windows Chrome, iPhone Safari and iPhone Chrome.
 - Recorded owner acceptance of red/green/grey-blue answer feedback on desktop and physical iPhone using speech and keypad.
@@ -74,7 +78,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Recorded brand-foundation implementation, owner feedback, static checks, and outstanding device regression checks in [the milestone verification record](docs/v6-milestone-1-verification.md).
 - Added an isolated browser regression suite and recorded 18 passing automated Windows Chrome checks, followed by owner acceptance after browser and iPhone testing. Detailed manual regression results remain partially unverified.
 
-> **Release status:** No v6 application features have been released. Planned features belong in `ROADMAP.md` until implemented and verified. The `main` branch remains the production version.
+> **Release scope:** This section records the approved v6.0.0 release. Historical design/verification entries describe their respective implementation stages; planned follow-ups remain in `ROADMAP.md`.
 
 ## [5.0.0] - 2026-11-14
 
