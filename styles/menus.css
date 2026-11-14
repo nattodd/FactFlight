@@ -38,3 +38,8 @@
 #menuView .import-conflicts{padding-left:22px;overflow-wrap:anywhere;line-height:1.6}
 #menuView .import-conflicts li+li{margin-top:12px}
 #menuView #learnerImportFile{font-size:16px}
+
+#renameLearnerDialog{max-height:90dvh;overflow:auto;text-align:left}
+#renameLearnerDialog label{font-size:18px;font-weight:700}
+#renameLearnerName{font-size:22px;margin-top:12px}
+#renameLearnerDialog button{min-height:48px;font-size:16px}

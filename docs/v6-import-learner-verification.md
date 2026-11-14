@@ -34,3 +34,7 @@ The 390px review screenshot was visually inspected. `git diff --check` passed. N
 After an approved commit/push, test iPhone Safari and Chrome file selection from Files, review scrolling and buttons, cancel, restoring a disposable exported learner, repeat-import duplicates, and progress after reload. Verify a second learner and Previous progress remain intact. Exercise the Home Screen context separately; do not assume its storage is shared with browser tabs. Actual microphone/permissions and Android/tablet behavior remain subject to the repository's manual regression requirements.
 
 The owner approved committing and pushing this increment to `v6-development` for the normal Netlify preview. Physical iPhone file-selection and restore acceptance remains pending.
+
+## Owner acceptance — 2026-11-14
+
+After deployment of `695854d`, the owner tested import/restore on physical iPhone Chrome and Safari and reported everything works, duplicate-only imports are disabled, and another learner’s progress stays intact. The owner requested clearer “Profile already exists” messaging and Change Learner Name as the next increment. This acceptance covers the reported flows; it is not a fresh exhaustive device/microphone regression pass.

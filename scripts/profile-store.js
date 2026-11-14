@@ -34,9 +34,10 @@
  }
  function reviewImport(data,backup){
   const existing=data.profiles.find(p=>p.id===backup.profile.id),conflicts=[],newSessions=[],seen=new Map(data.sessions.map(s=>[s.id,s]));let duplicates=0;
-  if(existing&&canonical(existing)!==canonical(backup.profile))conflicts.push({id:backup.profile.id,reason:'The learner ID already exists with different profile details.'});
+  // Nicknames can change without changing ownership. Keep the current local name on restore.
+  if(existing&&canonical({...existing,name:''})!==canonical({...backup.profile,name:''}))conflicts.push({id:backup.profile.id,reason:'The learner ID already exists with different profile details.'});
   for(const s of backup.sessions){const old=seen.get(s.id);if(old){if(canonical(old)===canonical(s))duplicates++;else conflicts.push({id:s.id,reason:old.learnerId!==backup.profile.id?'This flight ID belongs to another learner.':'This flight ID has different results.'})}else{seen.set(s.id,s);newSessions.push(s)}}
-  return {existing:!!existing,newSessions,duplicates,conflicts,sameName:data.profiles.some(p=>p.id!==backup.profile.id&&p.name===backup.profile.name),fingerprint:canonical(data)};
+  return {existing:!!existing,currentName:existing?.name,nameChanged:!!existing&&existing.name!==backup.profile.name,newSessions,duplicates,conflicts,sameName:data.profiles.some(p=>p.id!==backup.profile.id&&p.name===backup.profile.name),fingerprint:canonical(data)};
  }
  function validate(data){
   if(!data||data.version!==1||!Array.isArray(data.profiles)||!Array.isArray(data.sessions))throw Error('Unsupported or damaged learner data. Original data has been preserved.');
@@ -54,6 +55,13 @@
   }
   const snapshot=(data,id)=>JSON.stringify({profile:data.profiles.find(p=>p.id===id),sessions:data.sessions.filter(s=>s.learnerId===id)});
   return {read,snapshot,
+   rename:(id,name,expectedName)=>update(data=>{
+    const profile=data.profiles.find(p=>p.id===id);
+    if(!profile)throw Error('This learner no longer exists. Close this form and refresh the list.');
+    if(profile.name!==expectedName)throw Error('This learner’s name changed in another tab. Close this form and review the current name.');
+    if(typeof name!=='string'||!name.trim()||name.trim().length>24)throw Error('Enter a nickname between 1 and 24 characters.');
+    profile.name=name.trim();return profile;
+   }),
    review:backup=>reviewImport(read(),parseExport(JSON.stringify(backup))),
    restore:(backup,expected)=>update(data=>{
     const checked=parseExport(JSON.stringify(backup)),review=reviewImport(data,checked);

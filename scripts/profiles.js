@@ -24,17 +24,17 @@ begin=function(){if(!hasSelection(true)){if(phase==='checking')cancelCheck();Fli
 saveSession=function(record){
  if(record.guest)return;
  const copy=structuredClone(record);unsaved.set(copy.id,copy);saveStates.set(copy.id,'Saving to '+name(copy.learnerId)+'…');
- const writing=Promise.resolve().then(()=>{if(!store)throw Error('Browser storage is unavailable.');return store.save(copy)}).then(()=>{unsaved.delete(copy.id);saveStates.set(copy.id,'Saved to '+name(copy.learnerId)+' on this browser.');refresh()}).catch(e=>{saveStates.set(copy.id,'Could not save: '+e.message+' Export this flight before closing.');}).finally(()=>{if($('resultsView').dataset.sessionId===copy.id){const status=$('profileSaveStatus');if(status)status.textContent=saveStates.get(copy.id)}if(session?.id===copy.id)$('saveStatus').textContent=saveStates.get(copy.id);pendingWrites.delete(copy.id)});
+ const writing=Promise.resolve().then(()=>{if(!store)throw Error('Browser storage is unavailable.');return store.save(copy)}).then(()=>{unsaved.delete(copy.id);refresh();saveStates.set(copy.id,'Saved to '+name(copy.learnerId)+' on this browser.')}).catch(e=>{saveStates.set(copy.id,'Could not save: '+e.message+' Export this flight before closing.');}).finally(()=>{if($('resultsView').dataset.sessionId===copy.id){const status=$('profileSaveStatus');if(status)status.textContent=saveStates.get(copy.id)}if(session?.id===copy.id)$('saveStatus').textContent=saveStates.get(copy.id);pendingWrites.delete(copy.id)});
  pendingWrites.set(copy.id,writing);
 };
 const engineResult=renderResult;
 renderResult=function(s){
  storageOK=true;engineResult(s);$('resultsView').dataset.sessionId=String(s.id);
- const note=document.createElement('p');note.id='profileSaveStatus';note.setAttribute('role','status');note.textContent=s.guest?'Guest results are temporary and are not saved. They clear on reload or Change learner.':saveStates.get(s.id)||(s.learnerId?'Saved for '+(s.learnerName||name(s.learnerId))+'.':'Previous progress · kept separate from learner profiles.');$('resultsView').querySelector('h1').after(note);
+ const note=document.createElement('p');note.id='profileSaveStatus';note.setAttribute('role','status');note.textContent=s.guest?'Guest results are temporary and are not saved. They clear on reload or Change learner.':(unsaved.has(s.id)?saveStates.get(s.id):null)||(s.learnerId?'Saved for '+(family.profiles.some(p=>p.id===s.learnerId)?name(s.learnerId):s.learnerName||'Learner')+'.':'Previous progress · kept separate from learner profiles.');$('resultsView').querySelector('h1').after(note);
  if(s.guest)$('exportOne').remove();
  if((s.learnerId||'previous')!==active&&!s.guest)$('again').remove();
  $('seeProgress').textContent=s.guest?'Guest results':'See learner progress';$('seeProgress').onclick=()=>progress(s.guest?'guest':s.learnerId||'previous');
- $('saveStatus').textContent=s.guest?'Guest · not saved':saveStates.get(s.id)||note.textContent;
+ $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
 };
 const engineHistory=renderHistory;
 renderHistory=function(activity=null){engineHistory(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
@@ -50,7 +50,7 @@ function hasSelection(force=false){
  return active!==null;
 }
 function manage(){
- refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Export, restore, or remove a learner profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
+ refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Change a learner’s name, export, restore, or remove their profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-rename-profile="${esc(p.id)}" ${storeError?'disabled':''}>Change Learner Name</button><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
 }
 function exportProfile(id){
  if(busy())return;refresh();if(storeError)throw Error(storeError);const profile=family.profiles.find(p=>p.id===id);if(!profile)throw Error('This learner no longer exists. Refresh the list.');
@@ -99,7 +99,7 @@ async function prepareReview(stillCurrent=()=>true){
 function reviewScreen(){
  if(!importCandidate||!importReview)return importStart();
  const r=importReview,blocked=r.conflicts.length>0,nothing=r.existing&&r.newSessions.length===0;
- return `<button class="quiet back" data-nav="importLearner">← Choose another file</button><h1>Review learner import</h1><section class="profile-form"><h2>${esc(importCandidate.profile.name)}</h2><p>${r.existing?'Add new flights to the existing learner with this ID.':'Restore this learner as a separate profile.'}</p>${r.sameName?'<p class="notice">Another learner has the same name but a different ID. These profiles will stay separate.</p>':''}<dl class="import-counts"><div><dt>New flights</dt><dd>${r.newSessions.length}</dd></div><div><dt>Duplicate flights skipped</dt><dd>${r.duplicates}</dd></div><div><dt>Conflicts</dt><dd>${r.conflicts.length}</dd></div></dl>${blocked?`<p role="alert">Import is blocked. Existing data will not be overwritten. Choose a backup without these conflicts.</p><ul class="import-conflicts">${r.conflicts.map(c=>`<li>${esc(c.reason)}<br><small>Record ID: ${esc(c.id)}</small></li>`).join('')}</ul>`:''}<p>Other learners and Previous progress will remain unchanged.</p>${nothing&&!blocked?'<p>All of these flights are already saved. There is nothing new to import.</p>':''}<p id="importSaveStatus" role="alert"></p><div class="manage-actions"><button data-nav="manageLearners">Cancel</button><button data-review-import>Review again</button><button class="primary" data-confirm-import ${blocked||nothing?'disabled':''}>${r.existing?'Import new flights':'Restore learner'}</button></div></section>`;
+ return `<button class="quiet back" data-nav="importLearner">← Choose another file</button><h1>Review learner import</h1><section class="profile-form"><h2>${esc(r.currentName||importCandidate.profile.name)}</h2>${r.nameChanged?`<p class="notice">This profile already exists as ${esc(r.currentName)}. The backup uses the name ${esc(importCandidate.profile.name)}. Your current learner name will be kept.</p>`:''}<p>${r.existing?'Add new flights to the existing learner with this ID.':'Restore this learner as a separate profile.'}</p>${r.sameName?'<p class="notice">Another learner has the same name but a different ID. These profiles will stay separate.</p>':''}<dl class="import-counts"><div><dt>New flights</dt><dd>${r.newSessions.length}</dd></div><div><dt>Duplicate flights skipped</dt><dd>${r.duplicates}</dd></div><div><dt>Conflicts</dt><dd>${r.conflicts.length}</dd></div></dl>${blocked?`<p role="alert">Import is blocked. Existing data will not be overwritten. Choose a backup without these conflicts.</p><ul class="import-conflicts">${r.conflicts.map(c=>`<li>${esc(c.reason)}<br><small>Record ID: ${esc(c.id)}</small></li>`).join('')}</ul>`:''}<p>Other learners and Previous progress will remain unchanged.</p>${nothing&&!blocked?'<p class="notice" role="status"><strong>Profile already exists.</strong> All flights in this backup are already saved. Nothing needs to be added.</p>':''}<p id="importSaveStatus" role="alert"></p><div class="manage-actions"><button data-nav="manageLearners">Cancel</button><button data-review-import>Review again</button><button class="primary" data-confirm-import ${blocked||nothing?'disabled':''}>${nothing&&!blocked?'Already imported':r.existing?'Import new flights':'Restore learner'}</button></div></section>`;
 }
 $('menuView').addEventListener('change',async e=>{
  if(e.target.id!=='learnerImportFile')return;const input=e.target,file=input.files[0];if(!file)return;
@@ -121,6 +121,23 @@ $('menuView').addEventListener('click',async e=>{
   importCandidate=null;importReview=null;FlightMenu.profiles('manageLearners');
  }catch(err){if($('importSaveStatus'))$('importSaveStatus').textContent=err.message;/* Require another review after failure. */}
 });
+
+
+let renameTarget=null;
+const renameDialog=document.createElement('dialog');renameDialog.id='renameLearnerDialog';renameDialog.setAttribute('aria-labelledby','renameLearnerTitle');
+renameDialog.innerHTML=`<h2 id="renameLearnerTitle">Change Learner Name</h2><form id="renameLearnerForm"><label for="renameLearnerName">Learner nickname</label><input id="renameLearnerName" maxlength="24" required autocomplete="off" aria-describedby="renameLearnerHelp"><p id="renameLearnerHelp">A nickname is enough. Changing it keeps all of this learner’s progress.</p><p id="renameLearnerError" role="alert"></p><div class="controls"><button type="button" id="cancelRenameLearner">Cancel</button><button class="primary" type="submit" id="saveLearnerName">Save name</button></div></form>`;
+document.body.append(renameDialog);
+function openRename(id){
+ if(busy()){requestSessionExit();return}refresh();if(storeError)throw Error(storeError);const profile=family.profiles.find(p=>p.id===id);if(!profile)throw Error('This learner no longer exists. Refresh the list.');
+ renameTarget={id,name:profile.name};$('renameLearnerName').value=profile.name;$('renameLearnerError').textContent='';$('saveLearnerName').disabled=false;renameDialog.showModal();$('renameLearnerName').focus();$('renameLearnerName').select();
+}
+$('cancelRenameLearner').onclick=()=>renameDialog.close();
+$('renameLearnerForm').onsubmit=async e=>{
+ e.preventDefault();if(!renameTarget||busy())return;const target=renameTarget,value=$('renameLearnerName').value;$('saveLearnerName').disabled=true;
+ try{const profile=await store.rename(target.id,value,target.name);refresh();managementMessage=`Learner name changed to ${profile.name}. Their progress is unchanged.`;renameDialog.close();renameTarget=null;FlightMenu.profiles('manageLearners')}
+ catch(err){$('renameLearnerError').textContent=err.message;$('saveLearnerName').disabled=false}
+};
+$('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
 window.FlightProfiles={entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];

@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Added
+- Added Change Learner Name in Manage learners. Renaming preserves the learner ID, saved flights, other learners, and Previous progress; stale edits and failed writes do not overwrite data.
 - Added Manage learners → Import learner for JSON files exported by Manage learners, with a review of the learner, new flights, skipped duplicates, and conflicts before saving.
 - Restore preserves learner/flight IDs and detailed results, skips identical flights regardless of JSON property order, and blocks conflicts without overwriting records. Other learners and Previous progress remain unchanged; changed data in another tab requires another review.
 - Added Parent corner → Manage learners with profile-specific JSON export and a separate confirmation showing the learner name and flight count before deleting their profile and results. Other learners and Previous progress remain unchanged.
@@ -20,6 +21,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Added brand-kit FF Home Screen icon metadata, a branded favicon, and a web manifest with relative paths for root and subpath hosting. This increment retains browser display mode and does not add offline caching.
 
 ### Changed
+- Duplicate-only imports now explicitly say “Profile already exists” and show an “Already imported” disabled action. Imports using an older nickname keep the current local name for the matching learner ID.
 - Enlarged menu tile labels, descriptions, results text, keypad digits, and session controls. Focus equations are substantially larger, with a separate readable size for longer prompts; compact screens can scroll rather than shrinking text.
 - Centered the in-flight Focus layout vertically within the available viewport when space permits; shorter screens retain natural scrolling so controls remain reachable.
 - Replaced the public dropdown setup with the approved tile-based Home and guided activity, mode, level, input, and view menus. Quick Practice supports all eight math activities; future subjects are disabled Coming Soon tiles.
@@ -38,6 +40,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Recorded owner acceptance of learner import/restore on physical iPhone Chrome and Safari, including duplicates and preservation of another learner’s progress.
 - Recorded owner acceptance of profile export and deletion on physical iPhone Chrome and Safari, including preservation of another learner’s progress.
 - Recorded owner acceptance of learner profiles on physical iPhone Chrome and Safari, including separate progress and non-saving Guest behavior.
 - Refined the learner Home mockup so Home retains the current learner or Guest and returns to activity selection; Change learner opens the profile picker.
