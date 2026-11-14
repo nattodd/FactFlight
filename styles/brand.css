@@ -1,0 +1,46 @@
+/* Interim source-traced logo and selected brand palette. System fonts only.
+   Keep semantic text accents separate from yellow button backgrounds. */
+:root {
+  color-scheme: light;
+  --brand-yellow: #FBBF24;
+  --brand-amber: #FCD873;
+  --brand-ink: #0B0B0F;
+  --brand-cream: #FFF9E6;
+  --brand-sky: #7DD3E9;
+  --font-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: var(--brand-cream);
+  --card: #FFFFFF;
+  --ink: var(--brand-ink);
+  --muted: #595650;
+  --line: #D7D0BE;
+  --control-line: #827B6B;
+  --accent: #805200;
+  --primary-bg: var(--brand-yellow);
+  --primary-text: var(--brand-ink);
+  --soft: #FFF1BD;
+  --active: #E1F4FA;
+  --red: #A32939;
+  --redbg: #FCE7E9;
+  --green: #216344;
+  --greenbg: #DCF3DF;
+  --focus-ring: var(--brand-ink);
+  --shadow: 0 16px 50px #0B0B0F10;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #19191D;
+  --card: #28282E;
+  --ink: var(--brand-cream);
+  --muted: #C6C5C9;
+  --line: #55535C;
+  --control-line: #929099;
+  --accent: var(--brand-amber);
+  --soft: #3C3020;
+  --active: #233C42;
+  --red: #FFB4BC;
+  --redbg: #4C2932;
+  --green: #B9F2BE;
+  --greenbg: #254B35;
+  --focus-ring: var(--brand-amber);
+  --shadow: none;
+}
