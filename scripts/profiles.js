@@ -4,14 +4,29 @@
 const $=id=>document.getElementById(id),esc=escapeHTML;
 const previous=history.slice(),previousReadable=historyReadable;
 let active=null,viewing=null,guest=[],store=null,storeError='',family={version:1,profiles:[],sessions:[]};
+// Disposable per-browser preferences are separate from learner/results backups.
+const quickPrefix='fact-flight-quick-v1:',quickMemory=new Map();
+let quickWarning='';
+function validQuick(q){return q&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
+function quickChoice(){
+ if(!active||!hasSelection())return null;
+ let q=quickMemory.get(active);
+ if(active!=='guest'&&!q)try{q=JSON.parse(localStorage.getItem(quickPrefix+active))||q}catch{}
+ return validQuick(q)?structuredClone(q):null;
+}
+function rememberQuick(q){
+ if(!active||!hasSelection()||!validQuick(q))return;
+ quickMemory.set(active,structuredClone(q));quickWarning='';
+ if(active!=='guest')try{localStorage.setItem(quickPrefix+active,JSON.stringify(q));quickMemory.delete(active)}catch{quickWarning='Quick Practice choices could not be saved for next time. You can still practice.'}
+}
 const unsaved=new Map(),saveStates=new Map(),pendingWrites=new Map();
 let deleteTarget=null,managementMessage="",importCandidate=null,importReview=null;
 try{store=FlightProfileStore.create(localStorage,navigator.locks);family=store.read()}catch(e){storeError=e.message}
 function refresh(){try{if(!store)throw Error('Browser storage is unavailable.');family=store.read();storeError=''}catch(e){storeError=e.message}return family}
 function name(id){return id==='guest'?'Guest':id==='previous'?'Previous progress':family.profiles.find(p=>p.id===id)?.name||'Learner'}
 function records(id){if(id==='guest')return guest;if(id==='previous')return previous;refresh();const saved=family.sessions.filter(s=>s.learnerId===id);return [...unsaved.values()].filter(s=>s.learnerId===id&&!saved.some(r=>r.id===s.id)).concat(saved).sort((a,b)=>new Date(b.date)-new Date(a.date))}
-function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
-function change(){if(busy()){requestSessionExit();return}guest=[];active=null;viewing=null;history=[];session=null;FlightMenu.home()}
+function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];quickMemory.delete('guest');quickWarning='';active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
+function change(){if(busy()){requestSessionExit();return}guest=[];quickMemory.delete('guest');quickWarning='';active=null;viewing=null;history=[];session=null;FlightMenu.home()}
 function tile(p,stats=false){return `<button class="learner" ${stats?'data-profile-stats':'data-learner'}="${esc(p.id)}"><span class="avatar" aria-hidden="true">${esc(p.name.slice(0,1).toUpperCase())}</span><strong>${esc(p.name)}</strong><span>${stats?'See results':'Tap to start'}</span></button>`}
 function entry(){refresh();return `<section class="learner-entry"><div class="eyebrow">Your learning space</div><div class="accent-line"></div><h1>Who's ready to take flight?</h1><p class="intro">Pick a learner, or jump in as a guest.<br>No sign-in, no fuss.</p>${storeError?`<p class="notice" role="alert">${esc(storeError)} You can still practice as Guest.</p>`:''}<div class="learners">${family.profiles.map(p=>tile(p)).join('')}<button class="learner outline" data-create-profile ${storeError?'disabled':''}><span class="avatar" aria-hidden="true">+</span><strong>Create Profile</strong><span>Nickname only</span></button><button class="learner outline" data-learner="guest"><span class="avatar" aria-hidden="true">☆</span><strong>Continue as Guest</strong><span>Not saved</span></button></div><button class="primary results-link" data-nav="progress">Results & Stats →</button><button class="quiet parent-entry" data-nav="parents">Parent corner</button><p class="family-footer">Free to learn · No account needed · Progress stays in this browser on this device</p></section>`}
 function create(){return `<button class="quiet back" data-profile-cancel>← Back</button><div class="profile-form"><span class="avatar" aria-hidden="true">+</span><h1>A little space of your own.</h1><p>Create a learner profile. No email or password needed.</p><form id="profileForm"><label for="nickname">What should we call you?</label><p id="nicknameHelp">A nickname is enough. You can leave this blank.</p><input id="nickname" maxlength="24" autocomplete="off" aria-describedby="nicknameHelp" placeholder="e.g. Sunny"><p>Progress stays in this browser on this device.</p><p id="profileError" role="alert"></p><button class="primary" type="submit">Create profile & explore →</button></form><button class="quiet" data-profile-cancel>Cancel</button></div>`}
@@ -73,11 +88,12 @@ $('confirmDeleteLearner').onclick=async()=>{
  if(!deleteTarget||busy())return;const target=deleteTarget;$('confirmDeleteLearner').disabled=true;
  try{
   await store.remove(target.id,target.snapshot);
+  quickMemory.delete(target.id);let preferenceWarning='';try{localStorage.removeItem(quickPrefix+target.id)}catch{preferenceWarning=' Quick Practice preferences could not be cleared.'}
   for(const [id,record] of unsaved)if(record.learnerId===target.id){unsaved.delete(id);saveStates.delete(id)}
   if(active===target.id){active=null;session=null}if(viewing===target.id){viewing=null;history=[]}if(session?.learnerId===target.id)session=null;
   // Remove stale rendered copies from this tab after the confirmed deletion.
   $('resultsView').replaceChildren();$('historyView').replaceChildren();
-  refresh();managementMessage=`${target.name} and their results were deleted.`;deleteDialog.close();deleteTarget=null;FlightMenu.profiles('manageLearners');
+  refresh();managementMessage=`${target.name} and their results were deleted.${preferenceWarning}`;deleteDialog.close();deleteTarget=null;FlightMenu.profiles('manageLearners');
  }catch(e){$('deleteLearnerError').textContent=e.message;$('confirmDeleteLearner').disabled=false}
 };
 $('menuView').addEventListener('click',async e=>{const button=e.target.closest('button');if(!button||button.disabled)return;
@@ -139,6 +155,6 @@ $('renameLearnerForm').onsubmit=async e=>{
 };
 $('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
-window.FlightProfiles={entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
+window.FlightProfiles={quickChoice,rememberQuick,quickWarning:()=>quickWarning,entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();

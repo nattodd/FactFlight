@@ -22,6 +22,12 @@
    if(!s||!uuid(s.id)||s.learnerId!==data.profile.id||!str(s.learnerName)||s.guest||!date(s.date)||!['practice','test'].includes(s.mode)||!['voice','keyboard'].includes(s.input)||!['complete','manual','time'].includes(s.reason)||!num(s.elapsed)||(s.target!==null&&(!integer(s.target)||s.target<1))||!Array.isArray(s.items)||!Array.isArray(s.invalidated)||!Array.isArray(s.unrecognized))fail();
    if(s.activity!==undefined){if(!activities.includes(s.activity)||!integer(s.level)||s.level>4||s.schemaVersion!==1)fail()}
    else if(!integer(s.table)||s.table<2||s.table>10)fail();
+   // Optional fields on new flights; older exports remain readable without rewriting them.
+   if(s.practiceType!==undefined){
+    if(!s.activity||!['quick','free','timed','test'].includes(s.practiceType))fail();
+    const timed=['timed','test'].includes(s.practiceType);
+    if(timed?(s.mode!=='test'||![60000,120000,300000].includes(s.timeLimitMs)||s.elapsed>s.timeLimitMs):(s.mode!=='practice'||s.timeLimitMs!==null))fail();
+   }else if(s.timeLimitMs!==undefined)fail();
    for(const p of s.items){
     if(!p||!integer(p.answer)||!integer(p.skips)||!num(p.ms)||!['pending','correct','wrong','skipped'].includes(p.status)||!Array.isArray(p.attempts))fail();
     if(s.activity){if(!str(p.text)||!str(p.key))fail()}else if(!integer(p.a)||!integer(p.b)||!integer(p.factor))fail();

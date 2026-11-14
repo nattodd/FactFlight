@@ -28,3 +28,7 @@ Phone correct/neutral screenshots were visually inspected. `git diff --check` pa
 After an approved preview push, test the feedback with spoken and keypad answers on iPhone Safari/Chrome and Windows Chrome. Include wrong → unclear → correct, repeated wrong/unclear phrases, consecutive identical correct answers, Skip/Undo, final answer near expiry, and Finish/Home during the green hold. Review both themes, reduced motion, phone portrait/landscape, School and expanded math, both views, and the Home Screen context. Android/tablet and actual microphone/permission checks remain unverified for this increment.
 
 The owner approved committing and pushing this update to `v6-development` for the normal Netlify preview. Physical-device feedback acceptance remains pending.
+
+## Owner acceptance
+
+The owner tested deployed commit `256160c` on desktop and a physical iPhone using speech and keypad and confirmed that the red, green, and grey-blue feedback works. Browser names were not specified for this feedback acceptance. This confirms the reported feedback/input flows; it does not certify every edge case in the manual checklist above or complete the full release regression. Android/tablet checks remain unverified.

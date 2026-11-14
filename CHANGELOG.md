@@ -9,6 +9,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Added
+- Quick Practice remembers each learner’s last started Quick setup, displays its activity, level, count, input and view on Home, and offers Start again with fresh questions or Change options. Other modes do not replace the shortcut. Guest choices clear on reload or Change learner.
+- Added 1-, 2-, and 5-minute choices and 5/10/15/20/30/60-question sets to Timed Practice and Custom Test. Setup and repeat-session review show the selected choices; the original School Test stays fixed at 60 multiplication facts and two minutes.
+- New expanded-math flights retain their practice type and time limit in results, history, and JSON/CSV exports. Learner import validates the optional settings and continues accepting older exports without rewriting existing records.
 - Added Change Learner Name in Manage learners. Renaming preserves the learner ID, saved flights, other learners, and Previous progress; stale edits and failed writes do not overwrite data.
 - Added Manage learners → Import learner for JSON files exported by Manage learners, with a review of the learner, new flights, skipped duplicates, and conflicts before saving.
 - Restore preserves learner/flight IDs and detailed results, skips identical flights regardless of JSON property order, and blocks conflicts without overwriting records. Other learners and Previous progress remain unchanged; changed data in another tab requires another review.
@@ -42,6 +45,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Recorded owner browser acceptance of configurable sessions and local acceptance of the remembered Quick Practice shortcut; physical iPhone verification of these increments remains pending.
+- Recorded owner acceptance of red/green/grey-blue answer feedback on desktop and physical iPhone using speech and keypad.
 - Recorded owner acceptance of learner renaming and duplicate-import messaging on physical iPhone Chrome and Safari, with progress intact.
 - Recorded owner acceptance of learner import/restore on physical iPhone Chrome and Safari, including duplicates and preservation of another learner’s progress.
 - Recorded owner acceptance of profile export and deletion on physical iPhone Chrome and Safari, including preservation of another learner’s progress.

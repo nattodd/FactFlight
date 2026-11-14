@@ -43,3 +43,5 @@
 #renameLearnerDialog label{font-size:18px;font-weight:700}
 #renameLearnerName{font-size:22px;margin-top:12px}
 #renameLearnerDialog button{min-height:48px;font-size:16px}
+
+#menuView .quick-actions{display:grid;gap:10px}
