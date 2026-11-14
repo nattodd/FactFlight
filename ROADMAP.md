@@ -8,6 +8,8 @@
 
 **Implementation order revision — 2026-11-14:** At the owner's request, integrate the reviewed math activities into the working `index.html` first for testing at the normal Netlify address. The uncommitted interim Home has been set aside. Learner-first Home will follow phone review using the supplied desktop/mobile reference images. The math integration is implemented locally with verification in [the math integration record](docs/v6-math-integration-verification.md); this does not complete Focus, stream-based modes, profiles, or the full v6 program.
 
+**Focus increment:** After successful owner voice/math testing, Focus/Worksheet presentation is integrated locally for all activities, including School Test. Both render the existing session model; history schemas are unchanged. See [Focus verification](docs/v6-focus-verification.md). Physical-device review of this new presentation remains pending; learner-first Home is still deferred.
+
 ## 1. Non-negotiable product principles
 
 1. **Zero-friction start.** No account, email, subscription, ad, mandatory onboarding, daily streak, or forced lesson path.

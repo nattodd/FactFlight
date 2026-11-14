@@ -201,7 +201,7 @@ let browser;
     assert.equal(await q.evaluate(() => getComputedStyle(document.activeElement).outlineWidth), '3px');
     await q.addStyleTag({content:'body{font-size:200%}'});
     assert(await q.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'enlarged-text overflow');
-    assert.equal(await q.locator('.primary').evaluate(e => getComputedStyle(e).transitionDuration), '0s');
+    assert.equal(await q.locator('#start').evaluate(e => getComputedStyle(e).transitionDuration), '0s');
     await c.close();
   });
   await test('Skipped question is revisited and cannot earn first-try credit', async () => {

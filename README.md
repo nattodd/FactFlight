@@ -6,9 +6,9 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Features
 
-The v6 development preview at the normal Netlify address now includes an Activity selector in the working worksheet: addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares, each with five levels. Choose 5/10/15/20/30/60 questions and either a two-minute limit or untimed practice. The original School Test remains a separate choice with its existing 60 facts and three columns. New activities use one readable worksheet column on phones. Focus View and the learner-first Home screen are not integrated yet.
+The v6 development preview at the normal Netlify address now includes an Activity selector in the working worksheet: addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares, each with five levels. Choose 5/10/15/20/30/60 questions and either a two-minute limit or untimed practice. The original School Test remains a separate choice with its existing 60 facts and three columns. New activities use one readable worksheet column on phones. Choose Focus or Worksheet before starting any activity, including School Test. Focus shows one question with the keypad and recognized speech; new activities default to Focus on phones, while School defaults to its original worksheet. The learner-first Home remains deferred.
 
-New activity results save locally alongside the original history in a separate storage key; Progress and full-history exports include both. There is no history migration or profile assignment. Back up before updating if you have existing history. Real-device speech verification for the expanded ranges remains pending.
+New activity results save locally alongside the original history in a separate storage key; Progress and full-history exports include both. There is no history migration or profile assignment. Back up before updating if you have existing history. The owner reported successful voice and new-activity testing for the math integration. Physical-device verification of the subsequent Focus presentation remains pending.
 
 - 60-question multiplication fluency quizzes covering factors 1–10
 - Two-minute timed tests and untimed practice

@@ -9,6 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Changed
+- Added a pre-session Focus/Worksheet selector for all eight math activities and the original School Test. New activities default to Focus on phones; School retains its worksheet default and can also run in Focus.
+- Focus shows one equation with a responsive keypad, question position, timer, Skip/Undo/Finish controls, and recognized speech text. It reuses existing questions, scoring, microphone behavior, and saved results without a storage-schema change.
 - Integrated addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares into the working app, with five whole-number levels and 5/10/15/20/30/60-question sets using existing timed/untimed worksheet sessions.
 - Kept the original 60-question School Test as a separate choice. New activities use balanced shuffled fact pools with repeat spacing and fresh selection for each session.
 - Extended keyboard/keypad and spoken-number parsing to four-digit answers; kept the existing microphone ready/reconnect lifecycle.
