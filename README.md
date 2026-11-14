@@ -6,13 +6,17 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 ## Features
 
-The v6 development app opens with tile-based Home navigation. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are not part of this increment.
+The v6 development app opens with a learner picker. Select or create an optional nickname profile, or continue as Guest. After selection, Home returns to that learner’s activity menu; Change learner returns to the picker. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are local to this browser and device; no sign-in or cloud account is created.
 
 Quick Practice offers 5/10/15/20 questions without a timer. Free Practice continues until you choose Finish. Timed Practice uses a selected finite set with a two-minute limit; Test is a 60-question, two-minute preset for the selected activity. The original School Test remains a distinct multiplication preset with tables 2–10, 60 facts, and its original generator and scoring.
 
 Choose Focus or Worksheet before starting. Skip, Undo, Finish, and Home are available during sessions. Home or other navigation asks whether to keep practicing or finish and review results; the clock and microphone continue while deciding. Results include Return Home. Free Practice skips move forward and remain in results for review; finite sessions retain the existing revisit-unresolved behavior.
 
-New activity results save locally alongside the original history in a separate storage key; Progress and full-history exports include both. There is no history migration or profile assignment. Back up before updating if you have existing history. The owner reported successful voice and new-activity testing for the math integration. The owner also reported successful phone use of Focus. Physical-device verification of the new menus and continuous Free Practice remains pending.
+New flights save to the learner selected when the flight starts. Results & Stats is filtered by learner and activity. Guest flights are temporary: they can be reviewed while using Guest but are never saved or exported, and clear on reload or Change learner. Create/select a profile before starting to save future flights; Guest results do not transfer.
+
+Existing original and expanded-math history stays untouched under Previous progress. It is not automatically assigned to a learner. Learner JSON/CSV exports contain only the displayed learner’s sessions; Previous progress has its own exports. Export files include learner identity and the existing per-question detail. Profiles and sessions use a separate versioned local store with cross-tab write locking. If saving fails, a profile flight stays available in memory for export; an explicit error replaces the saved message. Full-family import/restore, profile renaming/deletion, and deliberate assignment of Previous progress remain future increments.
+
+Local automated profile/menu regressions are recorded in `docs/v6-profiles-integration-verification.md`. Physical iPhone/installed Home Screen validation of profiles remains pending.
 
 - 60-question multiplication fluency quizzes covering factors 1–10
 - Two-minute timed tests and untimed practice
@@ -89,7 +93,7 @@ Android generally does **not** have the same separate, system-wide **Speech Reco
 ## Planned Enhancements
 
 - Addition, subtraction, and division practice
-- Multiple student profiles
+- Profile management and backup import/restore
 - Customizable question counts and difficulty levels
 - Expanded progress analytics and personalized review
 

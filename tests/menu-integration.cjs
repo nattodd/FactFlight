@@ -2,12 +2,13 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const root=path.resolve(__dirname,'..'),output=process.env.FF_TEST_OUTPUT||require('node:os').tmpdir();fs.mkdirSync(output,{recursive:true});
-const server=http.createServer((req,res)=>{const files={'/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
+const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
 const results=[],errors=[];let browser,url;
 async function test(name,fn){if(process.env.FF_TEST_FILTER&&!name.includes(process.env.FF_TEST_FILTER))return;try{await fn();results.push({name,status:'PASS'})}catch(e){results.push({name,status:'FAIL',error:e.stack})}console.log(JSON.stringify(results.at(-1)))}
-async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);return [c,p]}
+async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator("[data-create-profile]").click();await p.locator("#nickname").fill("Test learner");await p.locator("#profileForm button").click();await p.locator("[data-quick]").waitFor();return [c,p]}
 
 async function choose(p,{activity='addition',mode='quick',view='focus',input='keypad',level=0,count=5,table=2}={}){
+ if(await p.locator('[data-learner]').count())await p.locator('[data-learner]:not([data-learner=guest])').first().click();
  await p.locator('#homeNav').click();
  if(mode==='school'){await p.locator('[data-math]').click();await p.locator('[data-school]').click();await p.locator(`[data-table="${table}"]`).click()}
  else {
@@ -28,7 +29,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
    for(let i=0;i<5;i++)await answer(p);
    assert.equal(await p.evaluate(()=>history[0].reason),'complete');assert.equal(await p.evaluate(()=>stats(history[0]).first),5);assert(await p.locator('#resultHome').isVisible());await p.locator('#resultHome').click();
   }
-  await p.reload();assert.equal(await p.evaluate(()=>history.length),16);await c.close();
+  await p.waitForFunction(()=>JSON.parse(localStorage.getItem("fact-flight-family-v1")).sessions.length===16);await p.reload();await p.locator("[data-learner]:not([data-learner=guest])").first().click();assert.equal(await p.evaluate(()=>history.length),16);await c.close();
  });
  await test('Free Practice exceeds 120 answers, preserves skip/undo and excludes unseen tail',async()=>{
   for(const view of ['focus','worksheet']){const [c,p]=await page();await p.clock.install();await choose(p,{mode:'free',view,activity:'squares'});await p.clock.fastForward(180000);assert.equal(await p.evaluate(()=>phase),'running');
@@ -39,7 +40,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
    assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>index),127);assert.equal(await p.evaluate(()=>items.length),128);
    assert(await p.evaluate(()=>items.every((p,i)=>!items.slice(Math.max(0,i-3),i).some(q=>q.key===p.key))));
    await p.locator('#end').click();assert.equal(await p.evaluate(()=>history[0].items.length),127);assert.deepEqual(await p.evaluate(()=>stats(history[0])),{first:125,correct:126,wrong:0,unanswered:1,errors:1,skips:1});
-   const saved=await p.evaluate(()=>localStorage.getItem(MATH_KEY));await p.reload();assert.equal(await p.evaluate(()=>localStorage.getItem(MATH_KEY)),saved);await c.close();
+   await p.waitForFunction(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===1);const saved=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.reload();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),saved);await c.close();
   }
  });
  await test('Home/Progress guard retains session, finish saves once, timer expires through dialog',async()=>{
@@ -60,7 +61,8 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
  });
  await test('Empty Free finish, target validation, Back and activity reports',async()=>{
   const [c,p]=await page();await choose(p,{mode:'free'});await p.locator('#end').click();assert(!(await p.locator('#resultsView').innerText()).includes('NaN'));assert.equal(await p.evaluate(()=>history[0].items.length),0);await p.locator('#again').click();assert((await p.locator('.review').innerText()).includes('until you finish'));await p.locator('#menuView summary').click();await p.locator('#target').fill('50');await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>session.target),50);await p.locator('#end').click();
-  await p.locator('#homeNav').click();await p.locator('[data-quick]').click();await p.locator('[data-activity=bonds]').click();await p.locator('[data-level="3"]').click();await p.locator('[data-count="10"]').click();await p.locator('[data-next]').click();await p.locator('#menuView summary').click();await p.locator('#target').fill('11');await p.locator('[data-start]').click();assert(await p.locator('#target').isVisible());assert.notEqual(await p.evaluate(()=>phase),'running');await p.locator('#target').fill('5');await p.locator('[data-back]').click();assert.equal(await p.locator('[data-level="3"]').getAttribute('aria-pressed'),'true');await p.locator('[data-next]').click();await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>session.target),5);await p.locator('#end').click();await p.locator('#seeProgress').click();await p.locator('[data-activity-progress=bonds]').click();assert.equal(await p.locator('[data-review]').count(),1);await c.close();
+  if(await p.locator('[data-learner]').count())await p.locator('[data-learner]:not([data-learner=guest])').first().click();
+ await p.locator('#homeNav').click();await p.locator('[data-quick]').click();await p.locator('[data-activity=bonds]').click();await p.locator('[data-level="3"]').click();await p.locator('[data-count="10"]').click();await p.locator('[data-next]').click();await p.locator('#menuView summary').click();await p.locator('#target').fill('11');await p.locator('[data-start]').click();assert(await p.locator('#target').isVisible());assert.notEqual(await p.evaluate(()=>phase),'running');await p.locator('#target').fill('5');await p.locator('[data-back]').click();assert.equal(await p.locator('[data-level="3"]').getAttribute('aria-pressed'),'true');await p.locator('[data-next]').click();await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>session.target),5);await p.locator('#end').click();await p.locator('#seeProgress').click();await p.locator('[data-activity-progress=bonds]').click();assert.equal(await p.locator('[data-review]').count(),1);await c.close();
  });
  for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1440,1000]])await test(`Tile menu and session layout ${width}x${height}`,async()=>{
   const [c,p]=await page({viewport:{width,height},hasTouch:width<1000,isMobile:width<1000,reducedMotion:'reduce'});

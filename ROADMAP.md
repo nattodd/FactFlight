@@ -204,3 +204,7 @@ Keep content separate from presentation. Example: the same letter card can be sh
 ---
 
 *This document is a living product roadmap. Add discoveries and adjust release boundaries on `v6-development`; preserve the stable v5 release as a fallback.*
+
+**Learner Home review — 2026-11-14:** Owner accepted the branded icon and app launch from the physical iPhone Home Screen. The [learner Home mockup](design-reference/ui-v6/v6-learner-home-preview.html) is ready for design review. It uses memory-only sample profiles/results; real learner storage, Guest retention, and data migration remain unimplemented.
+
+**Learner integration — 2026-11-14:** The reviewed learner Home is now integrated locally with nickname creation/selection, profile-owned new flights, learner-filtered results/exports, and temporary non-saving Guest use. Existing history remains unchanged under Previous progress. Owner confirmed there is no current history requiring backup; synthetic legacy copies are used for compatibility checks. See [profile integration verification](docs/v6-profiles-integration-verification.md). Physical-device acceptance remains pending. Rename/delete, full-family import/restore and deliberate old-history assignment remain separate work; this does not mark the complete family-data milestone finished.

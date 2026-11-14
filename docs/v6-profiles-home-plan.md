@@ -46,3 +46,15 @@ Two learners can complete different activities, reload, rename, and view only th
 Run existing engine/menu/readability suites plus targeted storage and ownership checks. Test School and all math activities, both views, voice ready/answer/reconnect, keypad/keyboard, timers, Free until Finish, Skip/Undo, guarded navigation, results, exports, and reload. Automated speech mocks and device emulation remain distinct from physical Windows Chrome/iPhone Safari/iPhone Chrome verification. Record unavailable Android/tablet checks as unverified. Installed Home Screen behavior gets its own manual checks.
 
 Each increment is reviewed and tested before a separately approved commit/push to `v6-development` and the normal Netlify preview. This plan does not authorize production publication or implementation of undecided retention policies.
+
+## Learner Home mockup R1 — available for review
+
+Open `design-reference/ui-v6/v6-learner-home-preview.html` directly in a browser. It extends the earlier menu navigator with the reference learner-first entry: Alex/Sam/Riley sample tiles, Create Profile, Guest, and Results & Stats. Profile selection opens the existing-style activity menu and setup navigator. Start ends at a clearly labeled mock launch; no real session or microphone starts. Sample results show learner selection, activity summaries, flight list, and illustrative review. Preview controls demonstrate an empty first visit.
+
+All data is memory-only and resets on reload. No app history is read or written. Guest “Not saved” remains a proposed policy for approval. This is a design artifact, not integration into `index.html`.
+
+Isolated Windows Chrome checks passed for overflow at 320×568, 390×844, 844×390, and 1440×1000; theme switching; selecting a learner; Quick setup to launch placeholder; nickname creation and blank-name fallback; Guest; learner/activity/flight stats navigation; empty first visit; and reset on reload. Storage getters were configured to throw, and no access or page errors occurred. Phone and desktop Home screenshots were visually inspected. Physical-device review of this new mockup remains pending. No commit or push was made.
+
+### Home navigation refinement
+
+At the owner’s request, Home (including logo and mock-launch Back to Home) returns to activity selection for the current learner or Guest. Change learner explicitly opens profile selection. Reload still resets this sample-only preview. This changes only the mockup.

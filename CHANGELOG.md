@@ -9,6 +9,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Added
+- Added the learner-first Home with optional nickname profiles, Create Profile, Guest, and Results & Stats. Home keeps the current learner; Change learner returns to selection.
+- New flights save to the profile selected at session start. Progress and exports are learner-specific; existing histories remain unchanged and separately accessible as Previous progress.
+- Guest flights remain temporary in memory, with no save prompts or export controls; reload or Change learner clears them. Guest flights never transfer into a new profile.
+- Added versioned local profile storage with cross-tab write locking, validation before writes, and exportable in-memory recovery for profile flights when saving fails.
 - Added brand-kit FF Home Screen icon metadata, a branded favicon, and a web manifest with relative paths for root and subpath hosting. This increment retains browser display mode and does not add offline caching.
 
 ### Changed
@@ -30,6 +34,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Enlarged general controls and arranged phone table-selection buttons in five columns, with wrapping header navigation.
 
 ### Documentation
+- Refined the learner Home mockup so Home retains the current learner or Guest and returns to activity selection; Change learner opens the profile picker.
+- Recorded owner acceptance of the branded iPhone Home Screen icon and launch; added a separate learner Home mockup with sample profiles, profile creation, Guest, and learner-specific Results & Stats navigation. No working-app or storage changes.
 - Recorded owner acceptance of the larger-text update on physical iPhone Chrome and Safari; added the proposed learner Home, local-profile, backup, and branded Home Screen icon implementation plan.
 - Added a separate tile-menu design mockup for review: account-free Home, Quick Practice across all eight activities, guided mode/level/input/view choices, and disabled Coming Soon subject tiles. The working app is unchanged.
 - Revised the planned v6 scope to include profiles, Guest, backup/import, expanded math activities and levels; added an experience plan and proposed activity matrix.
