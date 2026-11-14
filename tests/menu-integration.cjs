@@ -66,8 +66,15 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
   const [c,p]=await page({viewport:{width,height},hasTouch:width<1000,isMobile:width<1000,reducedMotion:'reduce'});
   const shot=async step=>{assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),step+' overflow');if(width===390||width===1440)await p.screenshot({path:path.join(output,`menu-${step}-${width}.png`),fullPage:true})};
   await shot('home');await p.locator('[data-math]').click();await shot('math');await p.locator('[data-activity=addition]').click();await shot('mode');await p.locator('[data-mode=free]').click();await shot('level');await p.locator('[data-next]').click();await shot('ready');await p.locator('[data-view=focus]').click();await p.locator('[data-start]').click();
+  const flightBox=await p.locator('#practiceView').boundingBox();if(flightBox.height<height-32)assert(Math.abs(flightBox.y+flightBox.height/2-height/2)<5,'flight should be vertically centered');
   for(const id of ['skip','undo','end','sessionHome']){const b=await p.locator('#'+id).boundingBox();assert(b&&b.y>=0&&b.y+b.height<=height,id+' outside viewport')}
+  if(width===390||width===1440)await p.screenshot({path:path.join(output,`flight-centered-${width}.png`)});
   await p.locator('#sessionHome').click();await p.locator('#continueFlight').click();await p.locator('[data-focus-digit="1"]').click();await p.locator('#focusForm button[type=submit]').click();await p.locator('#end').click();await p.locator('#resultHome').click();assert(await p.locator('[data-math]').isVisible());await c.close();
+ });
+ await test('Short Focus viewport keeps the top and scrollable controls reachable',async()=>{
+  const [c,p]=await page({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});await choose(p);await p.setViewportSize({width:390,height:400});
+  await p.evaluate(()=>window.scrollTo(0,0));assert((await p.locator('#practiceView').boundingBox()).y>=0);
+  await p.locator('#sessionHome').scrollIntoViewIfNeeded();const b=await p.locator('#sessionHome').boundingBox();assert(b.y>=0&&b.y+b.height<=400);await p.locator('#sessionHome').click();assert(await p.locator('#exitDialog').isVisible());await c.close();
  });
  await test('No uncaught browser errors',()=>assert.deepEqual(errors,[]));fs.writeFileSync(path.join(output,'menu-results.json'),JSON.stringify({results,errors},null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});

@@ -37,3 +37,10 @@ No commit, push, deployment, or production approval is recorded as completed her
 
 Final automated result: 12/12 public-menu checks, 18/18 original regression checks, 11/11 Focus checks, and 12/12 math checks passed (53 total). The five menu-layout checks were also rerun successfully after the Home style correction. git diff --check passed.
 
+
+## Owner acceptance and alignment follow-up
+
+The owner reported successful desktop/iPhone testing in Chrome and Safari, and requested vertical centering of the in-flight Focus screen. The local follow-up uses the dynamic viewport height and centers the full session when there is spare height. On shorter screens the document grows naturally, retaining access to the top and scrollable controls. No session JavaScript or storage code changed.
+
+Seven targeted automated checks passed: five layout sizes (320x568, 390x844, 844x390, 768x1024, 1440x1000), a 390x400 overflow/scrolling check, and the existing 320px School voice/keypad check. The centered 390px screenshot was visually inspected. Physical-device validation of this alignment change and commit/push remain pending.
+
