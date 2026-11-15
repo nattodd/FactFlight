@@ -40,6 +40,8 @@ The configuration/menu increment is implemented locally; verification is recorde
 
 **Choose Tables acceptance — 2026-11-15:** Owner confirms `ae6e496` works on desktop Chrome and physical iPhone Chrome/Safari via the Branch Deploy. Input methods and individual regression cases were not specified. This does not complete the full release checklist or authorize production. The owner chose to advance every selected table by one for the subsequent Next Table(s) action (2, 5 → 3, 6), unavailable if any selected table is 10. The owner subsequently verified Next Tables and the corrected selected-table heading on desktop Chrome and physical iPhone Chrome/Safari on the Branch Deploy (`13417bd`) on 2026-11-15. The supplied screenshot shows “Multiplication · Tables 3, 9” during practice. This feature acceptance does not establish a full release regression pass; input methods and individual edge cases were not specified.
 
+**Manual regression acceptance — 2026-11-15:** The owner completed the desktop/iPhone walkthrough across Windows Chrome and iPhone Chrome/Safari. See the [recorded results and exceptions](docs/v6.1-manual-release-checklist.md#completed-owner-walkthrough--2026-11-15). Earlier increment paragraphs below and above describe evidence at their respective stages; the current release gates are in section 5. Production remains unapproved.
+
 ## 1. Non-negotiable product principles
 
 **Branded icon increment — 2026-11-14:** Apple touch icon, favicon, and manifest metadata are implemented locally with root/subpath Chrome checks passing. Physical Home Screen acceptance remains pending; see [icon verification](docs/v6-home-screen-icon-verification.md). Offline caching and standalone launch changes remain deferred.
@@ -148,7 +150,7 @@ For every mode, support **Tap/Keypad** as a reliable input. Offer **Voice** only
 
 **Done when:** Multiple children can use one device without mixing scores, while guests can practice immediately. Previously saved sessions still display correctly.
 
-### v6.1 — Targeted practice and easier repeat sessions (implemented; release validation pending)
+### v6.1 — Targeted practice and easier repeat sessions (tested; release preparation pending)
 
 This is the approved G/E/F/A release scope described near the top of this file, plus the owner-approved Next Table(s) follow-up and heading correction. The older v6 program sections above retain their original planning context; they are not additional v6.1 release requirements.
 
@@ -165,7 +167,8 @@ This is the approved G/E/F/A release scope described near the top of this file, 
 **Remaining release gates:**
 **Automated gate completed — 2026-11-15:** 211 browser checks across 17 suites, 2,356 seeded generator/repeat sequences and all 1,023 table subsets passed against code `13417bd` / docs HEAD `b2db2e6`. Syntax checks passed. See [final regression](docs/v6.1-final-regression.md); physical testing remains separate.
 
-- Complete the [desktop/iPhone checklist](docs/v6.1-manual-release-checklist.md) and record the full minimum manual checks on Windows Chrome and physical iPhone Safari/Chrome: real microphone permissions, ready/start, spoken answers/reconnection, non-voice fallback, touch/keyboard, scoring/analytics, timed/untimed sessions, Focus/Worksheet scrolling, history/reload and learner isolation. Exercise repeat/advance limits (Level 5, table 10, mixed tables), cancellation and historical review. Mark unavailable Android/tablets/orientation coverage unverified.
+**Manual walkthrough completed — 2026-11-15:** Owner reported all 14 [checklist groups](docs/v6.1-manual-release-checklist.md) passed on Windows Chrome and physical iPhone Chrome/Safari, including real speech/reconnection, blocked-microphone fallback, scoring, timer expiry, backup restore, other math modes and layout/orientation. Fresh permission prompts remain unconfirmed; genuine legacy history was unavailable (synthetic checks passed); Android/tablets remain unverified. Exact OS/browser versions were not supplied. Resolve or explicitly accept the fresh-prompt gap during final release preparation.
+
 - Prepare v6.1.0 metadata and release notes; reconcile the final branch-to-main diff with Unreleased. App metadata and its release test still expect 6.0.0 as of this review. Keep Unreleased entries undated until production approval.
 - Confirm backups of any now-valued learner history and prepare a v6.1-specific promotion/rollback plan. Targeted sessions use schema version 2; backups containing them require v6.1, so a v6.0 rollback cannot be treated as fully data-compatible. Do not clear browser storage.
 - Confirm the intended production destination and current hosting/credit state before proposing execution: GitHub Pages uses main; Netlify's production branch remains v6-development. The last supplied Netlify balance was 14.7 credits, not a fresh balance check. No Netlify production change is implied by release preparation.
@@ -175,7 +178,32 @@ This is the approved G/E/F/A release scope described near the top of this file, 
 
 **Ready when:** The approved scope has a reconciled release record, the final automated and required manual checks pass with remaining limitations explicitly recorded, and backup/hosting/rollback preparation is reviewable. Feature acceptance alone is not production approval. The final automated regression is now recorded; only documentation changed during that run. No commit, push or deployment was performed.
 
-### v6.2 — Early learning: letters, sounds, colors, and shapes
+### v6.2 — Targeted review and mobile setup usability (planned)
+
+Added at the owner’s request after v6.1 testing. This is roadmap scope for design and incremental implementation, not completed functionality or permission to publish. Later planned releases move down: early learning v6.2→v6.3, reading v6.3→v6.4, playful practice v6.4→v6.5. The open-ended v7+ expansion horizon remains longer-term.
+
+**Deferred practice items brought forward:**
+- **B — Missed-fact practice:** optional practice from missed facts; define source sessions, correction/skip handling and empty-history behavior before implementation.
+- **C — Per-table progress:** define transparent table-level summaries without double-counting reversed or overlapping selected-table facts.
+- **D — Division-family selection:** choose targeted division families while retaining the existing levels and scoring.
+- **Tables 11/12:** evaluate explicit selection and its factor range, labels, Next Tables endpoint and backward-compatible backups; v6.1 stays at 1–10.
+
+**Next/Continue/Start layout exploration:**
+The owner reports that primary setup actions sit at the bottom on iPhone and require scrolling. Explore reducing the scrolling while preserving deliberate selection, readable settings and easy thumb access.
+
+| Option | Benefit | Tradeoff to verify |
+|---|---|---|
+| Persistent bottom action bar with a compact selection summary | Keeps the primary action reachable while settings scroll; first option to prototype | Must reserve content space and respect the iPhone safe area, browser bars and on-screen keyboard; never cover options or dialogs |
+| Primary action near the heading/selection summary | Visible early with no bottom overlay | May require scrolling back up after editing; easier to skip reviewing settings |
+| More compact setup and collapsed grown-up options | Reduces page length with ordinary document flow | Must preserve readable text, large touch targets and discoverability; cannot guarantee no scrolling |
+
+Prototype the bottom action bar first, with one visible primary action per step and a clear summary of the chosen tables/count. Keep Continue disabled for empty table selection, preserve validation and Voice ready/cancellation, and avoid duplicate starts. Compare against the existing layout before choosing an implementation. Test small iPhones in Safari/Chrome, portrait/landscape, larger text, VoiceOver/keyboard focus, open keyboard and microphone dialogs; include desktop so the mobile improvement does not degrade it. No app layout change is included in the current documentation update.
+
+**Other deferred work to triage within v6.2 planning:** full-family backup, deliberate Previous progress assignment, and offline/PWA reliability. These are candidates requiring separate design and data-safety decisions, not implied prerequisites or promised deliverables for this release. Keep personal progress local and preserve learner ownership.
+
+**Done when:** agreed targeted-review features and the chosen setup layout pass their own automated and physical-device regression, old history remains safe, and the owner accepts the usability improvement. Final v6.2 scope can be narrowed before implementation; none of this delays v6.1 release preparation.
+
+### v6.3 — Early learning: letters, sounds, colors, and shapes
 
 **Build:**
 - Big **A / a** cards, pictures, letter names, and curated letter sounds.
@@ -185,7 +213,7 @@ This is the approved G/E/F/A release scope described near the top of this file, 
 
 **Done when:** A two-year-old can participate with a parent using large cards, clear sounds, minimal reading, and no fine-motor demands.
 
-### v6.3 — Early reading and sight words
+### v6.4 — Early reading and sight words
 
 **Build:**
 - Beginner sight-word decks, reveal/flip cards, spoken examples, and short matching exercises.
@@ -194,7 +222,7 @@ This is the approved G/E/F/A release scope described near the top of this file, 
 
 **Done when:** A parent can open a 10-word session in seconds without creating an account or preparing physical cards.
 
-### v6.4 — Playful practice + smarter review
+### v6.5 — Playful practice + smarter review
 
 **Build:**
 - Optional short game modes (e.g., friendly missions, picture reveals, stars earned *during a session*).
@@ -239,9 +267,9 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 **Now:** Design and incrementally implement the complete v6 math/family experience: Home/navigation, Focus/Worksheet, Quick/Free/Timed/Challenge modes, original School Test, optional profiles/Guest, safe backups/import, separate progress, and expanded math activities with levels.
 
-**Next within v6:** resolve the release-audit findings, verify the fixes locally and on preview, and prepare a reviewed release checklist. Learner Home/profiles, icons, individual-learner backup/restore and configurable modes are implemented. Offline reliability remains a separate later milestone.
+**Next within v6:** complete v6.1 release preparation and explicit approval, then design the v6.2 targeted-review and mobile-action improvements above. Learner Home/profiles, icons, individual-learner backup/restore and configurable modes are implemented. Offline reliability remains a separate later milestone.
 
-**After that:** toddler flashcards and sounds, sight words, games, and personalized review.
+**After that:** v6.3 early-learning flashcards and sounds, v6.4 sight words, and v6.5 playful practice.
 
 **Deliberately deferred:** Mandatory accounts, subscriptions, advertising, cloud databases, social features, daily streaks, and complicated curricula. These conflict with the simple family-use goal.
 
