@@ -55,3 +55,37 @@
 
 #menuView .table-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 #menuView .table-choices button{min-width:0;min-height:48px;padding:10px}
+
+/* Mobile setup/results actions use the existing controls and reserve their measured height. */
+.action-summary{display:none}
+html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
+@media(max-width:900px){
+ #menuView .bottom-actions,#resultsView .bottom-actions{
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;
+  width:100%;margin:20px 0 0;padding:12px;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+ }
+ #menuView .bottom-actions .action-summary,#resultsView .bottom-actions .action-summary{
+  display:block;grid-column:1/-1;font-size:14px;line-height:1.4;
+  color:var(--muted);overflow-wrap:anywhere;
+ }
+ #menuView .bottom-actions p{grid-column:1/-1;grid-row:2;margin:0;font-size:14px;line-height:1.4}
+ #menuView .bottom-actions button,#resultsView .bottom-actions button{
+  min-width:0;min-height:48px;width:auto;margin:0;padding:10px 14px;
+  font-size:16px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;
+ }
+ #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px}
+ #menuView .bottom-actions .back{grid-column:1;grid-row:3}
+ #menuView .bottom-actions .primary{grid-column:2;grid-row:3}
+ #resultsView .bottom-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #resultsView .bottom-actions #again{grid-column:1/-1}
+ #resultsView .bottom-actions #nextLevel,#resultsView .bottom-actions #nextTables{grid-column:1/-1}
+ #menuView .bottom-actions.is-docked,#resultsView .bottom-actions.is-docked{
+  position:fixed;z-index:30;inset:auto 0 0;width:auto;margin:0;border-radius:0;
+  border-width:1px 0 0;box-shadow:0 -4px 16px #0000000d;
+  padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+ }
+ #menuView.has-bottom-actions,#resultsView.has-bottom-actions{padding-bottom:calc(var(--action-height) + 24px)}
+}
+
+@media(min-width:901px){#menuView .bottom-actions.back-only{display:none}}

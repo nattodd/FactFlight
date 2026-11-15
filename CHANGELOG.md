@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+### Changed
+- Mobile practice setup keeps Back and Continue/Start in a bottom action area with a compact selection summary. Results keep Practice Again (or Review settings) and eligible Next Level/Table actions within reach. Existing voice-ready and repeat behavior is preserved.
+- The action area reserves content space, respects safe-area insets, and returns to normal page flow while editing inputs, on short viewports, when zoomed, or when enlarged text makes it too tall. Physical iPhone acceptance remains pending; this change is local and unreleased.
+
 ## [6.1.0] - 2026-11-15
 
 ### Added

@@ -154,6 +154,8 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 ### v6.2 — Targeted review and mobile setup usability (PLANNED — next)
 
+**v6.2a local implementation — 2026-11-15:** Owner authorized local mobile bottom-action work, including Continue/Start/Back and Results repeat/advance controls, while preserving voice readiness. Implemented locally; required physical-device acceptance remains pending. See [verification and remaining checks](docs/v6.2-mobile-actions-verification.md). v6.2 remains unreleased/Coming Soon; release scope and the roadmap image are unchanged. The owner subsequently authorized committing/pushing this increment to the v6.2-development Netlify Branch Deploy for testing only; production remains unchanged.
+
 **Build, in order:**
 
 1. **v6.2a — Mobile setup:** Persistent Continue/Start area and compact summary, with the layout safeguards in section 2.

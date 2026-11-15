@@ -46,7 +46,71 @@ function selectionMenu(){
 function practice(){const a=activities[cfg.activity],school=cfg.mode==='school';return `${backButton()}${steps('Your practice')}${context()}<h1>${school?'Which times table?':'Pick your challenge.'}</h1><p>${school?'The same school test you know. Pick a table to begin.':cfg.activity==='multiplication'?'Choose a level or pick the tables you want to practice.':'Every level is open. Pick what feels right today.'}</p>${school?`<div class="pills section">${Array.from({length:9},(_,i)=>i+2).map(n=>`<button class="${selected(cfg.table,n)}" aria-pressed="${cfg.table===n}" data-table="${n}">${n}</button>`).join('')}</div>`:selectionMenu()}${cfg.mode==='free'?'<div class="review"><strong>Keep going until you choose Finish</strong><p>No timer and no question limit. Skip moves on; you can review skipped questions afterward.</p></div>':cfg.mode==='school'?`<div class="review"><strong>60 questions · ${cfg.schoolUntimed?'no time limit':'2 minutes'}</strong><p>Finish early if you need to. You can review every answer afterward.</p></div>`:`<section class="section"><h2>How many questions?</h2><div class="pills">${(cfg.mode==='quick'?[5,10,15,20]:[5,10,15,20,30,60]).map(n=>`<button class="${selected(cfg.count,n)}" aria-pressed="${cfg.count===n}" data-count="${n}">${n}</button>`).join('')}</div><p class="small">${['timed','test'].includes(cfg.mode)?'Finish your set or keep going until time runs out.':'No time limit. Take your time.'}</p></section>`}${['timed','test'].includes(cfg.mode)?`<section class="section"><h2>How much time?</h2><div class="pills">${[1,2,5].map(n=>`<button class="${selected(cfg.minutes,n)}" aria-pressed="${cfg.minutes===n}" data-minutes="${n}">${n} ${n===1?'minute':'minutes'}</button>`).join('')}</div><p class="small">The clock starts when you’re ready. Finish early whenever you need to.</p></section>`:''}<div class="footer-action"><p>Next: choose how to answer.</p><button class="primary" data-next ${validSelection(cfg)?'':'disabled'}>Continue →</button></div>`}
 function ready(){return `${backButton()}${steps('Ready')}${context()}<h1>Ready for takeoff?</h1><p>Choose how you want to answer.</p>${replayNote?`<p class="notice">${replayNote}</p>`:''}<div class="pair"><button class="tile${selected(cfg.input,'keypad')}" data-input="keypad" aria-pressed="${cfg.input==='keypad'}"><span class="icon">▦</span><strong>Tap or type</strong><span class="sub">Use the number pad or your keyboard.</span></button><button class="tile${selected(cfg.input,'voice')}" data-input="voice" aria-pressed="${cfg.input==='voice'}"><span class="icon">♪</span><strong>Say it out loud</strong><span class="sub">Use your microphone. Say “ready” to begin.</span></button></div><section class="section"><h2>How do you want to see it?</h2><div class="pair"><button class="tile${selected(cfg.view,'focus')}" data-view="focus" aria-pressed="${cfg.view==='focus'}"><span class="view-art">[ ? ]</span><strong>One at a time</strong><span class="sub">Focus View · one big, clear question.</span></button><button class="tile${selected(cfg.view,'worksheet')}" data-view="worksheet" aria-pressed="${cfg.view==='worksheet'}"><span class="view-art">☷ ☷ ☷</span><strong>The whole sheet</strong><span class="sub">Worksheet View · see your set of facts.</span></button></div></section><div class="review"><strong>${activities[cfg.activity].name} · ${cfg.mode==='school'?cfg.table+' times table':selectionLabel(cfg)}</strong><p>${cfg.mode==='school'?'Original School Test':modes[cfg.mode][0]} · ${cfg.mode==='free'?'Questions until you finish':(cfg.mode==='school'?60:cfg.count)+' questions'} · ${cfg.mode==='school'?(cfg.schoolUntimed?'no time limit':'2 minutes'):['test','timed'].includes(cfg.mode)?cfg.minutes+' '+(cfg.minutes===1?'minute':'minutes'):'no time limit'}</p></div><details><summary>Grown-up options</summary><label for="target">Optional first-try goal</label><p>Leave blank for no goal. ${cfg.mode==='free'?'Choose a goal from 1 to 60 first-try answers, or leave it blank.':'Choose a number up to your question count, or leave it blank.'}</p><input id="target" type="number" min="1" max="${['school','free'].includes(cfg.mode)?60:cfg.count}" value="${cfg.target}" placeholder="No goal"><p>Use Skip, Undo, or Finish during your flight. ${FlightProfiles.isGuest()?"Guest results are temporary and are not saved.":"Review answers and export your learner results from Progress."}</p></details><div class="footer-action"><p>${cfg.input==='voice'?'Allow the microphone, then say “ready.”':'Your keyboard or number pad is ready.'}</p><button class="primary" data-start>Start ${cfg.mode==='school'?'School Test':cfg.mode==='test'?'test':'practice'} →</button></div>`}
 function parents(){return `${backButton()}<div class="hero"><div class="eyebrow">Parent corner</div><h1>A little help for grown-ups.</h1><p>Keep the practice path simple. Keep guidance easy to find.</p></div><button class="primary" data-nav="manageLearners">Manage learners →</button><details open><summary>Microphone help</summary><p>Allow microphone and speech recognition access when your browser asks. During a flight, use Reconnect microphone if listening stops. Browser speech may use an online service. The app stores recognized text with results locally; it does not save audio recordings.</p></details><details><summary>Results and backups</summary><p>Open Progress for activity totals, flight reviews, and JSON/CSV exports. Results stay in this browser unless deliberately exported.</p></details><div class="notice">Profiles save separate progress in this browser. Guest results are temporary and cannot be saved or exported. Change learner before starting to keep future progress.</div>`}
-function render(){const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
+// Presentation only: move existing controls, never clone launch handlers.
+const actionMedia=matchMedia('(max-width:900px)');
+const actionAreas=new Map();
+let actionFrame=0;
+function scheduleActions(){if(!actionFrame)actionFrame=requestAnimationFrame(()=>{actionFrame=0;syncActions()})}
+function registerActions(view,bar,back=null){
+ const old=actionAreas.get(view);old?.observer.disconnect();
+ if(old?.back&&old.marker.isConnected)old.marker.replaceWith(old.back);
+ view.classList.remove('has-bottom-actions');view.style.removeProperty('--action-height');
+ const marker=back?document.createComment('Back button desktop position'):null;
+ if(back)back.before(marker);
+ bar.classList.add('bottom-actions');bar.setAttribute('role','group');bar.setAttribute('aria-label',view.id==='resultsView'?'Next practice actions':'Practice navigation');
+ const observer=new ResizeObserver(scheduleActions);observer.observe(bar);
+ actionAreas.set(view,{bar,back,marker,observer});
+ scheduleActions();
+}
+function syncActions(){
+ let reserved=0;
+ const viewport=window.visualViewport;
+ const available=viewport?.height||innerHeight;
+ const editing=document.activeElement?.matches('input,textarea,select');
+ for(const [view,area] of actionAreas){
+  const {bar,back,marker}=area;
+  if(!bar.isConnected){area.observer.disconnect();actionAreas.delete(view);view.classList.remove('has-bottom-actions');continue}
+  if(back){
+   const focused=document.activeElement===back;
+   if(actionMedia.matches&&back.parentElement!==bar)bar.prepend(back);
+   else if(!actionMedia.matches&&marker.parentNode&&back.parentElement===bar)marker.after(back);
+   if(focused)back.focus({preventScroll:true});
+  }
+  // Keep natural flow for keyboards, pinch zoom, short landscape, or very tall text.
+  const mobile=actionMedia.matches&&!view.classList.contains('hidden');
+  const height=Math.ceil(bar.getBoundingClientRect().height);
+  const fixed=mobile&&!editing&&available>=440&&(!viewport||viewport.scale<=1.05)&&height<=available*.4;
+  bar.classList.toggle('is-docked',fixed);
+  if(view.classList.contains('has-bottom-actions')!==fixed)view.classList.toggle('has-bottom-actions',fixed);
+  view.style.setProperty('--action-height',fixed?height+'px':'0px');
+  if(fixed)reserved=height;
+ }
+ document.documentElement.style.setProperty('--bottom-action-space',reserved+'px');
+}
+function setupActions(){
+ const view=$('menuView');
+ if(!['math','mode','practice','ready'].includes(screen)){scheduleActions();return}
+ let bar=view.querySelector('.footer-action');
+ if(!bar){bar=document.createElement('div');bar.className='footer-action back-only';view.append(bar)}
+ const summary=document.createElement('div');summary.className='action-summary';
+ const school=cfg.mode==='school';
+ summary.textContent=screen==='math'?'Choose an activity':screen==='mode'?activities[cfg.activity].name+' · Choose a mode':
+  activities[cfg.activity].name+' · '+(school?'Table '+cfg.table:cfg.selection?.type==='tables'?(cfg.selection.tables.length?selectionLabel(cfg):'Choose at least one table'):selectionLabel(cfg))+
+  ' · '+(cfg.mode==='free'?'Until Finish':(school?60:cfg.count)+' questions')+
+  ' · '+(school?(cfg.schoolUntimed?'Untimed':'2 min'):['timed','test'].includes(cfg.mode)?cfg.minutes+' min':'Untimed');
+ bar.prepend(summary);
+ registerActions(view,bar,view.querySelector('[data-back]'));
+}
+actionMedia.addEventListener('change',scheduleActions);
+window.addEventListener('resize',scheduleActions);
+window.visualViewport?.addEventListener('resize',scheduleActions);
+window.visualViewport?.addEventListener('scroll',scheduleActions);
+document.addEventListener('focusin',scheduleActions);
+document.addEventListener('focusout',scheduleActions);
+const actionVisibility=new MutationObserver(scheduleActions);
+for(const id of ['menuView','resultsView'])actionVisibility.observe($(id),{attributes:true,attributeFilter:['class']});
+
+function render(){const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();setupActions();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
  if(d.nav){if(d.nav==='progress'){FlightProfiles.progress();return}if(d.nav==='home'){FlightMenu.home();return}go(d.nav);return}if('back'in d){back();return}
  if('quickStart'in d){const q=FlightProfiles.quickChoice();if(q){loadQuick(q);startFromMenu()}else{quickRoute=true;cfg.mode='quick';cfg.count=5;cfg.target='';go('math')}return}
@@ -134,8 +198,10 @@ function resultActions(s){
  if(complete){
   if(canAdvance(s)){const next=document.createElement('button');next.id='nextLevel';next.textContent='Next Level · '+(c.level+2)+' →';next.onclick=()=>replay(s,'next');group.append(next)}
   if(canAdvanceTables(s)){const next=document.createElement('button');next.id='nextTables';next.textContent=(c.selection.tables.length===1?'Next Table':'Next Tables')+' · '+c.selection.tables.map(n=>n+1).join(', ')+' →';next.onclick=()=>replay(s,'nextTables');group.append(next)}
-  const change=document.createElement('button');change.id='changeOptions';change.textContent='Change options';change.onclick=()=>replay(s);group.append(change);
+  const change=document.createElement('button');change.id='changeOptions';change.textContent='Change options';change.onclick=()=>replay(s);group.after(change);
  }
+ const summary=document.createElement('div');summary.className='action-summary';summary.textContent=sessionLabel(s);group.prepend(summary);
+ registerActions($('resultsView'),group);
 }
 window.FlightMenu={replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>go(FlightProfiles.hasSelection()?'ready':'home',false),profiles:next=>go(next)};
 $('homeNav').onclick=()=>FlightMenu.home();$('practiceNav').onclick=()=>FlightMenu.math();
