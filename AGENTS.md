@@ -7,13 +7,15 @@ These rules apply to all development work in this repository.
 - Repository: `nattodd/FactFlight`.
 - Production branch: `main`.
 - Active development branch: `v6.1-development`.
-- Verified stable baseline: `v6.0.0`.
+- Prior verified stable baseline: `v6.0.0`; v6.1.0 production promotion is owner-approved on 2026-11-15.
 - Always verify the active branch before modifying code.
 - Never modify, merge into, or deploy `main` without the repository owner's explicit approval.
 - Never commit, push, or merge without the repository owner's approval.
 - Development preview testing is permitted through the approved preview workflow. This permission does not authorize commits, pushes, merges, production deployments, or publishing outside that workflow. If the approved workflow is not documented or known, clarify it before deploying a preview.
 - Never otherwise publish without the repository owner's approval.
 - Approved preview workflow (2026-11-15): Netlify project factflight-preview keeps production branch `v6-development`; only `v6.1-development` is enabled as an additional Branch Deploy. The owner approved committing/pushing the reviewed G/E/F increment for one Branch Deploy trial. This does not authorize other commits/pushes, production deployments, or changing either `main` or `v6-development`. Verify deployment context and usage against 19 production deploys / 285 deployment credits / 14.7 remaining; traffic may consume credits. Prefer local tests and batch separately approved preview pushes. The owner separately approved committing/pushing Choose Tables on 2026-11-15 to `v6.1-development` for a Branch Deploy and desktop/iPhone testing; the same production restrictions apply. The owner also separately approved committing/pushing Next Table(s) and its updated verification docs to the same branch for desktop/iPhone Branch Deploy testing on 2026-11-15, without production changes.
+
+- Release authorization (2026-11-15): owner explicitly approved finalizing v6.1.0 release docs, committing/pushing preparation, merging/pushing main for GitHub Pages, verifying production, and publishing the v6.1.0 annotated tag/GitHub release. Keep Netlify production/v6-development unchanged. Rollback requires separate owner approval. This does not authorize subsequent feature releases.
 
 ## 2. Product principles
 

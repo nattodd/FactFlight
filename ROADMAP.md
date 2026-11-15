@@ -2,7 +2,7 @@
 
 **Vision:** *Little practice. Big confidence.* A free, account-free, family-friendly learning app that opens instantly on a phone, tablet, or computer. Practice should fit into real life: five minutes at a sibling's practice, a waiting room, or around the kitchen table.
 
-**Approved stable release:** `v6.0.0` on `main`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6.1-development`. All milestones below are proposed scope, not promised dates.
+**Approved release:** `v6.1.0` for GitHub Pages; publication and exact commit are recorded in its GitHub release. **Prior stable baseline:** `v6.0.0`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6.1-development`. All milestones below are proposed scope, not promised dates.
 
 **Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
 
@@ -41,6 +41,8 @@ The configuration/menu increment is implemented locally; verification is recorde
 **Choose Tables acceptance — 2026-11-15:** Owner confirms `ae6e496` works on desktop Chrome and physical iPhone Chrome/Safari via the Branch Deploy. Input methods and individual regression cases were not specified. This does not complete the full release checklist or authorize production. The owner chose to advance every selected table by one for the subsequent Next Table(s) action (2, 5 → 3, 6), unavailable if any selected table is 10. The owner subsequently verified Next Tables and the corrected selected-table heading on desktop Chrome and physical iPhone Chrome/Safari on the Branch Deploy (`13417bd`) on 2026-11-15. The supplied screenshot shows “Multiplication · Tables 3, 9” during practice. This feature acceptance does not establish a full release regression pass; input methods and individual edge cases were not specified.
 
 **Manual regression acceptance — 2026-11-15:** The owner completed the desktop/iPhone walkthrough across Windows Chrome and iPhone Chrome/Safari. See the [recorded results and exceptions](docs/v6.1-manual-release-checklist.md#completed-owner-walkthrough--2026-11-15). Earlier increment paragraphs below and above describe evidence at their respective stages; the current release gates are in section 5. Production remains unapproved.
+
+**v6.1.0 production approval — 2026-11-15:** Owner authorized final release documents, promotion to main/GitHub Pages, production verification, and tag/GitHub release publication. Testing exceptions are accepted, permission prompts and preview smoke passed, and no history needs preserving. Netlify production stays unchanged; rollback requires separate approval. Earlier pending-approval entries retain historical context. See the [execution plan](docs/v6.1-release-plan.md) and [release notes](docs/v6.1-release-notes.md).
 
 ## 1. Non-negotiable product principles
 
@@ -150,7 +152,7 @@ For every mode, support **Tap/Keypad** as a reliable input. Offer **Voice** only
 
 **Done when:** Multiple children can use one device without mixing scores, while guests can practice immediately. Previously saved sessions still display correctly.
 
-### v6.1 — Targeted practice and easier repeat sessions (tested; release preparation pending)
+### v6.1 — Targeted practice and easier repeat sessions (tested; production approved)
 
 This is the approved G/E/F/A release scope described near the top of this file, plus the owner-approved Next Table(s) follow-up and heading correction. The older v6 program sections above retain their original planning context; they are not additional v6.1 release requirements.
 

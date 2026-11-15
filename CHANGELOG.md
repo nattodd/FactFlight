@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-11-15
+
 ### Added
 - Table-selected results offer Next Table(s), showing the destination and advancing every selected table by one while preserving session options and voice readiness. The action is unavailable when any selected table is 10 or the complete setup is no longer available in the current tab.
 - Multiplication offers Choose Tables for any combination of tables 1–10 with factors 1–10 in Quick, Free, Timed Practice and Custom Test. Existing levels and the original School Test remain available.
