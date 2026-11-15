@@ -8,6 +8,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-11-15
+
+### Added
+- Table-selected results offer Next Table(s), showing the destination and advancing every selected table by one while preserving session options and voice readiness. The action is unavailable when any selected table is 10 or the complete setup is no longer available in the current tab.
+- Multiplication offers Choose Tables for any combination of tables 1–10 with factors 1–10 in Quick, Free, Timed Practice and Custom Test. Existing levels and the original School Test remain available.
+- Selected tables persist with learner practice settings and Quick shortcuts, carry through Practice Again, and appear in results, history and JSON/CSV exports. Next Level is hidden for table-selected flights.
+- Results offer Next Level for complete numbered-level flight settings below Level 5, including Free Practice, while preserving the learner and compatible session options. School Test does not offer Next Level.
+- Results include Change options alongside repeat actions, with full-width repeat controls on small screens.
+
+### Changed
+- Practice Again starts a fresh flight immediately when the completed flight's full configuration is available in the current tab. Voice still waits for ready. Older/reloaded flights without a saved view retain an explicit Review settings action.
+- Repeated expanded-math flights prefer previously unused fact families where available while preserving balanced rounds and repeat spacing. Small pools reuse facts with a different opening when possible; repeated School Tests retain the fixed preset with a different opening.
+- Repeat actions recheck learner ownership before launch and after voice readiness, preserve completed records, and prevent duplicate starts. A cancelled launch does not replace saved preferences.
+
+### Fixed
+- In-session headings show the selected multiplication tables instead of a numbered level in Focus and Worksheet, including Practice Again and Next Table(s).
+- Practice menus remember each learner's last started settings separately for each activity, including mode, level, count, duration, input, view and optional goal. Mode choices now visibly identify the selected option.
+- Selecting the current practice mode preserves its count and timer choices. Abandoned setup changes do not replace the last started settings, and changing learners resets setup drafts.
+- General practice preferences preserve the separate Quick Practice shortcut. Guest preferences remain temporary; learner deletion also clears the new disposable preferences. These preference changes do not rewrite existing flight history. New Choose Tables flights use session schema version 2, and backups containing them require v6.1 to import; older backups remain supported.
+
 ## [6.0.0] - 2026-11-14
 
 ### Added
@@ -109,6 +129,6 @@ First verified stable release of Fact Flight, a free browser-based multiplicatio
 
 1. For each completed feature, meaningful behavior change, or bug fix, update **[Unreleased]** in the same change or commit.
 2. Use factual, user-facing descriptions. Do not mark planned features as implemented.
-3. Before release, compare `v6-development` with `main`, reconcile the changelog with the actual code changes, and verify regression tests.
+3. Before release, compare `v6.1-development` with `main`, reconcile the changelog with the actual code changes, and verify regression tests.
 4. Only after explicit production approval, move verified entries to a dated release section and publish the corresponding GitHub release.
 5. Do not rewrite historical release notes without a documented correction.

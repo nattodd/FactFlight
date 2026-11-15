@@ -4,9 +4,17 @@
 
 Fact Flight is a free, browser-based math fact fluency application designed to help elementary school students build speed, accuracy, and confidence through interactive practice.
 
+## Release status
+
+Version **6.1.0** adds remembered per-learner/activity settings, one-tap Practice Again, Next Level, multiplication Choose Tables 1–10, and Next Table(s). Selected tables appear consistently in active headings, results, history and exports. Original numbered levels and School Test remain available. Voice waits for “ready”; Guest stays temporary and learners’ progress stays separate.
+
+New table-selected backups require a v6.1-compatible reader; older records are not rewritten. See [release notes](docs/v6.1-release-notes.md), [automated results](docs/v6.1-final-regression.md), [manual results and accepted limitations](docs/v6.1-manual-release-checklist.md), and the [approved promotion/rollback plan](docs/v6.1-release-plan.md). The [v6.1.0 GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.1.0) records publication and production verification when complete.
+
+GitHub Pages is the stable production destination. Netlify’s primary site remains on v6.0.0 / v6-development; the v6.1 Branch Deploy is separate. v6.2 targeted-review and mobile setup improvements remain planned in the roadmap. Rollback requires separate owner approval and must preserve new targeted-session data.
+
 ## Features
 
-This section describes Fact Flight v6.0.0. The public GitHub Pages site serves the stable release; Netlify remains the development preview.
+The core math and family features below remain available in v6.1.0 alongside the improvements listed above.
 
 The app opens with a learner picker. Select or create an optional nickname profile, or continue as Guest. After selection, Home returns to that learner’s activity menu; Change learner returns to the picker. Choose Quick Practice for any of the eight math activities, or Math → activity → mode → level → input/view. Five levels remain available for addition, subtraction, multiplication, division, number bonds, doubles, halves, and squares. Letters & Sounds, Colors & Shapes, and Reading are marked Coming Soon and cannot be opened. Profiles are local to this browser and device; no sign-in or cloud account is created.
 
@@ -107,4 +115,4 @@ Built with HTML, CSS, and vanilla JavaScript. Hosted for free using GitHub Pages
 
 Fact Flight is independently developed with AI-assisted design, implementation, and testing using OpenAI's ChatGPT and Codex.
 
-Actively developed as a personal educational project. Version 6.0.0 adds the math and family experience described above while preserving the original School Test. Version 5.0 remains the tagged rollback baseline.
+Actively developed as a personal educational project. Version 6.1.0 builds on the v6.0.0 math and family experience. v6.0.0 is the prior stable code baseline; returning to it after targeted-table records exist requires a data-aware recovery plan. v5.0 remains a historical baseline.
