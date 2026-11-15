@@ -11,12 +11,16 @@ const activities={
  halves:{name:'Halves',symbol:'½',desc:'Two equal parts',levels:['Even numbers to 10','Even numbers to 20','Even numbers to 40','Even numbers 42–198','Even numbers 200–1,998']},
  squares:{name:'Squares',symbol:'n²',desc:'A number times itself',levels:['Bases 1–5','Bases 1–10','Bases 1–12','Bases 13–20','Bases 21–50']}
 };
+function validTables(tables){return Array.isArray(tables)&&tables.length>0&&tables.length<=10&&new Set(tables).size===tables.length&&tables.every(n=>Number.isInteger(n)&&n>=1&&n<=10)}
 function questionPool(settings){
+ if(settings.selection!==undefined&&settings.selection!==null&&(!settings.selection||settings.selection.type!=='tables'||settings.activity!=='multiplication'||!validTables(settings.selection.tables)))throw Error('Choose one or more multiplication tables from 1 to 10');
  const groups=new Map(),kind=settings.activity,l=settings.level;
  const add=(key,text,answer)=>{if(!groups.has(key))groups.set(key,{key,variants:[]});const g=groups.get(key);if(!g.variants.some(v=>v.text===text))g.variants.push({text,answer})};
  const family=(op,a,b,answer)=>add(`${op}:${Math.min(a,b)}:${Math.max(a,b)}`,`${a} ${op} ${b}`,answer);
  if(settings.mode==='school'){
   for(let f=1;f<=10;f++){add(`school:${f}`,`${settings.table} × ${f}`,settings.table*f);add(`school:${f}`,`${f} × ${settings.table}`,settings.table*f)}
+ }else if(kind==='multiplication'&&settings.selection?.type==='tables'){
+  for(const a of settings.selection.tables)for(let b=1;b<=10;b++)family('×',a,b,a*b);
  }else if(kind==='addition'){
   if(l<3){const max=[5,10,20,99,999][l],min=l<3?0:l===3?21:100;for(let a=min;a<=max;a++)for(let b=0;b<=max-a;b++)family('+',a,b,a+b)}
   else {for(let a=l===3?10:100;a<=(l===3?99:999);a++)for(let b=10;b<=99;b++){family('+',a,b,a+b);family('+',b,a,a+b)}}
@@ -78,6 +82,6 @@ function parseWholeNumber(raw){
  const m=text.match(/^(a|one|two|three|four|five|six|seven|eight|nine) thousand(?: (?:and )?(.+))?$/);if(!m)return null;
  const tail=underThousand(m[2]||'');return tail===null?null:(m[1]==='a'?1:units.indexOf(m[1]))*1000+tail;
 }
-const api={activities,questionPool,createQuestionSource,parseWholeNumber};
+const api={validTables,activities,questionPool,createQuestionSource,parseWholeNumber};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FactFlightMath=api;
 })(globalThis);

@@ -22,7 +22,7 @@ function rememberPractice(config){
 }
 function clearPractice(id){for(const activity of Object.keys(FactFlightMath.activities)){const key=practicePrefix+id+':'+activity;practiceMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}}
 
-function validQuick(q){return q&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
+function validQuick(q){return q&&(q.tableChoices===undefined||(Array.isArray(q.tableChoices)&&(q.tableChoices.length===0||FactFlightMath.validTables(q.tableChoices))))&&(!q.selection||(q.activity==='multiplication'&&q.selection.type==='tables'&&FactFlightMath.validTables(q.selection.tables)))&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
 function quickChoice(){
  if(!active||!hasSelection())return null;
  let q=quickMemory.get(active);
