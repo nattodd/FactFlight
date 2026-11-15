@@ -148,6 +148,33 @@ For every mode, support **Tap/Keypad** as a reliable input. Offer **Voice** only
 
 **Done when:** Multiple children can use one device without mixing scores, while guests can practice immediately. Previously saved sessions still display correctly.
 
+### v6.1 — Targeted practice and easier repeat sessions (implemented; release validation pending)
+
+This is the approved G/E/F/A release scope described near the top of this file, plus the owner-approved Next Table(s) follow-up and heading correction. The older v6 program sections above retain their original planning context; they are not additional v6.1 release requirements.
+
+**Implemented and owner-accepted on preview:**
+- **G — Configuration/menu persistence:** remember last-started choices per learner/activity, highlight selections, preserve the separate Quick shortcut and temporary Guest behavior.
+- **E — Practice Again:** start a fresh flight directly with the same complete settings, preserving learner ownership and voice readiness; older/reloaded flights retain setup review.
+- **F — Next Level:** advance exactly one numbered level with compatible settings; stop at Level 5 and exclude School Test/table selections.
+- **A — Choose Tables:** multiplication tables 1–10 with other factors 1–10 across Quick, Free, Timed Practice and Custom Test; retain existing levels and School Test.
+- **Next Table(s):** increment every selected table by one, show the destination and stop when any selected table is 10.
+- Display selected tables in active headings, results, history and exports; preserve selections through repeats. Balanced generation and existing records remain protected.
+
+**Evidence:** Owner acceptance covers desktop Chrome and physical iPhone Chrome/Safari; desktop keyboard was specified for G/E/F, while later input methods and individual regression cases were not itemized. The code at `13417bd` includes the heading correction; `b2db2e6` records acceptance. Automated increment suites passed, including all 1,023 table subsets and 2,356 seeded generation/repeat sequences. Test counts across increments overlap and are not a cumulative certification. See [setup](docs/v6.1-setup-verification.md), [repeat actions](docs/v6.1-repeat-verification.md), [tables and follow-ups](docs/v6.1-tables-verification.md), and [preview acceptance](docs/v6.1-branch-deploy-trial.md).
+
+**Remaining release gates:**
+**Automated gate completed — 2026-11-15:** 211 browser checks across 17 suites, 2,356 seeded generator/repeat sequences and all 1,023 table subsets passed against code `13417bd` / docs HEAD `b2db2e6`. Syntax checks passed. See [final regression](docs/v6.1-final-regression.md); physical testing remains separate.
+
+- Complete the [desktop/iPhone checklist](docs/v6.1-manual-release-checklist.md) and record the full minimum manual checks on Windows Chrome and physical iPhone Safari/Chrome: real microphone permissions, ready/start, spoken answers/reconnection, non-voice fallback, touch/keyboard, scoring/analytics, timed/untimed sessions, Focus/Worksheet scrolling, history/reload and learner isolation. Exercise repeat/advance limits (Level 5, table 10, mixed tables), cancellation and historical review. Mark unavailable Android/tablets/orientation coverage unverified.
+- Prepare v6.1.0 metadata and release notes; reconcile the final branch-to-main diff with Unreleased. App metadata and its release test still expect 6.0.0 as of this review. Keep Unreleased entries undated until production approval.
+- Confirm backups of any now-valued learner history and prepare a v6.1-specific promotion/rollback plan. Targeted sessions use schema version 2; backups containing them require v6.1, so a v6.0 rollback cannot be treated as fully data-compatible. Do not clear browser storage.
+- Confirm the intended production destination and current hosting/credit state before proposing execution: GitHub Pages uses main; Netlify's production branch remains v6-development. The last supplied Netlify balance was 14.7 credits, not a fresh balance check. No Netlify production change is implied by release preparation.
+- Obtain explicit production approval; only then perform the approved promotion, production smoke checks and tag/release publication.
+
+**Deferred, not release blockers:** B (missed-fact practice), C (per-table progress), D (division-family selection), explicit 11/12 table selection, offline/early-learning work and the previously deferred full-family/legacy-assignment features.
+
+**Ready when:** The approved scope has a reconciled release record, the final automated and required manual checks pass with remaining limitations explicitly recorded, and backup/hosting/rollback preparation is reviewable. Feature acceptance alone is not production approval. The final automated regression is now recorded; only documentation changed during that run. No commit, push or deployment was performed.
+
 ### v6.2 — Early learning: letters, sounds, colors, and shapes
 
 **Build:**
