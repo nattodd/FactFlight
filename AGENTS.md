@@ -6,8 +6,9 @@ These rules apply to all development work in this repository.
 
 - Repository: `nattodd/FactFlight`.
 - Production branch: `main`.
-- Active development branch: `v6.1-development`.
-- Prior verified stable baseline: `v6.0.0`; v6.1.0 production promotion is owner-approved on 2026-11-15.
+- Active development branch: `v6.2-development`, created from verified main / v6.1.0 `f760615`.
+- Verified stable baseline: `v6.1.0` at main `f760615`, published and production voice owner-accepted on 2026-11-15. Prior baseline `v6.0.0` is not a fully compatible reader for new targeted-table records. Rollback requires separate owner approval.
+- Branch transition authorization (2026-11-15): owner approved creating local `v6.2-development` from verified main, carrying over v6.1 release-completion notes and pending documentation/image, and updating current branch references. The owner subsequently approved a local commit of the reviewed documentation and roadmap image only. Application changes, pushes, deployments and Netlify configuration changes remain unauthorized; v6.2 Branch Deploy is not yet enabled by this work.
 - Always verify the active branch before modifying code.
 - Never modify, merge into, or deploy `main` without the repository owner's explicit approval.
 - Never commit, push, or merge without the repository owner's approval.
@@ -53,11 +54,13 @@ These rules apply to all development work in this repository.
 
 ## 5. Documentation and release management
 
+- **Preserve documentation structure:** Obtain explicit owner approval before renaming, renumbering, reordering, combining or removing established sections, or substantially changing their format. Routine content corrections within existing sections are permitted.
+- **Keep the roadmap image synchronized:** When release scope, sequence, major features or Available/Coming Soon status changes, generate an updated brand-compliant image, verify it against `ROADMAP.md`, and update the README reference. Wording-only corrections do not require regeneration.
 - Document each completed meaningful feature, behavior change, or fix in the `Unreleased` section of `CHANGELOG.md` as part of the same development change or commit.
 - Use factual, user-facing descriptions. Never represent planned features as completed; keep planned work in `ROADMAP.md` until implemented and verified.
 - Never alter historical release notes without a documented correction.
 - Update `ROADMAP.md` when milestones are verified.
-- Before releases, compare `v6.1-development` against `main` and reconcile the changelog with actual changes.
+- Before releases, compare the active development branch (`v6.2-development`) against `main` and reconcile the changelog with actual changes.
 - Never publish to production without the repository owner's explicit approval.
 - Only after explicit production approval, move verified changelog entries into a dated release section and publish the corresponding release.
 

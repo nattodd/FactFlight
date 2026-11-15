@@ -8,9 +8,9 @@ Fact Flight is a free, browser-based math fact fluency application designed to h
 
 Version **6.1.0** adds remembered per-learner/activity settings, one-tap Practice Again, Next Level, multiplication Choose Tables 1–10, and Next Table(s). Selected tables appear consistently in active headings, results, history and exports. Original numbered levels and School Test remain available. Voice waits for “ready”; Guest stays temporary and learners’ progress stays separate.
 
-New table-selected backups require a v6.1-compatible reader; older records are not rewritten. See [release notes](docs/v6.1-release-notes.md), [automated results](docs/v6.1-final-regression.md), [manual results and accepted limitations](docs/v6.1-manual-release-checklist.md), and the [approved promotion/rollback plan](docs/v6.1-release-plan.md). The [v6.1.0 GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.1.0) records publication and production verification when complete.
+New table-selected backups require a v6.1-compatible reader; older records are not rewritten. See [release notes](docs/v6.1-release-notes.md), [automated results](docs/v6.1-final-regression.md), [manual results and accepted limitations](docs/v6.1-manual-release-checklist.md), and the [approved promotion/rollback plan](docs/v6.1-release-plan.md). The [v6.1.0 GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.1.0) is published at main commit `f760615`. Production assets and automated smoke checks passed; the owner confirmed production voice on Windows Chrome and iPhone Chrome/Safari. **v6.1.0 is complete.**
 
-GitHub Pages is the stable production destination. Netlify’s primary site remains on v6.0.0 / v6-development; the v6.1 Branch Deploy is separate. v6.2 targeted-review and mobile setup improvements remain planned in the roadmap. Rollback requires separate owner approval and must preserve new targeted-session data.
+GitHub Pages is the stable production destination. Netlify’s primary site remains on v6.0.0 / v6-development; the v6.1 Branch Deploy is separate. v6.2 targeted-review and mobile setup improvements remain planned in the roadmap. The local development branch is `v6.2-development`, created from verified main; its Netlify Branch Deploy has not been enabled by this work. Rollback requires separate owner approval and must preserve new targeted-session data.
 
 ## Features
 
@@ -101,6 +101,10 @@ Android generally does **not** have the same separate, system-wide **Speech Reco
 - Depending on the browser and platform, speech recognition may use an online service to process audio. Review browser privacy settings if this is a concern.
 
 ## Planned Enhancements
+
+[View the detailed release roadmap](ROADMAP.md#5-release-roadmap). The graphic below distinguishes available features from planned additions; Coming Soon indicates the planned sequence, not release dates.
+
+![Fact Flight roadmap: v6.1 math and family practice available now; v6.2 targeted review, v6.3 fact families and grouped menus, v6.4 numbers/colors/shapes, v6.5 letters/sounds, v6.6 clocks and v6.7 reading coming soon. Family backups and offline practice are planned separately; games and more subjects are later ideas.](docs/images/fact-flight-roadmap-2026-11-15.png)
 
 - Full-family backups and deliberate assignment of Previous progress
 - Offline caching and update notices
