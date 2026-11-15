@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Added
+- Table-selected results offer Next Table(s), showing the destination and advancing every selected table by one while preserving session options and voice readiness. The action is unavailable when any selected table is 10 or the complete setup is no longer available in the current tab.
 - Multiplication offers Choose Tables for any combination of tables 1–10 with factors 1–10 in Quick, Free, Timed Practice and Custom Test. Existing levels and the original School Test remain available.
 - Selected tables persist with learner practice settings and Quick shortcuts, carry through Practice Again, and appear in results, history and JSON/CSV exports. Next Level is hidden for table-selected flights.
 - Results offer Next Level for complete numbered-level flight settings below Level 5, including Free Practice, while preserving the learner and compatible session options. School Test does not offer Next Level.

@@ -38,6 +38,8 @@ The configuration/menu increment is implemented locally; verification is recorde
 
 **Branch Deploy acceptance — 2026-11-15:** Owner verified `dc155f8` on the successful v6.1 Branch Deploy: direct Practice Again, Next Level, and remembered selections after Home navigation. Owner subsequently specified desktop Chrome with keyboard and confirmed the link and changes work on physical iPhone Chrome and Safari. iPhone input method was not specified; full release regression and unitemized voice checks remain pending. Billing still displays 19 production deploys / 285 deployment credits and 14.7 remaining, with requests increasing from 892 to 903. See the [trial outcome](docs/v6.1-branch-deploy-trial.md#trial-outcome-and-owner-acceptance--2026-11-15). Choose Tables is the subsequent local increment; its new behavior is not covered by this earlier device acceptance. Production is not approved.
 
+**Choose Tables acceptance — 2026-11-15:** Owner confirms `ae6e496` works on desktop Chrome and physical iPhone Chrome/Safari via the Branch Deploy. Input methods and individual regression cases were not specified. This does not complete the full release checklist or authorize production. The owner chose to advance every selected table by one for the subsequent Next Table(s) action (2, 5 → 3, 6), unavailable if any selected table is 10. That increment is local and requires its own verification.
+
 ## 1. Non-negotiable product principles
 
 **Branded icon increment — 2026-11-14:** Apple touch icon, favicon, and manifest metadata are implemented locally with root/subpath Chrome checks passing. Physical Home Screen acceptance remains pending; see [icon verification](docs/v6-home-screen-icon-verification.md). Offline caching and standalone launch changes remain deferred.

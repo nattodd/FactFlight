@@ -111,6 +111,7 @@ function replay(s,action='review'){
  }
  quickRoute=cfg.mode==='quick';trail=['home','math','practice'];
  if(action==='next'){if(!canAdvance(s))return;cfg.level++}
+ if(action==='nextTables'){if(!canAdvanceTables(s))return;cfg.selection.tables=cfg.selection.tables.map(n=>n+1);cfg.tableChoices=cfg.selection.tables.slice()}
  if(action!=='review'&&remembered&&validConfig(cfg)){startFromMenu();return}
  go('ready',false);
 }
@@ -118,6 +119,10 @@ function replay(s,action='review'){
 function canAdvance(s){
  const c=flightChoices.get(s);
  return !!c&&validConfig(c)&&c.mode!=='school'&&c.level<4&&(!c.selection||c.selection.type==='level');
+}
+function canAdvanceTables(s){
+ const c=flightChoices.get(s);
+ return !!c&&validConfig(c)&&c.selection?.type==='tables'&&c.selection.tables.every(n=>n<10);
 }
 function resultActions(s){
  const again=$('again');if(!again)return;
@@ -128,6 +133,7 @@ function resultActions(s){
  const group=document.createElement('div');group.className='repeat-actions';again.before(group);group.append(again);
  if(complete){
   if(canAdvance(s)){const next=document.createElement('button');next.id='nextLevel';next.textContent='Next Level · '+(c.level+2)+' →';next.onclick=()=>replay(s,'next');group.append(next)}
+  if(canAdvanceTables(s)){const next=document.createElement('button');next.id='nextTables';next.textContent=(c.selection.tables.length===1?'Next Table':'Next Tables')+' · '+c.selection.tables.map(n=>n+1).join(', ')+' →';next.onclick=()=>replay(s,'nextTables');group.append(next)}
   const change=document.createElement('button');change.id='changeOptions';change.textContent='Change options';change.onclick=()=>replay(s);group.append(change);
  }
 }
