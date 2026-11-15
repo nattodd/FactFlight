@@ -6,13 +6,14 @@ These rules apply to all development work in this repository.
 
 - Repository: `nattodd/FactFlight`.
 - Production branch: `main`.
-- Active development branch: `v6-development`.
-- Verified stable baseline: `v5.0`.
+- Active development branch: `v6.1-development`.
+- Verified stable baseline: `v6.0.0`.
 - Always verify the active branch before modifying code.
 - Never modify, merge into, or deploy `main` without the repository owner's explicit approval.
 - Never commit, push, or merge without the repository owner's approval.
 - Development preview testing is permitted through the approved preview workflow. This permission does not authorize commits, pushes, merges, production deployments, or publishing outside that workflow. If the approved workflow is not documented or known, clarify it before deploying a preview.
 - Never otherwise publish without the repository owner's approval.
+- Approved preview workflow (2026-11-15): Netlify project factflight-preview keeps production branch `v6-development`; only `v6.1-development` is enabled as an additional Branch Deploy. The owner approved committing/pushing the reviewed G/E/F increment for one Branch Deploy trial. This does not authorize other commits/pushes, production deployments, or changing either `main` or `v6-development`. Verify deployment context and usage against 19 production deploys / 285 deployment credits / 14.7 remaining; traffic may consume credits. Prefer local tests and batch separately approved preview pushes.
 
 ## 2. Product principles
 
@@ -54,7 +55,7 @@ These rules apply to all development work in this repository.
 - Use factual, user-facing descriptions. Never represent planned features as completed; keep planned work in `ROADMAP.md` until implemented and verified.
 - Never alter historical release notes without a documented correction.
 - Update `ROADMAP.md` when milestones are verified.
-- Before releases, compare `v6-development` against `main` and reconcile the changelog with actual changes.
+- Before releases, compare `v6.1-development` against `main` and reconcile the changelog with actual changes.
 - Never publish to production without the repository owner's explicit approval.
 - Only after explicit production approval, move verified changelog entries into a dated release section and publish the corresponding release.
 

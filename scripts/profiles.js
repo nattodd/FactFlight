@@ -6,7 +6,22 @@ const previous=history.slice(),previousReadable=historyReadable;
 let active=null,viewing=null,guest=[],store=null,storeError='',family={version:1,profiles:[],sessions:[]};
 // Disposable per-browser preferences are separate from learner/results backups.
 const quickPrefix='fact-flight-quick-v1:',quickMemory=new Map();
-let quickWarning='';
+let quickWarning='',practiceWarning='';
+const practicePrefix='fact-flight-practice-v1:',practiceMemory=new Map();
+function practiceChoice(activity){
+ if(!active||!hasSelection())return null;
+ const key=practicePrefix+active+':'+activity;let value=practiceMemory.get(key);
+ if(active!=='guest'&&!value)try{value=JSON.parse(localStorage.getItem(key))}catch{}
+ return value?.version===1&&value.config?.activity===activity&&FlightMenu.validConfig(value.config)?structuredClone(value.config):null;
+}
+function rememberPractice(config){
+ if(!active||!hasSelection()||!FlightMenu.validConfig(config))return;
+ const key=practicePrefix+active+':'+config.activity,value={version:1,config:structuredClone(config)};
+ practiceMemory.set(key,value);practiceWarning='';
+ if(active!=='guest')try{localStorage.setItem(key,JSON.stringify(value));practiceMemory.delete(key)}catch{practiceWarning='Practice choices could not be saved for next time. You can still practice.'}
+}
+function clearPractice(id){for(const activity of Object.keys(FactFlightMath.activities)){const key=practicePrefix+id+':'+activity;practiceMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}}
+
 function validQuick(q){return q&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
 function quickChoice(){
  if(!active||!hasSelection())return null;
@@ -25,8 +40,8 @@ try{store=FlightProfileStore.create(localStorage,navigator.locks);family=store.r
 function refresh(){try{if(!store)throw Error('Browser storage is unavailable.');family=store.read();storeError=''}catch(e){storeError=e.message}return family}
 function name(id){return id==='guest'?'Guest':id==='previous'?'Previous progress':family.profiles.find(p=>p.id===id)?.name||'Learner'}
 function records(id){if(id==='guest')return guest;if(id==='previous')return previous;refresh();const saved=family.sessions.filter(s=>s.learnerId===id);return [...unsaved.values()].filter(s=>s.learnerId===id&&!saved.some(r=>r.id===s.id)).concat(saved).sort((a,b)=>new Date(b.date)-new Date(a.date))}
-function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];quickMemory.delete('guest');quickWarning='';active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
-function change(){if(busy()){requestSessionExit();return}guest=[];quickMemory.delete('guest');quickWarning='';active=null;viewing=null;history=[];session=null;FlightMenu.home()}
+function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
+function change(){if(busy()){requestSessionExit();return}guest=[];clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=null;viewing=null;history=[];session=null;FlightMenu.home()}
 function tile(p,stats=false){return `<button class="learner" ${stats?'data-profile-stats':'data-learner'}="${esc(p.id)}"><span class="avatar" aria-hidden="true">${esc(p.name.slice(0,1).toUpperCase())}</span><strong>${esc(p.name)}</strong><span>${stats?'See results':'Tap to start'}</span></button>`}
 function entry(){refresh();return `<section class="learner-entry"><div class="eyebrow">Your learning space</div><div class="accent-line"></div><h1>Who's ready to take flight?</h1><p class="intro">Pick a learner, or jump in as a guest.<br>No sign-in, no fuss.</p>${storeError?`<p class="notice" role="alert">${esc(storeError)} You can still practice as Guest.</p>`:''}<div class="learners">${family.profiles.map(p=>tile(p)).join('')}<button class="learner outline" data-create-profile ${storeError?'disabled':''}><span class="avatar" aria-hidden="true">+</span><strong>Create Profile</strong><span>Nickname only</span></button><button class="learner outline" data-learner="guest"><span class="avatar" aria-hidden="true">☆</span><strong>Continue as Guest</strong><span>Not saved</span></button></div><button class="primary results-link" data-nav="progress">Results & Stats →</button><button class="quiet parent-entry" data-nav="parents">Parent corner</button><p class="family-footer">Free to learn · No account needed · Progress stays in this browser on this device</p></section>`}
 function create(){return `<button class="quiet back" data-profile-cancel>← Back</button><div class="profile-form"><span class="avatar" aria-hidden="true">+</span><h1>A little space of your own.</h1><p>Create a learner profile. No email or password needed.</p><form id="profileForm"><label for="nickname">What should we call you?</label><p id="nicknameHelp">A nickname is enough. You can leave this blank.</p><input id="nickname" maxlength="24" autocomplete="off" aria-describedby="nicknameHelp" placeholder="e.g. Sunny"><p>Progress stays in this browser on this device.</p><p id="profileError" role="alert"></p><button class="primary" type="submit">Create profile & explore →</button></form><button class="quiet" data-profile-cancel>Cancel</button></div>`}
@@ -52,6 +67,7 @@ renderResult=function(s){
  if((s.learnerId||'previous')!==active&&!s.guest)$('again').remove();
  $('seeProgress').textContent=s.guest?'Guest results':'See learner progress';$('seeProgress').onclick=()=>progress(s.guest?'guest':s.learnerId||'previous');
  $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
+ FlightMenu.resultActions(s);
 };
 const engineHistory=renderHistory;
 renderHistory=function(activity=null){engineHistory(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
@@ -63,6 +79,7 @@ renderHistory=function(activity=null){engineHistory(activity);const label=docume
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;if('learner'in d)select(d.learner);if('createProfile'in d)FlightMenu.profiles('createProfile');if('changeLearner'in d)change();if('profileCancel'in d)FlightMenu.home();if('profileStats'in d)progress(d.profileStats)});
 $('menuView').addEventListener('submit',async e=>{if(e.target.id!=='profileForm')return;e.preventDefault();const form=e.target,button=form.querySelector('button'),value=$('nickname').value;button.disabled=true;try{const p=await store.add(value);refresh();select(p.id)}catch(err){if(form.isConnected){$('profileError').textContent=err.message;button.disabled=false}}});
 
+function canRepeat(s){return hasSelection(true)&&(s.guest?active==='guest'&&guest.includes(s):!!s.learnerId&&s.learnerId===active)}
 function hasSelection(force=false){
  if(active&&active!=='guest'&&(!busy()||force)){refresh();if(!storeError&&!family.profiles.some(p=>p.id===active)){active=null;viewing=null;history=[];session=null}}
  return active!==null;
@@ -102,7 +119,7 @@ $('confirmDeleteLearner').onclick=async()=>{
  if(!deleteTarget||busy())return;const target=deleteTarget;$('confirmDeleteLearner').disabled=true;
  try{
   await store.remove(target.id,target.snapshot);
-  quickMemory.delete(target.id);let preferenceWarning='';try{localStorage.removeItem(quickPrefix+target.id)}catch{preferenceWarning=' Quick Practice preferences could not be cleared.'}
+  quickMemory.delete(target.id);let preferenceWarning='';try{localStorage.removeItem(quickPrefix+target.id);clearPractice(target.id)}catch{preferenceWarning=' Practice preferences could not be cleared.'}
   for(const [id,record] of unsaved)if(record.learnerId===target.id){unsaved.delete(id);saveStates.delete(id)}
   if(active===target.id){active=null;session=null}if(viewing===target.id){viewing=null;history=[]}if(session?.learnerId===target.id)session=null;
   // Remove stale rendered copies from this tab after the confirmed deletion.
@@ -169,6 +186,6 @@ $('renameLearnerForm').onsubmit=async e=>{
 };
 $('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
-window.FlightProfiles={quickChoice,rememberQuick,quickWarning:()=>quickWarning,entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
+window.FlightProfiles={canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();

@@ -40,16 +40,24 @@ function createQuestionSource(settings,random=Math.random,pool=questionPool(sett
  if(!pool.length)throw Error('Choose a nonempty question pool');
  let remaining=[],recent=[],round=0;
  const variantCounts=new Map();
+ // Prefer unseen families in the first balanced round of a repeated flight.
+ const previous=new Set(settings.previousKeys||[]),previousFirst=settings.previousKeys?.[0];
+ let unseen=previous.size?pool.filter(g=>!previous.has(g.key)).length:0,emitted=0;
  const pick=list=>list[Math.floor(random()*list.length)];
  return {next(){
   if(!remaining.length){remaining=pool.slice();round++}
   // Random swap-removal avoids rescanning large pools for every question.
   let slot=-1;
-  for(let trial=0;trial<8;trial++){const i=Math.floor(random()*remaining.length);if(!recent.includes(remaining[i].key)){slot=i;break}}
+  const eligible=g=>!recent.includes(g.key)&&!(emitted===0&&pool.length>1&&g.key===previousFirst);
+  const preferred=g=>eligible(g)&&(round!==1||!unseen||!previous.has(g.key));
+  for(let trial=0;trial<8;trial++){const i=Math.floor(random()*remaining.length);if(preferred(remaining[i])){slot=i;break}}
+  if(slot<0)slot=remaining.findIndex(preferred);
+  if(slot<0)slot=remaining.findIndex(eligible);
   if(slot<0)slot=remaining.findIndex(g=>!recent.includes(g.key));
   // Tiny pools use the longest possible gap without looping or changing range.
   if(slot<0){const earliest=Math.min(...remaining.map(g=>recent.lastIndexOf(g.key)));slot=remaining.findIndex(g=>recent.lastIndexOf(g.key)===earliest)}
   const group=remaining[slot];remaining[slot]=remaining[remaining.length-1];remaining.pop();
+  if(round===1&&unseen&&!previous.has(group.key))unseen--;emitted++;
   recent.push(group.key);recent=recent.slice(-3);
   let variant;
   if(settings.mode==='school')variant=group.variants[(round-1)%group.variants.length];

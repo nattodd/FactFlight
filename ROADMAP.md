@@ -2,7 +2,7 @@
 
 **Vision:** *Little practice. Big confidence.* A free, account-free, family-friendly learning app that opens instantly on a phone, tablet, or computer. Practice should fit into real life: five minutes at a sibling's practice, a waiting room, or around the kitchen table.
 
-**Approved stable release:** `v6.0.0` on `main`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6-development`. All milestones below are proposed scope, not promised dates.
+**Approved stable release:** `v6.0.0` on `main`. **Rollback baseline:** `v5.0` (multiplication fact fluency). **Development branch:** `v6.1-development`. All milestones below are proposed scope, not promised dates.
 
 **Scope revision — 2026-11-14:** At the owner’s direction, the v6 program now includes optional profiles, Guest, export/import, separate local progress, expanded math activities and levels alongside the new app interface. These are incremental milestones within v6, not deferred behind the former v6.0/v6.1 boundary. See the [experience plan](docs/v6-experience-plan.md), [activity/level matrix](docs/v6-activity-matrix.md), and [clickable design preview](design-reference/ui-v6/v6-experience-preview.html). The preview is a disposable design artifact, not integrated app functionality.
 
@@ -14,11 +14,27 @@
 
 **Readability acceptance — 2026-11-14:** The larger-text update (`7e93dc1`) is owner-accepted on physical iPhone Chrome and Safari after 43 automated checks. This is visual/readability acceptance, not a new exhaustive device regression pass. Next proposed increments are branded Home Screen icons, learner-selection Home, and backup-safe local profiles. See [the next-phase plan](docs/v6-profiles-home-plan.md). Icon metadata is brought forward; offline caching and update handling remain separate.
 
-## Current release-readiness status — 2026-11-14
+## Current release status — v6.0.0 published
 
-The current candidate is `693affa`. The owner confirms the full manual release checklist passed on Windows Chrome, iPhone Safari and iPhone Chrome. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. Earlier increment paragraphs describe historical states; this section supersedes their pending-device and future-feature wording.
+Version `v6.0.0` is published from main commit `6cff208`, with an annotated tag and GitHub release. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. The audited replay/backup fixes and compact Progress are included. Earlier increment paragraphs below are historical records, not the current release status.
 
-The [release-readiness audit](docs/v6-release-readiness-audit.md) recommends fixing older-flight Practice again setup and clarifying/unifying restorable JSON exports before release. No merge, tag, production deployment or release is approved. Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
+Published files and automated production smoke passed. The owner subsequently confirmed production voice, menus, profile creation/change/deletion, and answer-box feedback; browser/device names were not specified for that report. Earlier full preview regression covered Windows Chrome, iPhone Safari and iPhone Chrome. See [production verification](docs/v6-release-plan.md#completed-production-verification) for the exact scope and remaining unverified coverage.
+
+Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
+
+## v6.1 — Approved scope (2026-11-15)
+
+Active development is `v6.1-development`, created from the verified local `v6.0.0` tag / main commit `6cff208`. Production remains v6.0.0. The older v6 implementation notes below are historical context; this section governs the next release.
+
+Approved scope, in implementation order:
+1. **G — Configuration and menu persistence:** last actually started settings per learner/activity; preserve the separate Quick shortcut and temporary Guest behavior.
+2. **E — One-tap Practice Again:** fresh sessions with the completed flight's compatible settings, preserving voice readiness and history.
+3. **F — Next Level:** immediate optional advancement by exactly one numbered level; no action at Level 5 or for non-level presets.
+4. **A — Choose Tables:** multiplication tables 1–10, other factors 1–10, compatible modes and existing balanced generation; preserve School Test.
+
+**Deferred:** B (missed-fact practice), C (per-table progress), D (division family selection), and explicit 11/12 table selection. These are not v6.1 commitments.
+
+The configuration/menu increment is implemented locally; verification is recorded in [v6.1 setup verification](docs/v6.1-setup-verification.md). E/F are also implemented locally: same-tab Practice Again and Next Level share the validated configuration and normal voice startup; incomplete historical configurations retain setup review. See [repeat-action verification](docs/v6.1-repeat-verification.md). A remains planned, not implemented. Physical-device acceptance of these increments is pending. The initial scope approval did not authorize publication. Subsequent owner approval permits one commit/push of the reviewed G/E/F increment for a Netlify Branch Deploy trial; production remains unapproved. See [trial record](docs/v6.1-branch-deploy-trial.md). Complete local checks and physical-device regression before release approval.
 
 ## 1. Non-negotiable product principles
 
@@ -179,8 +195,8 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 ## 7. Development, testing, and release process
 
-1. Keep **`main` = stable production**, currently tagged `v5.0`.
-2. Build in **`v6-development`**; avoid committing untested features to `main`.
+1. Keep **`main` = stable production**, currently tagged `v6.0.0`.
+2. Build in **`v6.1-development`**; avoid committing untested features to `main`.
 3. Test on Netlify or a separate preview deployment. Verify **Windows Chrome, iPhone Safari, iPhone Chrome**, and eventually **Android Chrome and tablets** (Android not yet verified).
 4. For each release, test voice, keypad/touch, scrolling/focus, timer, screen rotation, session history, and clearing/reloading the page. Test offline mode separately once added.
 5. Before migration, export existing v5 history; test upgrade with a copy of real saved data.
@@ -209,7 +225,7 @@ Keep content separate from presentation. Example: the same letter card can be sh
 
 ---
 
-*This document is a living product roadmap. Add discoveries and adjust release boundaries on `v6-development`; preserve the stable v5 release as a fallback.*
+*This document is a living product roadmap. Add discoveries and adjust release boundaries on `v6.1-development`; preserve v6.0.0 as the release baseline and v5.0 as an older fallback.*
 
 **Learner Home review — 2026-11-14:** Owner accepted the branded icon and app launch from the physical iPhone Home Screen. The [learner Home mockup](design-reference/ui-v6/v6-learner-home-preview.html) is ready for design review. It uses memory-only sample profiles/results; real learner storage, Guest retention, and data migration remain unimplemented.
 
@@ -244,3 +260,5 @@ Keep content separate from presentation. Example: the same letter card can be sh
 **Release preparation:** Proposed `6.0.0` notes and a concrete promotion/backup/rollback plan are prepared locally in [the release plan](docs/v6-release-plan.md). Final version metadata is staged locally; no production action is approved or complete.
 
 **v6.0.0 production approval — 2026-11-14:** Owner confirmed no history needs preserving and explicitly authorized final release commits, merge/push to main and publication of v6.0.0 with its tag. The release scope is the accepted math/family experience, including the audited replay/backup fixes and compact Progress. Deferred work remains listed above. See [release notes](docs/v6-release-notes.md) and [execution plan](docs/v6-release-plan.md).
+
+**v6.0.0 published and production smoke accepted:** Main commit `6cff208` is deployed to GitHub Pages with annotated tag `v6.0.0` and a published GitHub release. Published assets and automated production smoke passed. The owner subsequently confirmed voice, menus, adding/changing/deleting profiles, and answer-box colors work on production; browser/device details were not specified for this report. See [production verification](docs/v6-release-plan.md#completed-production-verification). This closes the release milestone without extending the stated device coverage.

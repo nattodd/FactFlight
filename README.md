@@ -4,6 +4,14 @@
 
 Fact Flight is a free, browser-based math fact fluency application designed to help elementary school students build speed, accuracy, and confidence through interactive practice.
 
+## Development status
+
+The local `v6.1-development` branch starts from v6.0.0. Its first increment remembers last-started practice settings per learner and activity and highlights the selected mode. Returning Home discards unstarted drafts; Back within setup retains them. Existing Quick preferences remain a separate shortcut. Guest choices clear on reload or Change learner. Preferences are disposable browser settings, excluded from learner backups; history formats are unchanged. Device acceptance is pending: see [verification](docs/v6.1-setup-verification.md).
+
+One-tap Practice Again and Next Level are now implemented locally for flights whose complete setup remains available in this tab. They preserve learner, mode, count/timer, input, view and optional goal; Voice still waits for ready. Next Level advances one numbered level, including Free Practice, and is hidden at Level 5 and for School Test. Change options opens setup. Older/reloaded flights without the saved view use Review settings instead. Repeats prefer unused facts when possible and use fresh balanced sequences for small pools. No history or backup format change is made. See [repeat-action verification](docs/v6.1-repeat-verification.md).
+
+Multiplication table selection (1–10) is the remaining approved feature, not yet implemented. Missed-fact practice, table-progress reporting and division-family selection are deferred. Production remains v6.0.0. The owner approved one commit/push of the reviewed G/E/F increment to the separately configured Netlify Branch Deploy; production branches remain unchanged. See [the preview trial record](docs/v6.1-branch-deploy-trial.md).
+
 ## Features
 
 This section describes Fact Flight v6.0.0. The public GitHub Pages site serves the stable release; Netlify remains the development preview.
