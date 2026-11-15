@@ -1,6 +1,13 @@
 # Fact Flight 6.0.0 release plan
 
-Status: **owner-authorized for publication on 2026-11-14**. The owner confirmed there is no history to preserve and approved committing preparation, merging/pushing main and publishing v6.0.0, including the release tag. Version `6.0.0`, tag `v6.0.0`, title “Fact Flight 6.0.0 — Math practice for the whole family.” [Release notes](v6-release-notes.md). Deployment verification is performed after the main push.
+Status: **published as v6.0.0; owner production smoke checks accepted**. Release preparation commit `b46821a` was merged and pushed to main as `6cff2087dd0e9e62c1fba4647e8413f0432de66b`. Annotated tag `v6.0.0` points to that main commit. [Published release](https://github.com/nattodd/FactFlight/releases/tag/v6.0.0) · [Production app](https://nattodd.github.io/FactFlight/) · [Release notes](v6-release-notes.md). The owner approved production publication and confirmed no history required preservation on 2026-11-14.
+
+## Completed production verification
+
+- Published HTML, runtime JavaScript, styles, manifest and brand icons matched the released files.
+- Automated production smoke passed in an isolated Chrome context: learner creation, Quick Focus keypad completion and first-try scoring, saved results after reload, original School Test setup/launch, Guest entry, and no page errors. This did not exercise a real microphone.
+- After publication, the owner confirmed voice, menus, adding/changing/deleting profiles, and answer-box colors work. This is manual production acceptance for those checks; the report did not specify browser/device names or separately confirm microphone reconnection, permission resets, backup round trips, or the full regression checklist.
+- Earlier preview regression evidence remains below. Android/tablets and other previously unverified combinations are not newly marked passed.
 
 ## Reviewed release contents
 

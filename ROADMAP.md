@@ -14,11 +14,13 @@
 
 **Readability acceptance — 2026-11-14:** The larger-text update (`7e93dc1`) is owner-accepted on physical iPhone Chrome and Safari after 43 automated checks. This is visual/readability acceptance, not a new exhaustive device regression pass. Next proposed increments are branded Home Screen icons, learner-selection Home, and backup-safe local profiles. See [the next-phase plan](docs/v6-profiles-home-plan.md). Icon metadata is brought forward; offline caching and update handling remain separate.
 
-## Current release-readiness status — 2026-11-14
+## Current release status — v6.0.0 published
 
-The current candidate is `693affa`. The owner confirms the full manual release checklist passed on Windows Chrome, iPhone Safari and iPhone Chrome. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. Earlier increment paragraphs describe historical states; this section supersedes their pending-device and future-feature wording.
+Version `v6.0.0` is published from main commit `6cff208`, with an annotated tag and GitHub release. Brand, learner Home, eight activities/five levels, Focus/Worksheet, configurable modes, remembered Quick, separate profiles/Guest, management and individual-learner restore are implemented. The audited replay/backup fixes and compact Progress are included. Earlier increment paragraphs below are historical records, not the current release status.
 
-The [release-readiness audit](docs/v6-release-readiness-audit.md) recommends fixing older-flight Practice again setup and clarifying/unifying restorable JSON exports before release. No merge, tag, production deployment or release is approved. Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
+Published files and automated production smoke passed. The owner subsequently confirmed production voice, menus, profile creation/change/deletion, and answer-box feedback; browser/device names were not specified for that report. Earlier full preview regression covered Windows Chrome, iPhone Safari and iPhone Chrome. See [production verification](docs/v6-release-plan.md#completed-production-verification) for the exact scope and remaining unverified coverage.
+
+Full-family backups, old-history assignment, custom fact-family selectors, deeper mode/trend reporting and offline/early-learning work remain proposed follow-ups rather than completed features.
 
 ## 1. Non-negotiable product principles
 
@@ -244,3 +246,5 @@ Keep content separate from presentation. Example: the same letter card can be sh
 **Release preparation:** Proposed `6.0.0` notes and a concrete promotion/backup/rollback plan are prepared locally in [the release plan](docs/v6-release-plan.md). Final version metadata is staged locally; no production action is approved or complete.
 
 **v6.0.0 production approval — 2026-11-14:** Owner confirmed no history needs preserving and explicitly authorized final release commits, merge/push to main and publication of v6.0.0 with its tag. The release scope is the accepted math/family experience, including the audited replay/backup fixes and compact Progress. Deferred work remains listed above. See [release notes](docs/v6-release-notes.md) and [execution plan](docs/v6-release-plan.md).
+
+**v6.0.0 published and production smoke accepted:** Main commit `6cff208` is deployed to GitHub Pages with annotated tag `v6.0.0` and a published GitHub release. Published assets and automated production smoke passed. The owner subsequently confirmed voice, menus, adding/changing/deleting profiles, and answer-box colors work on production; browser/device details were not specified for this report. See [production verification](docs/v6-release-plan.md#completed-production-verification). This closes the release milestone without extending the stated device coverage.
