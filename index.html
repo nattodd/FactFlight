@@ -218,9 +218,9 @@ function configureActivity(){
 }
 function updateSetup(){
  const school=$('activity').value==='school',activity=FactFlightMath.activities[$('activity').value],count=selectedCount();
- $('sheetTitle').textContent=school?`The ${table}s · Multiplication facts`:`${activity.name} · Level ${Number($('level').value)+1}`;
+ $('sheetTitle').textContent=school?`The ${table}s · Multiplication facts`:sessionLabel({activity:$('activity').value,level:Number($('level').value),selection:configuredSelection});
  $('empty').querySelector('.orb').textContent=school?table+'×':activity.symbol;
- $('sessionScope').textContent=school?'60 facts · 3 columns · factors 1–10. Read down each column, then across.':`${count} questions · ${activity.levels[Number($('level').value)]}. Skipped facts return later. Finish whenever you need.`;
+ $('sessionScope').textContent=school?'60 facts · 3 columns · factors 1–10. Read down each column, then across.':`${count} questions · ${$('activity').value==='multiplication'&&configuredSelection?.type==='tables'?'Tables '+configuredSelection.tables.join(', ')+' · factors 1–10':activity.levels[Number($('level').value)]}. Skipped facts return later. Finish whenever you need.`;
  $('correctCount').textContent=`0 / ${count}`;$('firstCount').textContent='0';$('bar').style.width='0%';
  $('threshold').max=count;document.querySelector('label[for=threshold]').textContent=`Pass target: first-try facts out of ${count} (optional)`;
 }

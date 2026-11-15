@@ -21,6 +21,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Repeat actions recheck learner ownership before launch and after voice readiness, preserve completed records, and prevent duplicate starts. A cancelled launch does not replace saved preferences.
 
 ### Fixed
+- In-session headings show the selected multiplication tables instead of a numbered level in Focus and Worksheet, including Practice Again and Next Table(s).
 - Practice menus remember each learner's last started settings separately for each activity, including mode, level, count, duration, input, view and optional goal. Mode choices now visibly identify the selected option.
 - Selecting the current practice mode preserves its count and timer choices. Abandoned setup changes do not replace the last started settings, and changing learners resets setup drafts.
 - General practice preferences preserve the separate Quick Practice shortcut. Guest preferences remain temporary; learner deletion also clears the new disposable preferences. These preference changes do not rewrite existing flight history. New Choose Tables flights use session schema version 2, and backups containing them require v6.1 to import; older backups remain supported.
