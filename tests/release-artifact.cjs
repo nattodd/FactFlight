@@ -7,7 +7,7 @@ const server=http.createServer((req,res)=>{const relative=req.url==='/'?'index.h
 (async()=>{
  await test('Executable lab files are absent from the release tree',()=>{for(const file of removed)assert(!fs.existsSync(path.join(root,file)),file)});
  await test('Application assets have no lab dependency and identify the release candidate',()=>{
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert(html.includes('name="application-version" content="6.2.0-rc.1"'));
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert(html.includes('name="application-version" content="6.2.0"'));
  for(const file of ['index.html',...fs.readdirSync(path.join(root,'scripts')).filter(f=>f.endsWith('.js')).map(f=>'scripts/'+f)])assert(!fs.readFileSync(path.join(root,file),'utf8').includes('microphone-lab'),file);
  for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){const asset=match[1];if(!/^(https?:|data:)/.test(asset))assert(fs.existsSync(path.join(root,asset)),asset)}
  });
