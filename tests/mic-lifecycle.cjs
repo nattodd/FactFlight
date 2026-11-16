@@ -49,17 +49,20 @@ async function ready(p){await p.evaluate(()=>{const r=[{transcript:'ready'}];r.i
   const [c,p]=await setup();await p.evaluate(()=>{const late=testRecognition.onresult;testRecognition.onend();const r=[{transcript:'ready'}];r.isFinal=true;late({resultIndex:0,results:[r]})});assert.equal(await p.evaluate(()=>phase),'checking');await p.locator('#retryMic').click();await p.clock.runFor(399);assert.equal(await p.evaluate(()=>instances.length),1);await p.clock.runFor(1);assert.equal(await p.evaluate(()=>instances.length),2);await p.clock.runFor(1100);assert.equal(await p.evaluate(()=>instances.length),2);await c.close();
  });
  await test('Automatic end reconnect creates fresh objects and remains bounded',async()=>{
-  const [c,p]=await setup();
+  const [c,p]=await setup();await ready(p);
   for(let i=0;i<12;i++){await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(1500)}
   assert.equal(await p.evaluate(()=>instances.length),13);assert(await p.evaluate(()=>instances.every(r=>r.starts===1)));
   await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>instances.length),13);assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
  });
- await test('Silent ready startup recovers once then stops without creating a flight',async()=>{
+ await test('Silent ready startup stops after five seconds and requires a fresh tap',async()=>{
   const [c,p]=await setup();assert.equal(await p.evaluate(()=>micState),'waiting');
-  await p.clock.runFor(8450);assert.equal(await p.evaluate(()=>instances.length),2);
-  await p.clock.runFor(8000);assert.equal(await p.evaluate(()=>phase),'checking');assert.equal(await p.evaluate(()=>micState),'disconnected');assert.equal(await p.evaluate(()=>session),null);
-  await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),2);
+  await p.clock.runFor(4999);assert.equal(await p.evaluate(()=>micState),'waiting');
+  await p.clock.runFor(1);assert.equal(await p.evaluate(()=>phase),'checking');assert.equal(await p.evaluate(()=>micState),'disconnected');assert.equal(await p.evaluate(()=>session),null);
+  await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),1);
   await p.locator('#retryMic').click();await ready(p);assert.equal(await p.evaluate(()=>phase),'running');await c.close();
+ });
+ await test('Natural end in ready check stops without automatic retries',async()=>{
+  const [c,p]=await setup();await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),1);assert.equal(await p.evaluate(()=>phase),'checking');assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
  });
  await test('Speech detection cancels startup watchdog and thinking time never restarts a flight',async()=>{
   const [c,p]=await setup();await p.evaluate(()=>testRecognition.onspeechstart());await p.clock.runFor(10000);assert.equal(await p.evaluate(()=>instances.length),1);
@@ -95,6 +98,27 @@ async function ready(p){await p.evaluate(()=>{const r=[{transcript:'ready'}];r.i
    if(i<4){await p.locator('#again').click();await p.clock.runFor(450);assert.equal(await p.evaluate(()=>phase),'checking')}
   }
   assert.equal(new Set(ids).size,5);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);assert(await p.evaluate(()=>instances.every(r=>r.starts===1&&r.aborted)));await c.close();
+ });
+ await test('Diagnostic export contains bounded event metadata but no speech or learner data',async()=>{
+  const [c,p]=await setup();
+  await p.evaluate(()=>{testRecognition.onaudiostart();testRecognition.onsoundstart();testRecognition.onspeechstart();
+   for(let i=0;i<210;i++){const r=[{transcript:'private spoken words'}];r.isFinal=false;testRecognition.onresult({resultIndex:0,results:[r]})}
+   testRecognition.onerror({error:'private error details'});
+  });
+  await p.locator('#micDiagnostics summary').click();assert((await p.locator('#micDiagnosticLog').innerText()).includes('result'));
+  const pending=p.waitForEvent('download');await p.locator('#downloadMicLog').click();const raw=fs.readFileSync(await (await pending).path(),'utf8'),data=JSON.parse(raw);
+  assert.equal(data.events.length,200);assert.equal(data.ios,true);assert.equal(data.events.at(-1).error,'unknown');
+  assert(!raw.includes('private'));assert(!raw.includes('Test learner'));assert(!raw.includes('learnerId'));assert(!raw.includes('transcript'));
+  assert(data.events.every(e=>Object.keys(e).every(k=>['ms','connection','phase','event','error'].includes(k))));
+  await p.reload();assert.equal(await p.evaluate(()=>micEvents.length),0);await c.close();
+ });
+ await test('Trace distinguishes audio startup from absent recognition on the repeated flight',async()=>{
+  const [c,p]=await setup();await p.evaluate(()=>testRecognition.onaudiostart());await ready(p);await finish(p);
+  await p.locator('#again').click();await p.clock.runFor(450);await p.evaluate(()=>testRecognition.onaudiostart());await p.clock.runFor(5000);
+  const trace=await p.evaluate(()=>micEvents);const started=trace.filter(e=>e.event==='start');assert(started.length>=2);
+  const repeat=trace.filter(e=>e.connection===started[1].connection);
+  assert(repeat.some(e=>e.event==='audiostart'));assert(repeat.some(e=>e.event==='startup-watchdog'));assert(!repeat.some(e=>e.event==='result'));
+  await c.close();
  });
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'mic-lifecycle-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;

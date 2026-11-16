@@ -178,7 +178,7 @@ dialog::backdrop{background:#0B0B0FAA}
   </div>
   <div class="keypad-hint">Tap Enter to submit · Undo and Skip are below the worksheet</div>
 </div>
-<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><p class="small">Uses your browser’s microphone. The timer has not started.</p><div id="iosMicDialogHelp" class="voice-help hidden" role="note"></div><div class="mic-actions"><div id="iosVoiceRecovery" class="hidden"><p class="small">Connected but not hearing you? Refresh and return to this setup, then tap Reconnect microphone. Saved learner results stay on this device.</p><button id="refreshVoice">Refresh &amp; keep setup</button></div><button id="retryMic">Try microphone again</button> <button id="cancelMic" class="quiet">Cancel</button></div></dialog>
+<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><div class="mic-actions"><button id="retryMic" class="primary">Try microphone again</button><button id="cancelMic" class="quiet">Cancel</button></div><p class="small">Uses your browser’s microphone. The timer has not started.</p><details id="iosMicDialogHelp" class="voice-help hidden"></details><details id="iosVoiceRecovery" class="hidden"><summary>More recovery options</summary><p class="small">If trying the microphone again does not help, refresh and return to this setup. Saved learner results stay on this device.</p><button id="refreshVoice">Refresh &amp; keep setup</button></details><details id="micDiagnostics"><summary>Microphone diagnostics</summary><p class="small">Temporary event timing only—no audio, spoken words or learner details. Cleared when this page refreshes. Download before refreshing to keep this test log.</p><pre id="micDiagnosticLog" style="text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;font-size:11px"></pre><button id="downloadMicLog">Download diagnostic log</button></details></dialog>
 <script src="scripts/math-activities.js"></script>
 <script>
 'use strict';
@@ -275,7 +275,7 @@ function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test')
 $('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
 $('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
 let micRetryTimer=null,micEverConnected=false,micState='not-connected';
-let micShutdown=null,micCleanup=null,micRestartCount=0,micWatchdogRecoveries=0;
+let micShutdown=null,micCleanup=null,micRestartCount=0;
 const isIOSDevice=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isChromeIOS=/CriOS/i.test(navigator.userAgent);
 function iosVoiceHelpHTML(){
@@ -286,7 +286,7 @@ function updateIOSVoiceGuidance(){
  const enabled=isIOSDevice&&$('inputMode').value==='voice';
  for(const id of ['iosVoiceHint','iosMicDialogHelp','iosMicTroubleshoot']){
    const el=$(id);if(!el)continue;
-   if(!el.dataset.ready){el.innerHTML=iosVoiceHelpHTML();el.dataset.ready='1'}
+   if(!el.dataset.ready){el.innerHTML=(id==='iosMicDialogHelp'?'<summary>iPhone microphone help</summary>':'')+iosVoiceHelpHTML();el.dataset.ready='1'}
    const show=enabled&&(id!=='iosMicTroubleshoot'||(phase==='running'&&micState==='disconnected'));
    el.classList.toggle('hidden',!show);
  }
@@ -304,18 +304,33 @@ function setMicStatus(state){
  if($('micReconnectTop'))$('micReconnectTop').classList.toggle('hidden',state==='connected'||!(phase==='running'||phase==='checking'));
  updateIOSVoiceGuidance();
 }
+// Bounded, in-memory lifecycle evidence only. Never pass transcripts or user data here.
+const micEvents=[],micTraceStarted=performance.now();
+function micTrace(event,connection=recEpoch,error){
+ const entry={ms:Math.round(performance.now()-micTraceStarted),connection,phase,event};
+ if(error)entry.error=['no-speech','aborted','audio-capture','network','not-allowed','service-not-allowed','bad-grammar','language-not-supported'].includes(error)?error:'unknown';
+ micEvents.push(entry);if(micEvents.length>200)micEvents.shift();
+ if($('micDiagnostics').open)renderMicTrace();
+}
+function renderMicTrace(){$('micDiagnosticLog').textContent=micEvents.map(e=>e.ms+'ms · '+e.connection+' · '+e.phase+' · '+e.event+(e.error?' · '+e.error:'')).join('\n')||'No microphone events yet.'}
+$('micDiagnostics').addEventListener('toggle',renderMicTrace);
+$('downloadMicLog').onclick=()=>{
+ const data={format:1,implementation:'voice-lifecycle-diagnostics-1',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+ const a=document.createElement('a');a.href=url;a.download='fact-flight-microphone-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
 function stopMic(){
  recEpoch++;clearTimeout(micRetryTimer);micRetryTimer=null;
  if(micCleanup){micCleanup();micCleanup=null}
  if(rec){
-   const old=rec;rec=null;
-   old.onstart=null;old.onresult=null;old.onerror=null;old.onspeechstart=null;old.onend=null;
+   const old=rec,oldEpoch=recEpoch-1;rec=null;micTrace('abort-requested',oldEpoch);
+   old.onstart=null;old.onresult=null;old.onerror=null;old.onspeechstart=null;old.onend=null;old.onaudiostart=null;old.onaudioend=null;old.onsoundstart=null;old.onsoundend=null;old.onspeechend=null;
    // On iOS, abort is asynchronous. Do not overlap the next recognizer with it.
    if(isIOSDevice){
      const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
-     const timeout=setTimeout(()=>gate.resolve(false),2500);
+     const timeout=setTimeout(()=>{micTrace('shutdown-timeout',oldEpoch);gate.resolve(false)},2500);
      old.onend=()=>{
-       old.onend=null;clearTimeout(timeout);
+       old.onend=null;clearTimeout(timeout);micTrace('abort-end',oldEpoch);
        setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
      };
    }
@@ -328,15 +343,16 @@ function micError(message){
  else if(phase==='running'){$('heard').textContent=message}
 }
 function connectMic(automatic=false){
- if(automatic!==true){micRestartCount=0;micWatchdogRecoveries=0}
+ if(automatic!==true){micRestartCount=0}
  stopMic();
  const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!Speech){setMicStatus('not-connected');micError('Speech recognition is unavailable in this browser. Try Safari with current iOS, Chrome/Edge on desktop, or use keyboard answers.');return}
  if(!window.isSecureContext){setMicStatus('not-connected');micError('Microphone needs an HTTPS website or localhost. Open the hosted link in Safari, not a messaging-app file preview.');return}
- const epoch=recEpoch;
+ const epoch=recEpoch;micTrace(automatic===true?'automatic-connect':'manual-connect',epoch);
  const launch=()=>{
  if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
- const recognizer=new Speech();rec=recognizer;
+ const recognizer=new Speech();rec=recognizer;micTrace('created',epoch);
+ for(const event of ['audiostart','audioend','soundstart','soundend','speechend'])recognizer['on'+event]=()=>{if(epoch===recEpoch&&rec===recognizer)micTrace(event,epoch)};
  recognizer.lang='en-US';recognizer.continuous=true;recognizer.interimResults=true;recognizer.maxAlternatives=1;
  let fatal=false,processed=new Set(),lastFinal='',lastFinalAt=-Infinity,hasStarted=false;
  // Safari/iOS may occasionally show an interim number without ever finalizing it.
@@ -352,7 +368,7 @@ function connectMic(automatic=false){
  const isReady=text=>/^(?:i am |i'm |im )?ready$/.test(normalizeReady(text));
  function acceptReady(){
    if(epoch!==recEpoch||phase!=='checking')return;
-   $('micDialog').close();begin();
+   micTrace('ready-accepted',epoch);$('micDialog').close();begin();
    if(phase==='running'){setMicStatus('connected');$('heard').textContent='Listening — say one answer at a time.'}
  }
  function queueReadyInterim(text,resultIndex){
@@ -387,31 +403,27 @@ function connectMic(automatic=false){
 
  recognizer.onstart=()=>{
    if(epoch!==recEpoch||rec!==recognizer)return;
-   micEverConnected=true;hasStarted=true;processed.clear();setMicStatus('waiting');
+   micTrace('start',epoch);micEverConnected=true;hasStarted=true;processed.clear();setMicStatus('waiting');
    if(phase==='checking'){
      $('micMessage').textContent='Microphone opened. Say “ready” to check speech.';
-     // Silence is not proof of failure. Try one recovery, then leave control to the user.
+     // Silence is not proof of failure. Hand control back for a fresh user tap.
      startupWatchdog=setTimeout(()=>{
        if(epoch!==recEpoch||phase!=='checking')return;
-       if(micWatchdogRecoveries<1){
-         micWatchdogRecoveries++;connectMic(true);
-         micError('No speech detected yet. Restarting the microphone once — then say “ready.”');
-       }else{
-         stopMic();setMicStatus('disconnected');
-         micError('No speech detected. Try microphone again, or Cancel and choose Tap or type.');
-       }
-     },8000);
+       micTrace('startup-watchdog',epoch);
+       stopMic();setMicStatus('disconnected');
+       micError('No speech detected yet. Tap Try microphone again, then say “ready.”');
+     },5000);
    }
    else if(phase==='running')$('prompt').textContent=questionLabel(items[index])+(factText(items[index]).includes('=')?'':' ?');
  };
  recognizer.onspeechstart=()=>{
    if(epoch!==recEpoch||rec!==recognizer||!hasStarted)return;
-   clearWatchdog();setMicStatus('connected');
+   micTrace('speechstart',epoch);clearWatchdog();setMicStatus('connected');
    if(phase==='checking')micError('Speech detected. Say “ready.”');
  };
  recognizer.onresult=e=>{
    if(epoch!==recEpoch||rec!==recognizer||!hasStarted)return;
-   clearWatchdog();setMicStatus('connected');
+   micTrace('result',epoch);clearWatchdog();setMicStatus('connected');
    if(phase==='running'&&transitioning){clearInterim();for(let j=e.resultIndex;j<e.results.length;j++)processed.add(j);return;}
    for(let k=e.resultIndex;k<e.results.length;k++){
      const result=e.results[k],text=result[0].transcript.trim();
@@ -453,7 +465,7 @@ function connectMic(automatic=false){
  recognizer.onerror=e=>{
    if(epoch!==recEpoch||rec!==recognizer)return;
    clearInterim();
-   const error=e.error||'unknown';
+   const error=e.error||'unknown';micTrace('error',epoch,error);
    // 'no-speech' can be a routine session timeout. The onend handler handles it.
    if(error==='no-speech')return;
    clearWatchdog();
@@ -468,14 +480,15 @@ function connectMic(automatic=false){
  recognizer.onend=()=>{
    clearInterim();clearWatchdog();
    if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
-   rec=null;micCleanup=null;
+   micTrace('end',epoch);rec=null;micCleanup=null;
    if(isIOSDevice){
      const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
      setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
    }
-   recognizer.onstart=null;recognizer.onresult=null;recognizer.onerror=null;recognizer.onspeechstart=null;recognizer.onend=null;
+   recognizer.onstart=null;recognizer.onresult=null;recognizer.onerror=null;recognizer.onspeechstart=null;recognizer.onend=null;recognizer.onaudiostart=null;recognizer.onaudioend=null;recognizer.onsoundstart=null;recognizer.onsoundend=null;recognizer.onspeechend=null;
    setMicStatus('disconnected');
    if(fatal){micError('Microphone disconnected. Tap Reconnect to try again; keyboard answers remain available.');return}
+   if(phase==='checking'){micError('Listening stopped. Tap Try microphone again, then say “ready.”');return}
    // A normal recognition session can end during silence, even when permission is still valid.
    // Reconnect only after a session successfully started; never loop on initial permission failures.
    if(!hasStarted){micError('Microphone did not connect. Tap Reconnect to try again.');return}
@@ -487,7 +500,7 @@ function connectMic(automatic=false){
      connectMic(true);
    },Math.min(300+micRestartCount*200,1500));
  };
- try{recognizer.start()}catch(e){fatal=true;setMicStatus('disconnected');micError('Could not start speech recognition. Tap Reconnect or choose Keyboard.')}
+ try{micTrace('start-requested',epoch);recognizer.start()}catch(e){micTrace('start-threw',epoch);fatal=true;setMicStatus('disconnected');micError('Could not start speech recognition. Tap Reconnect or choose Keyboard.')}
  };
  if(isIOSDevice&&micShutdown){
    micError('Releasing the previous microphone connection…');

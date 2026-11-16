@@ -161,8 +161,8 @@ async function seed(p){
   const [c,p]=await page(ios);await seed(p);await mockRecoveryVoice(p);
   const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));
   await p.locator('#progressReview').click();await p.locator('[data-review-fact="4"]').uncheck();await p.locator('[data-review-input=voice]').click();await p.locator('[data-review-view=worksheet]').click();await p.locator('[data-review-start]').click();
-  assert(await p.locator('#refreshVoice').isVisible());
-  await p.locator('#refreshVoice').click();await p.locator('[data-review-start]').waitFor();
+  assert(await p.locator('#iosVoiceRecovery > summary').isVisible());
+  await refreshVoice(p);await p.locator('[data-review-start]').waitFor();
   assert.equal(await p.evaluate(()=>phase),'idle');assert.equal(await p.evaluate(()=>!!window.testRecognition),false);
   assert.equal(await p.locator('[data-review-fact]:checked').count(),4);assert.equal(await p.locator('[data-review-view=worksheet]').getAttribute('aria-pressed'),'true');
   assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);
@@ -170,13 +170,13 @@ async function seed(p){
   await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
   await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})});
   assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>session.items?.length||items.length),4);
-  await finish(p);await p.locator('#again').click();await p.locator('[data-review-start]').click();await p.locator('#refreshVoice').click();await p.locator('[data-review-start]').waitFor();
+  await finish(p);await p.locator('#again').click();await p.locator('[data-review-start]').click();await refreshVoice(p);await p.locator('[data-review-start]').waitFor();
   await p.locator('[data-review-start]').click();await p.locator('#cancelMic').click();assert.equal(await p.evaluate(()=>phase),'idle');
   await p.reload();assert(await p.locator('[data-learner]').count());assert.equal(await p.locator('[data-review-start]').count(),0);await c.close();
  });
  for(const mode of ['quick','timed','school'])await test('iPhone recovery preserves ordinary '+mode+' settings and voice-ready gate',async()=>{
   const [c,p]=await page(ios);await mockRecoveryVoice(p);await choose(p,{mode,activity:'multiplication',level:3,count:10,minutes:5,table:7,input:'voice',view:'focus'});
-  await p.locator('#refreshVoice').click();await p.locator('[data-start]').waitFor();assert.equal(await p.evaluate(()=>phase),'idle');
+  await refreshVoice(p);await p.locator('[data-start]').waitFor();assert.equal(await p.evaluate(()=>phase),'idle');
   await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
   assert.equal(await p.locator('#inputMode').inputValue(),'voice');assert.equal(await p.locator('#sessionView').inputValue(),'focus');
   if(mode==='school')assert.equal(await p.evaluate(()=>table),7);
@@ -187,13 +187,13 @@ async function seed(p){
  await test('Recovery blocks Guest, unsaved results and unavailable session storage',async()=>{
   const [c,p]=await page(ios);await mockRecoveryVoice(p);
   await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();await choose(p,{input:'voice'});
-  await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Guest results are temporary'));assert.equal(await p.evaluate(()=>phase),'checking');await p.locator('#cancelMic').click();
+  await refreshVoice(p);assert((await p.locator('#micMessage').innerText()).includes('Guest results are temporary'));assert.equal(await p.evaluate(()=>phase),'checking');await p.locator('#cancelMic').click();
   await p.locator('#homeNav').click();await p.locator('[data-change-learner]').click();await p.locator('[data-learner]:not([data-learner=guest])').first().click();
   await choose(p,{input:'voice'});await p.waitForFunction(()=>rec&&micState==='waiting');await p.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(this===sessionStorage)throw Error('blocked');return originalSet.call(this,k,v)}});
-  await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Could not keep your setup'));assert.equal(await p.evaluate(()=>phase),'checking');
+  await refreshVoice(p);assert((await p.locator('#micMessage').innerText()).includes('Could not keep your setup'));assert.equal(await p.evaluate(()=>phase),'checking');
   await p.evaluate(()=>{Storage.prototype.setItem=originalSet;const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]});Storage.prototype.setItem=function(k,v){if(k==='fact-flight-family-v1')throw Error('quota');return originalSet.call(this,k,v)}});
   await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.includes('Could not save'));
-  await p.locator('#again').click();await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Results are still saving'));assert.equal(await p.evaluate(()=>phase),'checking');await c.close();
+  await p.locator('#again').click();await refreshVoice(p);assert((await p.locator('#micMessage').innerText()).includes('Results are still saving'));assert.equal(await p.evaluate(()=>phase),'checking');await c.close();
  });
  await test('Recovery rejects expired, malformed and deleted-owner setup',async()=>{
   const [c,p]=await page(ios);const owner=await p.evaluate(()=>FlightProfiles.reviewOwner());
@@ -207,4 +207,5 @@ async function seed(p){
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'missed-review-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});
+async function refreshVoice(p){if(!await p.locator('#iosVoiceRecovery').evaluate(e=>e.open))await p.locator('#iosVoiceRecovery > summary').click();await p.locator('#refreshVoice').click()}
 async function finishGuest(p){await p.locator('#end').click();await p.locator('#reviewMissed').waitFor()}
