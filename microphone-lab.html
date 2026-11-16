@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Microphone lab · Fact Flight</title>
+<link rel="stylesheet" href="styles/brand.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font-ui)}main{max-width:720px;margin:auto;padding:24px max(18px,env(safe-area-inset-left)) calc(30px + env(safe-area-inset-bottom))}img{width:210px;max-width:100%}h1{font-size:2rem;line-height:1.15}section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin:20px 0}p{margin:12px 0}label{display:block;font-weight:700}select,button{font:inherit;border:1px solid var(--control-line);border-radius:12px;padding:12px;color:var(--ink);background:var(--card);min-height:48px;width:100%;margin-top:10px}select{white-space:normal}button{cursor:pointer;font-weight:700}button:disabled{opacity:.55;cursor:default}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}.primary{background:var(--primary-bg);color:var(--primary-text)}.muted{color:var(--muted)}#status{font-weight:700;min-height:3em}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;font-size:12px}a{color:var(--accent)}summary{cursor:pointer}small{display:block}
+</style>
+<script src="scripts/microphone-lab.js" defer></script>
+</head>
+<body><main>
+<img src="assets/brand/horizontal.svg" alt="Fact Flight">
+<h1>Microphone lab</h1>
+<p>Adult testing only · Separate from practice</p>
+<p>Learner history and the quiz are not used by this page.</p>
+<section aria-labelledby="test-title">
+<h2 id="test-title">Compare repeated starts</h2>
+<label for="mode">Test mode</label>
+<select id="mode">
+<option value="natural">A · Natural end</option>
+<option value="stop">B · Stop after a result</option>
+<option value="cue">C · Spoken cue + natural end</option>
+</select>
+<p id="description">Single-phrase recognition. The browser ends the session itself.</p>
+<p id="status" role="status" aria-live="polite">Ready to test. Microphone is off.</p>
+<button id="start" class="primary">Start attempt</button>
+<button id="cancel" disabled>Cancel &amp; release microphone</button>
+<p id="counts" class="muted">No attempts yet.</p>
+<p>Tap Start attempt, wait for “Say ready,” then say <strong>“ready”</strong> once. Wait for the session to end before repeating. Aim for 10 attempts per mode.</p>
+<small>A received result is evidence of recognition, not a check that the word was correct. No five-second reset: after 20 seconds we show a notice but keep listening until you cancel or the browser ends.</small>
+</section>
+<section>
+<h2>Save the evidence</h2>
+<p>No audio or spoken text is saved. Browser speech recognition may send audio to its processing service.</p>
+<button id="download">Download diagnostic log</button>
+<details><summary>Event log</summary><pre id="log"></pre></details>
+<p class="muted">The log stays in memory and clears on reload. Download it before leaving. Nothing is uploaded automatically.</p>
+</section>
+<details><summary>How to compare fairly</summary>
+<p>Close other voice tests first. Keep the same browser and mode for a run. Download the log, then fully close and reopen the browser before comparing another mode; a reload may not reset a stuck browser audio service.</p>
+<p>Mode B calls stop after the first final result. Mode C speaks “Your turn” before opening recognition. A and C let recognition end naturally. Cancel always requests an abort; test recovery after cancellation separately.</p>
+<p>These tests use a tap for every attempt. Success here does not yet verify hands-free question transitions in the quiz. Do not clear website data or learner history.</p>
+</details>
+<p><a href="index.html">Return to Fact Flight</a></p>
+</main></body></html>
