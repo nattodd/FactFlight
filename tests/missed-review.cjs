@@ -157,6 +157,13 @@ async function seed(p){
   const install=()=>{window.SpeechSynthesisUtterance=class{};Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{speak(u){u.onend?.()},cancel(){}}});window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){setTimeout(()=>this.onend?.(),0)}}};
   await p.addInitScript(install);await p.evaluate(install);
  }
+ await test('Typed fallback from microphone setup preserves selected mixed-review facts and history',async()=>{
+  const [c,p]=await page(ios);await seed(p);await mockRecoveryVoice(p);
+  const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));
+  await p.locator('#progressReview').click();await p.locator('[data-review-fact="4"]').uncheck();await p.locator('[data-review-input=voice]').click();await p.locator('[data-review-start]').click();
+  await p.locator('#typeInstead').click();assert.equal(await p.locator('[data-review-fact]:checked').count(),4);assert.equal(await p.locator('[data-review-input=keypad]').getAttribute('aria-pressed'),'true');assert.equal(await p.evaluate(()=>phase),'idle');
+  assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');assert.equal(await p.evaluate(()=>items.length),4);await c.close();
+ });
  await test('iPhone recovery restores selected review and learner without starting or changing history',async()=>{
   const [c,p]=await page(ios);await seed(p);await mockRecoveryVoice(p);
   const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));

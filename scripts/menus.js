@@ -256,7 +256,7 @@ function refreshVoice(){
  else {$('micMessage').textContent='Please cancel and review your practice settings.';return}
  try{sessionStorage.setItem(voiceRecoveryKey,JSON.stringify(payload))}
  catch{$('micMessage').textContent='Could not keep your setup for a refresh. Cancel and choose Tap or type, or try the microphone again.';return}
- stopMic();location.reload();
+ releaseMicrophone();location.reload();
 }
 function restoreVoiceSetup(){
  let payload;
@@ -272,7 +272,12 @@ function restoreVoiceSetup(){
  $('menuView').querySelector('h1').after(notice);
  $('menuView').querySelector('[data-review-start], [data-start]').textContent='Reconnect microphone →';
 }
-window.FlightMenu={refreshVoice,openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
+function useTypedSetup(){
+ if(phase!=='checking')return;
+ cfg.input='keypad';if(reviewDraft)reviewDraft.input='keypad';
+ $('inputMode').value='keyboard';cancelCheck();
+}
+window.FlightMenu={useTypedSetup,refreshVoice,openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
 $('homeNav').onclick=()=>FlightMenu.home();$('practiceNav').onclick=()=>FlightMenu.math();
 $('historyNav').onclick=()=>{if(busy()){requestSessionExit();return}FlightProfiles.progress()};
 window.addEventListener('microphonepolicychange',()=>{if(!busy()&&!$('menuView').classList.contains('hidden'))render()});

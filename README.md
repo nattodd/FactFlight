@@ -16,7 +16,7 @@ See the [draft v6.2 release notes](docs/v6.2-release-notes.md), [final automated
 
 ## Features
 
-The local v6.2 candidate adds Parent corner → Disable microphone, covering all learners and Guest in this browser, with Parent restricted voice choices and typed/touch fallback. It persists across reloads but is not a PIN lock or a device-wide browser permission. Other browsers and cleared website data are separate. The owner accepted the parent restriction. The previous microphone cleanup failed on iPhone; a local audio-session category workaround awaits physical release/restart verification.
+The local v6.2 candidate adds Parent corner → Disable microphone, covering all learners and Guest in this browser, with Parent restricted voice choices and typed/touch fallback. It persists across reloads but is not a PIN lock or a device-wide browser permission. Other browsers and cleared website data are separate. The owner accepted the parent restriction. The earlier microphone cleanup and audio-session workaround failed iPhone release testing. The local candidate now restores continuous iOS recognition without per-answer cues or audio-session overrides; physical release and follow-up recovery are still release blockers. See the [local recovery verification and iPhone checklist](docs/v6.2-continuous-voice-verification.md).
 
 The core math and family features below remain available in v6.1.0 alongside the improvements listed above.
 
@@ -91,7 +91,9 @@ Android generally does **not** have the same separate, system-wide **Speech Reco
 3. Check that the intended microphone is selected and not muted.
 4. Reload the page and start a new voice session.
 
-The v6.2 development Branch Deploy uses the tested Mode H sequence on iOS: wait for **Listening**, say “ready,” then say each answer when Listening appears again. A short “Your turn” cue prepares each phrase; it may be inaudible on some devices. Lab transitions averaged about two seconds. Timed sessions keep running during these transitions. Exact voice substitutions recognize “sex” as six, “thor”/“poor” as four, and “freddy” as ready only during setup. Desktop voice behavior is unchanged. The owner confirmed repeated five-question voice flights on iPhone Safari and Chrome and accepted the delay. Safari accepted “freddy” as ready; Chrome heard “ready” each time. Number substitutions are implemented and automatically tested but were not deliberately reproduced on-device. Broader release verification remains separate; this is not a production-release claim.
+The current local v6.2 candidate uses continuous recognition on iOS: say “ready,” then each answer without per-answer preparation cues. Unexpected endings and missing speech results stop the attempt and offer deliberate retry or typed fallback. Setup includes **Tap or type instead** and **Refresh & keep setup**; refresh is not guaranteed to repair recognition and never automatically starts voice. Existing safeguards block refresh when it would lose Guest or unsaved results. Timers continue during in-flight interruptions. Exact iOS substitutions retain “sex” as six, “thor”/“poor” as four, and “freddy” as ready only during setup. Desktop behavior is retained.
+
+The owner has authorized this candidate for the existing v6.2 Branch Deploy; verify the deployed commit before testing. Earlier owner acceptance of repeated five-question Safari/Chrome flights and its delay does not establish privacy acceptance: the persistent microphone-use indicator is a release blocker. The new lifecycle requires physical release/recovery checks before publication.
 
 ### If voice answers still do not work
 
