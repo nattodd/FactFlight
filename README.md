@@ -127,6 +127,8 @@ The owner has authorized this candidate for the existing v6.2 Branch Deploy; ver
 
 Built with HTML, CSS, and vanilla JavaScript. Hosted for free using GitHub Pages.
 
+Contributors: install the repository-local privacy hooks and run the checks in [Privacy safeguards](docs/privacy-safeguards.md) before committing or publishing. Keep learner exports, credentials and personal machine paths outside the repository.
+
 ## Status
 
 Fact Flight is independently developed with AI-assisted design, implementation, and testing using OpenAI's ChatGPT and Codex.

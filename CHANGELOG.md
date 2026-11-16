@@ -8,7 +8,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
-No unreleased changes.
+### Fixed
+- Redacted personal home-directory prefixes from 13 verification documents/result files without changing historical test outcomes. This is a documentation privacy correction; existing Git history and published copies are not erased by a later cleanup commit.
+
+### Added
+- Local staged-file and commit-message privacy hooks, GitHub noreply identity checks, ignored private-file patterns, and a proposed CI privacy check. Checks report rule names/locations without printing matched values. These safeguards do not rewrite existing history or change app behavior.
 
 ## [6.2.0] - 2026-11-16
 

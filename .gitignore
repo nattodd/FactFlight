@@ -1,0 +1,17 @@
+# Local credentials and private learner exports never belong in the repository.
+.env
+.env.*
+.netrc
+credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+fact-flight-*.json
+# Keep local verification artifacts outside the published source tree.
+node_modules/
+test-results/
+playwright-report/
+tmp/
