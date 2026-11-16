@@ -44,8 +44,69 @@ async function saved(p,n){await p.waitForFunction(n=>JSON.parse(localStorage.get
  await test('Quota failure retains unsaved profile flight and allows export without claiming saved',async()=>{
   const [c,p]=await page();await create(p,'Alex');await p.evaluate(()=>{const old=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='fact-flight-family-v1')throw new DOMException('Quota full','QuotaExceededError');return old.call(this,k,v)}});await flight(p);await p.waitForFunction(()=>document.querySelector('#profileSaveStatus').textContent.includes('Could not save'));assert.equal(await p.evaluate(()=>history.length),1);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),0);assert(await p.locator('#exportOne').isVisible());await p.locator('#resultHome').click();await p.locator('#historyNav').click();assert.equal(await p.evaluate(()=>history.length),1);await c.close();
  });
- await test('Two tabs retain overlapping profile creations and session saves',async()=>{
-  const [c,p]=await page();const q=await c.newPage();await q.goto(url);await Promise.all([create(p,'Alex'),create(q,'Sam')]);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles.length),2);await Promise.all([flight(p),flight(q)]);await saved(p,2);const data=await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')));assert.equal(new Set(data.sessions.map(s=>s.learnerId)).size,2);await c.close();
+ for(let attempt=0;attempt<Number(process.env.FF_CONCURRENCY_RUNS||1);attempt++)await test('Two tabs reject concurrent learner writes without replacing data',async()=>{
+  const [c,p]=await page();const q=await c.newPage();await q.goto(url);
+  try{
+   await Promise.all([p,q].map(tab=>tab.evaluate(()=>FlightProfileStore.create(localStorage,navigator.locks).writeReady)));
+   const writes=await Promise.all([p,q].map((tab,i)=>tab.evaluate(async i=>{try{return {profile:await FlightProfileStore.create(localStorage,navigator.locks).add(i?'Sam':'Alex')}}catch(e){return {error:e.message}}},i)));
+   assert(writes[0].profile);assert.match(writes[1].error,/Another Fact Flight tab/);
+   await q.getByText('Another Fact Flight tab is using learner saving.',{exact:false}).waitFor();
+   await p.reload();await flight(p);await saved(p,1);
+   const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));
+   await q.reload();await q.locator('[data-learner]:not([data-learner=guest])').first().click();
+   await flight(q);await q.waitForFunction(()=>document.querySelector('#profileSaveStatus').textContent.includes('Could not save'));
+   const [download]=await Promise.all([q.waitForEvent('download'),q.locator('#exportOne').click()]);
+   assert(fs.readFileSync(await download.path(),'utf8').includes('learnerId'));
+   assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);
+   assert.equal(await q.evaluate(()=>history.length),2); // persisted plus exportable unsaved flight
+   await p.close();
+   // No automatic takeover can accidentally write a stale snapshot.
+   assert.match(await q.evaluate(async()=>{try{await FlightProfileStore.create(localStorage,navigator.locks).add('Blocked');return ''}catch(e){return e.message}}),/Another Fact Flight tab/);
+   await q.reload();await create(q,'Sam');await flight(q);await saved(q,2);
+   const after=await q.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1'))),old=JSON.parse(before);
+   assert.equal(after.profiles.length,2);assert.equal(after.sessions.length,2);
+   assert.deepEqual(after.profiles[0],old.profiles[0]);assert.deepEqual(after.sessions.find(s=>s.id===old.sessions[0].id),old.sessions[0]);
+  }finally{await c.close()}
+ });
+ await test('Non-writer rejects rename, delete, import and saves while keeping exports readable',async()=>{
+  const [c,p]=await page();await create(p,'Alex');await flight(p);await saved(p,1);
+  const q=await c.newPage();await q.goto(url);
+  assert(await q.evaluate(async()=>{
+   const store=FlightProfileStore.create(localStorage,navigator.locks),before=localStorage.getItem(FlightProfileStore.KEY),data=store.read(),profile=data.profiles[0];
+   const backup={format:'fact-flight-learner-export',version:1,exportedAt:new Date().toISOString(),profile,sessions:data.sessions};
+   const review=store.review(backup);
+   for(const action of [()=>store.rename(profile.id,'Changed',profile.name),()=>store.remove(profile.id,store.snapshot(data,profile.id)),()=>store.restore(backup,review.fingerprint),()=>store.save({...data.sessions[0],id:crypto.randomUUID()})]){
+    try{await action();return false}catch(e){if(!e.message.includes('Another Fact Flight tab'))return false}
+    if(localStorage.getItem(FlightProfileStore.KEY)!==before)return false;
+   }
+   return store.read().sessions.length===1;
+  }));await c.close();
+ });
+ await test('Simultaneous page loads choose one writer and preserve its complete snapshot',async()=>{
+  for(let i=0;i<20;i++){
+   const c=await browser.newContext(),tabs=await Promise.all([c.newPage(),c.newPage()]);
+   try{
+    await Promise.all(tabs.map(p=>p.goto(url)));
+    const outcomes=await Promise.all(tabs.map((p,i)=>p.evaluate(async i=>{const s=FlightProfileStore.create(localStorage,navigator.locks);try{return {profile:await s.add('Concurrent '+i)}}catch(e){return {error:e.message}}},i)));
+    assert.equal(outcomes.filter(x=>x.profile).length,1);assert.match(outcomes.find(x=>x.error).error,/Another Fact Flight tab/);
+    const winner=tabs[outcomes.findIndex(x=>x.profile)];
+    assert.deepEqual(await winner.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles),[outcomes.find(x=>x.profile).profile]);
+   }finally{await c.close()}
+  }
+ });
+ await test('Writer lifecycle and parallel same-page stores preserve existing records',async()=>{
+  const [c,p]=await page();await create(p,'Alex');await flight(p);await saved(p,1);
+  assert(await p.evaluate(async()=>{
+   const store=FlightProfileStore.create(localStorage,navigator.locks),before=store.read();
+   await Promise.all(Array.from({length:30},(_,i)=>FlightProfileStore.create(localStorage,navigator.locks).add('Learner '+i)));
+   const after=store.read();if(after.profiles.length!==31||JSON.stringify(after.sessions)!==JSON.stringify(before.sessions))return false;
+   window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+   window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+   try{await store.add('Stale page');return false}catch(e){}
+   return JSON.stringify(store.read())===JSON.stringify(after);
+  }));
+  await p.getByText('This page stopped saving.',{exact:false}).waitFor();await p.reload();await create(p,'After reload');
+  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).profiles.length),32);await c.close();
  });
  await test('Optional and unsafe nicknames render as plain text; same names keep separate IDs',async()=>{
   const [c,p]=await page();await create(p,'');assert(await p.getByText("Learner 1's practice").isVisible());await p.locator('[data-change-learner]').click();await create(p,'<img src=x onerror=1>');assert.equal(await p.locator('.learner-identity img').count(),0);await p.locator('[data-change-learner]').click();await create(p,'Learner 1');const data=await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')));assert.equal(new Set(data.profiles.map(p=>p.id)).size,3);await c.close();

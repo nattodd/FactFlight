@@ -55,3 +55,86 @@
 
 #menuView .table-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 #menuView .table-choices button{min-width:0;min-height:48px;padding:10px}
+
+/* Mobile setup/results actions use the existing controls and reserve their measured height. */
+.action-summary{display:none}
+html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
+@media(max-width:900px){
+ #menuView .bottom-actions,#resultsView .bottom-actions{
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;
+  width:100%;margin:20px 0 0;padding:12px;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+ }
+ #menuView .bottom-actions .action-summary,#resultsView .bottom-actions .action-summary{
+  display:block;grid-column:1/-1;font-size:14px;line-height:1.4;
+  color:var(--muted);overflow-wrap:anywhere;
+ }
+ #menuView .bottom-actions p{grid-column:1/-1;grid-row:2;margin:0;font-size:14px;line-height:1.4}
+ #menuView .bottom-actions button,#resultsView .bottom-actions button{
+  min-width:0;min-height:48px;width:auto;margin:0;padding:10px 14px;
+  font-size:16px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;
+ }
+ #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px}
+ #menuView .bottom-actions .back{grid-column:1;grid-row:3}
+ #menuView .bottom-actions .primary{grid-column:2;grid-row:3}
+ #resultsView .bottom-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #resultsView .bottom-actions #again{grid-column:1/-1}
+ #resultsView .bottom-actions #nextLevel,#resultsView .bottom-actions #nextTables{grid-column:1/-1}
+ #menuView .bottom-actions.is-docked,#resultsView .bottom-actions.is-docked{
+  position:fixed;z-index:30;inset:auto 0 0;width:auto;margin:0;border-radius:0;
+  border-width:1px 0 0;box-shadow:0 -4px 16px #0000000d;
+  padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+ }
+ #menuView.has-bottom-actions,#resultsView.has-bottom-actions{padding-bottom:calc(var(--action-height) + 24px)}
+}
+
+@media(min-width:901px){#menuView .bottom-actions.back-only{display:none}}
+.review-facts{display:grid;gap:8px;margin:20px 0}
+#menuView .review-facts label{display:flex;align-items:center;gap:12px;min-height:52px;padding:12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+#menuView .review-facts input{width:24px;height:24px;flex:0 0 24px;margin:0}
+.review-facts small{display:block;color:var(--muted)}
+#reviewActivity{max-width:100%;min-height:48px}
+.missed-review-panel{padding:20px;margin:20px 0;background:var(--card);border:1px solid var(--line);border-radius:16px}
+#menuView .review-facts input{accent-color:var(--ink)}
+#menuView [data-review-input][aria-pressed=true],#menuView [data-review-view][aria-pressed=true]{background:var(--primary-bg);color:var(--primary-text);border-color:var(--control-line)}
+
+.table-progress{margin:24px 0;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:20px}
+.table-progress h2{margin:8px 0}.table-progress-filters{display:flex;flex-wrap:wrap;gap:16px;margin:20px 0}
+.table-progress-filters label{display:grid;gap:8px;flex:1;min-width:160px}.table-progress select{width:100%;min-height:48px}
+#tableCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.table-progress-card{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--bg)}
+.table-card-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}.table-card-heading h3{margin:0}
+.table-first{margin:16px 0 4px}.table-first strong{font-size:2rem}.table-progress-card dl{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.table-progress-card dt{font-size:.85rem;color:var(--muted)}.table-progress-card dd{font-size:1.25rem;font-weight:700;margin:4px 0 0}
+.table-timing{border-left:3px solid var(--brand-yellow);padding:12px 16px;margin:20px 0;background:var(--bg)}
+@media(max-width:480px){.table-progress{padding:16px}#tableCards{grid-template-columns:1fr}}
+
+/* Short practice sets are a readable list, not three mostly empty columns. */
+#grid.short-sheet{display:flex;flex-direction:column;gap:10px;max-width:760px;margin:0 auto}
+#grid.short-sheet .column{display:contents}#grid.short-sheet .coltitle{display:none}
+#grid.short-sheet .fact{min-height:68px;padding:12px 16px;gap:12px;flex-wrap:nowrap;font-size:22px}
+#grid.short-sheet .idx{flex:0 0 20px;font-size:12px}
+#grid.short-sheet .fact-equation{flex:1;order:1}
+#grid.short-sheet .inline-answer{order:2;flex:0 0 auto;gap:8px;margin-left:auto}
+#grid.short-sheet .inline-answer input{width:80px;height:44px;font-size:22px}
+#grid.short-sheet .inline-answer button{min-width:44px;height:44px}
+#grid.short-sheet .keyboard-active .value{display:none}
+.mobile-keypad-open #grid.short-sheet .keyboard-active .value{display:block}
+#grid.short-sheet .value{order:2}
+#tableCardsToggle,#activityCardsToggle,#toggleFacts,#toggleFlights{display:block;margin:14px 0 20px}
+.report-section-title{margin-top:30px}#toggleFacts + .report-section-title{margin-top:0}
+@media(max-width:480px){#grid.short-sheet .fact{padding:10px;gap:8px;font-size:20px}#grid.short-sheet .inline-answer input{width:58px}#grid.short-sheet .idx{flex-basis:14px}}
+
+@media(min-width:900px){
+ #grid.short-sheet.ten-sheet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,auto);grid-auto-flow:column;max-width:1200px;gap:12px 18px}
+}
+
+/* Every progress section shares the same panel treatment. */
+.progress-report-section,.missed-review-panel{margin:24px 0;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:20px}
+.progress-report-section > h2{margin-top:0}
+.progress-report-section > :last-child{margin-bottom:0}
+@media(max-width:480px){.progress-report-section,.missed-review-panel{padding:16px}}
+
+#menuView .microphone-restriction{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;font-weight:650}
+#menuView #disableMicrophone{width:22px;height:22px;flex:none;padding:0;accent-color:var(--accent)}
+#menuView [data-input="voice"]:disabled,#menuView [data-review-input="voice"]:disabled{color:var(--muted);border-style:dashed;cursor:not-allowed}

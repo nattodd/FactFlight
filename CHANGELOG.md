@@ -8,6 +8,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [6.2.0] - 2026-11-16
+
+Owner-accepted mobile practice, targeted review and progress improvements. iOS voice retry remains a known limitation; keypad fallback is supported. See [release notes](docs/v6.2-release-notes.md).
+
+### Fixed
+- Learner saving is limited to one open tab to prevent concurrent whole-family writes from replacing another learner or flight. Other tabs show a warning, retain viewing/export and Guest practice, and keep unsaved flights exportable. Close the saving tab and reload the other tab to transfer saving; export unsaved results before reloading. Existing records and backup formats are unchanged.
+- Selecting an activity in Progress now focuses and scrolls to its heading and facts report instead of retaining a scroll position near the exports at the bottom. Returning to All activities anchors its heading too; filtering, history and existing disclosure controls are unchanged.
+- The local iOS recovery candidate restores continuous recognition across ready and answers, with explicit abort on completion/cancellation/backgrounding. It removes per-answer synthesis, natural-end scoring, per-answer cooldowns and Audio Session category overrides from the quiz. Unexpected iOS endings require a deliberate retry; the owner subsequently accepted microphone checks and keypad fallback; improved repeat-voice reliability is not claimed.
+- Review retries recalculate eligibility from current learner results, removing facts after two later first-try successes while keeping the original review scope.
+- Exact iOS substitutions continue to accept “sex” as six, “thor”/“poor” as four, and “freddy” as ready during setup, independently of the expected answer. Earlier Mode H repeated-flight acceptance did not establish microphone release; that lifecycle is no longer used by the application.
+- iOS recovery distinguishes missing start confirmation, missing results and reported permission/service errors. Startup/readiness attempts time out after eight seconds without the relevant event; active flights stop recognition after twenty seconds without results, preserving answers and timer behavior. Try microphone again stays prominent, Tap or type instead returns to the same setup, and a failed retry expands setup-preserving refresh. These timeouts do not diagnose a browser fault. Desktop retains its existing continuous recognition and recovery behavior.
+- Short worksheets align answers and controls; ten-question worksheets use two columns of five on wide screens and one column on narrow screens. Original School Test retains its three-column layout. Progress sections and Show all controls have consistent borders and spacing.
+
+### Added
+- Parent corner offers Disable microphone for every learner and Guest in this browser. Restricted voice options are disabled and labeled Parent restricted; remembered starts, review and reconnects respect the restriction. Other open tabs stop voice when the setting changes. The setting is local, not PIN-protected or an OS-wide permission control.
+- Missed-fact review from Results uses that session; Progress defaults to All activities or one activity across the latest five eligible flights. Select up to five unique missed/skipped facts for untimed practice. Mixed reviews retain each fact’s original activity and level/table context; Guest review remains temporary.
+- Review setup defaults to Worksheet on desktop and One at a time on phones. Each learner’s last started input/view choices are remembered separately for those layouts; cancelled voice setup does not replace them.
+- Per-table multiplication progress shows first-try accuracy and encounter counts, wrong submissions, skips, distinct facts and average active time for a shared recent-five-flight or all-flight window. Overlap, small samples and timing limitations are explicit. Reports read existing history without rewriting it. The owner accepted v6.2c progress/layout on iPhone Safari and Chrome.
+- Optional iPhone Refresh & keep setup restores pending learner settings without automatically starting voice or the timer. It blocks Guest and unsaved-result loss; this earlier workaround is not a guarantee of speech recovery.
+- Downloadable, temporary microphone event diagnostics exclude audio, recognized words and learner details. Experimental lab code is excluded from the release tree; its history remains in Git.
+
+### Changed
+- Finalized `6.2.0` metadata and removed the standalone microphone lab HTML/script from the static release tree. Voice experiments are frozen; no further speech lifecycle changes are included. The owner approved publication to main/GitHub Pages; Netlify production remains unchanged.
+- Mobile setup keeps Back and Continue/Start in a persistent bottom action area; Results keeps repeat and eligible Next Level/Table actions reachable. It reserves space and returns to ordinary flow for editing, short viewports, zoom or oversized text.
+- Microphone retry and Cancel appear directly below status; iPhone help and refresh options are collapsed. Progress table/activity cards initially show three entries with independent Show all / Show fewer controls.
+- New review records and backups require a v6.2-compatible reader. Older history is preserved; local-only result storage and optional voice remain unchanged.
+- Final regression updated older test expectations for waiting-for-speech status, scoped replay notices and collapsed activity cards. See [automated evidence](docs/v6.2-final-regression.md) and [remaining manual checks](docs/v6.2-manual-release-checklist.md). Earlier experimental voice notes are consolidated here into final behavior; their chronology remains in the increment verification documents. Version 6.2.0 is the released scope.
+
 ## [6.1.0] - 2026-11-15
 
 ### Added

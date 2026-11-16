@@ -6,9 +6,11 @@ These rules apply to all development work in this repository.
 
 - Repository: `nattodd/FactFlight`.
 - Production branch: `main`.
-- Active development branch: `v6.1-development`.
-- Prior verified stable baseline: `v6.0.0`; v6.1.0 production promotion is owner-approved on 2026-11-15.
+- Active development branch: `v6.2-development`, created from verified main / v6.1.0 `f760615`.
+- Current release baseline: `v6.2.0` on main/GitHub Pages, owner-approved on 2026-11-16 after preview `a9fe516` and release-check acceptance. Exact release commit is identified by annotated tag `v6.2.0` and the GitHub release. Previous baseline `v6.1.0` at `f760615` does not support importing new mixed-review records. Rollback requires separate owner approval and a data-preserving plan.
+- Branch transition authorization (2026-11-15): owner approved creating local `v6.2-development` from verified main, carrying over v6.1 release-completion notes and pending documentation/image, and updating current branch references. The owner subsequently approved a local commit of the reviewed documentation and roadmap image only. Application changes, pushes, deployments and Netlify configuration changes remain unauthorized; v6.2 Branch Deploy is not yet enabled by this work.
 - Always verify the active branch before modifying code.
+- Subsequent v6.2 authorization (2026-11-15): owner approved local v6.2a implementation, then enabling `v6.2-development` as an additional Netlify Branch Deploy and committing/pushing `3fa74b1` for that preview only. The owner accepted layout and voice on iPhone Safari/Chrome. Netlify production remains `v6-development`; `main` remains GitHub Pages production. The owner subsequently approved committing/pushing the locally reviewed v6.2b missed-fact review and retry preferences to v6.2-development for Netlify Branch Deploy testing only; no merge to main or production deployment is authorized. Current learner JSON backups were confirmed exported before adding review-session metadata. These specific approvals supersede the earlier branch-transition restrictions only for the stated work.
 - Never modify, merge into, or deploy `main` without the repository owner's explicit approval.
 - Never commit, push, or merge without the repository owner's approval.
 - Development preview testing is permitted through the approved preview workflow. This permission does not authorize commits, pushes, merges, production deployments, or publishing outside that workflow. If the approved workflow is not documented or known, clarify it before deploying a preview.
@@ -17,7 +19,11 @@ These rules apply to all development work in this repository.
 
 - Release authorization (2026-11-15): owner explicitly approved finalizing v6.1.0 release docs, committing/pushing preparation, merging/pushing main for GitHub Pages, verifying production, and publishing the v6.1.0 annotated tag/GitHub release. Keep Netlify production/v6-development unchanged. Rollback requires separate owner approval. This does not authorize subsequent feature releases.
 
+- Release authorization (2026-11-16): owner approved final v6.2 release-status/image updates, promotion to main/GitHub Pages, and the v6.2.0 annotated tag/GitHub release after verifying preview a9fe516. Keep Netlify production v6-development unchanged. This authorizes this release only, not future development publication.
+
 ## 2. Product principles
+
+- Owner privacy boundary: never read, list, search, or otherwise access the owner's iCloud Drive, including its local synced folders. Request files from Downloads instead. A previously shared iCloud path does not grant continuing access.
 
 - Fact Flight is a free, privacy-conscious educational application for children ages 2–12.
 - No mandatory accounts, subscriptions, advertisements, or marketing.
@@ -53,11 +59,13 @@ These rules apply to all development work in this repository.
 
 ## 5. Documentation and release management
 
+- **Preserve documentation structure:** Obtain explicit owner approval before renaming, renumbering, reordering, combining or removing established sections, or substantially changing their format. Routine content corrections within existing sections are permitted.
+- **Keep the roadmap image synchronized:** When release scope, sequence, major features or Available/Coming Soon status changes, generate an updated brand-compliant image, verify it against `ROADMAP.md`, and update the README reference. Wording-only corrections do not require regeneration.
 - Document each completed meaningful feature, behavior change, or fix in the `Unreleased` section of `CHANGELOG.md` as part of the same development change or commit.
 - Use factual, user-facing descriptions. Never represent planned features as completed; keep planned work in `ROADMAP.md` until implemented and verified.
 - Never alter historical release notes without a documented correction.
 - Update `ROADMAP.md` when milestones are verified.
-- Before releases, compare `v6.1-development` against `main` and reconcile the changelog with actual changes.
+- Before releases, compare the active development branch (`v6.2-development`) against `main` and reconcile the changelog with actual changes.
 - Never publish to production without the repository owner's explicit approval.
 - Only after explicit production approval, move verified changelog entries into a dated release section and publish the corresponding release.
 

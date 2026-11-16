@@ -70,7 +70,7 @@ async function confirm(p){await p.locator('[data-confirm-import]').click();await
  });
  await test('Concurrent restores cannot duplicate flights or overwrite a newer review',async()=>{
   const [c,p]=await page();const data=await seed(p);data.sessions[0].id=require('crypto').randomUUID();const q=await c.newPage();await q.goto(url);await Promise.all([upload(p,data),upload(q,data)]);await Promise.all([p.locator('[data-confirm-import]').waitFor(),q.locator('[data-confirm-import]').waitFor()]);  // Use the actual review screens for confirmation (the review snapshot is deliberately private).
-  await Promise.all([p.locator('[data-confirm-import]').click(),q.locator('[data-confirm-import]').click()]);await p.waitForFunction(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===2);await Promise.race([p.getByText('Saved data changed after your review.',{exact:false}).waitFor(),q.getByText('Saved data changed after your review.',{exact:false}).waitFor()]);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),2);await c.close();
+  await Promise.all([p.locator('[data-confirm-import]').click(),q.locator('[data-confirm-import]').click()]);await p.waitForFunction(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===2);await q.locator('#importSaveStatus').getByText('Another Fact Flight tab is using learner saving.',{exact:false}).waitFor();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),2);await c.close();
  });
 
  for(const [width,height] of [[320,568],[390,844],[844,390],[1440,1000]])await test(`Import review layout ${width}x${height}`,async()=>{

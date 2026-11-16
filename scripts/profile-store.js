@@ -2,6 +2,26 @@
 (function(root){
  'use strict';
  const KEY='fact-flight-family-v1';
+ // A page owns the writer lock for its lifetime. Per-write locking still
+ // allowed competing snapshots in the two-tab browser regression.
+ // Never take over in an already-open page: close the writer, then reload.
+ const writers=new WeakMap();
+ const writerMessage='Another Fact Flight tab is using learner saving. Use that tab, or export any unsaved flight here, close the other tab, then reload this one. Guest practice and viewing/exporting saved results are still available.';
+ function writer(storage,locks){
+  if(!locks?.request)return {ready:Promise.resolve(),error:'Safe saving is unavailable in this browser. Try an updated browser, or continue as Guest.'};
+  let state=writers.get(storage);if(state)return state;
+  let ready,release;
+  state={error:'Checking learner saving…',ended:false,ready:new Promise(resolve=>ready=resolve)};
+  writers.set(storage,state);
+  const end=()=>{state.ended=true;state.error='This page stopped saving. Export any unsaved flight, then reload before saving learner changes.';release?.()};
+  root.addEventListener('pagehide',end);
+  locks.request(KEY,{ifAvailable:true},lock=>{
+   if(!lock||state.ended){state.error=state.ended?state.error:writerMessage;ready();return}
+   state.error='';ready();
+   return new Promise(resolve=>release=resolve);
+  }).catch(()=>{state.error='Safe learner saving is unavailable. Export any unsaved flight before reloading, or continue as Guest.';ready()});
+  return state;
+ }
  // Canonical comparison ignores JSON property order, but preserves every stored field/value.
  function canonical(value){
   if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
@@ -20,21 +40,30 @@
   function depth(v,n=0){if(n>20)fail();if(v&&typeof v==='object')for(const [key,item] of Object.entries(v)){if(['__proto__','constructor','prototype'].includes(key))fail();depth(item,n+1)}}depth(data);
   for(const s of data.sessions){
    if(!s||!uuid(s.id)||s.learnerId!==data.profile.id||!str(s.learnerName)||s.guest||!date(s.date)||!['practice','test'].includes(s.mode)||!['voice','keyboard'].includes(s.input)||!['complete','manual','time'].includes(s.reason)||!num(s.elapsed)||(s.target!==null&&(!integer(s.target)||s.target<1))||!Array.isArray(s.items)||!Array.isArray(s.invalidated)||!Array.isArray(s.unrecognized))fail();
+   const review=s.activity==='review';
+   if(review&&(s.schemaVersion!==3||s.level!==undefined||s.table!==undefined||s.selection!==undefined||s.practiceType!=='review'||s.mode!=='practice'||s.timeLimitMs!==null||s.target!==null||!root.FactFlightMath?.validReview(s.review)||s.items.length!==s.review.facts.length))fail();
+   if(!review&&s.review!==undefined)fail();
    const selected=s.selection!==undefined;
    if(selected){
     const t=s.selection?.tables;
     if(s.activity!=='multiplication'||s.schemaVersion!==2||s.level!==undefined||s.selection?.type!=='tables'||!Array.isArray(t)||t.length<1||t.length>10||new Set(t).size!==t.length||!t.every(n=>integer(n)&&n>=1&&n<=10))fail();
    }
-   if(s.activity!==undefined){if(!activities.includes(s.activity)||(!selected&&(!integer(s.level)||s.level>4||s.schemaVersion!==1)))fail()}
+   if(s.activity!==undefined){if(!review&&(!activities.includes(s.activity)||(!selected&&(!integer(s.level)||s.level>4||s.schemaVersion!==1))))fail()}
    else if(!integer(s.table)||s.table<2||s.table>10)fail();
    // Optional fields on new flights; older exports remain readable without rewriting them.
-   if(s.practiceType!==undefined){
+   if(s.practiceType!==undefined&&!review){
     if(!s.activity||!['quick','free','timed','test'].includes(s.practiceType))fail();
     const timed=['timed','test'].includes(s.practiceType);
     if(timed?(s.mode!=='test'||![60000,120000,300000].includes(s.timeLimitMs)||s.elapsed>s.timeLimitMs):(s.mode!=='practice'||s.timeLimitMs!==null))fail();
-   }else if(s.timeLimitMs!==undefined)fail();
+   }else if(s.timeLimitMs!==undefined&&!review)fail();
+   const reviewKeys=new Set();
    for(const p of s.items){
     if(!p||!integer(p.answer)||!integer(p.skips)||!num(p.ms)||!['pending','correct','wrong','skipped'].includes(p.status)||!Array.isArray(p.attempts))fail();
+    if(review){
+     const f=root.FactFlightMath.reviewFact(s,p),key=p.activity+':'+p.key;
+     if(!f||reviewKeys.has(key)||!s.review.facts.some(expected=>canonical(expected)===canonical(f)))fail();
+     reviewKeys.add(key);
+    }else if(p.activity!==undefined)fail();
     if(selected){
      const operands=typeof p.text==='string'?p.text.match(/^(\d+) × (\d+)$/):null;
      if(!operands)fail();const a=Number(operands[1]),b=Number(operands[2]);
@@ -64,13 +93,16 @@
   return data;
  }
  function create(storage,locks){
+  const access=writer(storage,locks);
   const read=()=>validate(JSON.parse(storage.getItem(KEY)||'{"version":1,"profiles":[],"sessions":[]}'));
   async function update(change){
-   if(!locks?.request)throw Error('Safe saving is unavailable in this browser. Try an updated browser, or continue as Guest.');
-   return locks.request(KEY,()=>{const data=read();const result=change(data);validate(data);storage.setItem(KEY,JSON.stringify(data));return result});
+   await access.ready;
+   if(access.error)throw Error(access.error);
+   // No await between read and write: same-page mutations run to completion.
+   const data=read();const result=change(data);validate(data);storage.setItem(KEY,JSON.stringify(data));return result;
   }
   const snapshot=(data,id)=>JSON.stringify({profile:data.profiles.find(p=>p.id===id),sessions:data.sessions.filter(s=>s.learnerId===id)});
-  return {read,snapshot,
+  return {read,snapshot,writeReady:access.ready,writeError:()=>access.error,
    rename:(id,name,expectedName)=>update(data=>{
     const profile=data.profiles.find(p=>p.id===id);
     if(!profile)throw Error('This learner no longer exists. Close this form and refresh the list.');

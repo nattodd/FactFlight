@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),math=require('../scripts/math-activities.js');
+const fact=(a,b,{wrong=0,skips=0,untouched=false,ms=2000}={})=>({text:`${a} × ${b}`,answer:a*b,status:untouched?'pending':skips?'skipped':'correct',skips,ms,attempts:untouched||skips?[]:[...Array.from({length:wrong},()=>({correct:false})),{correct:true}]});
+const flights=Array.from({length:6},(_,i)=>({id:i,date:new Date(2026,0,i+1).toISOString(),activity:'multiplication',items:[fact(4,7)]}));
+flights[5].items=[fact(7,4,{wrong:2}),fact(4,4),fact(4,7,{skips:2}),fact(4,9,{untouched:true})];
+flights[4].activity='review';flights[4].items=[{...fact(4,7),activity:'multiplication'},{...fact(4,7),activity:'division'}];
+flights[3].items=[{a:4,b:7,status:'correct',attempts:[{correct:true}],skips:0,ms:3000}];delete flights[3].activity;flights[3].table=7;
+flights[2].items[0].ms=undefined;
+const before=JSON.stringify(flights),recent=math.tableProgress(flights),all=math.tableProgress(flights,'all');
+assert.equal(recent.flights,5);assert.equal(recent.total.encounters,7);assert.equal(all.total.encounters,8);
+const four=recent.tables.find(r=>r.table===4),seven=recent.tables.find(r=>r.table===7);
+assert.equal(four.encounters,7);assert.equal(seven.encounters,6);assert.equal(four.facts,2);assert.equal(four.first,5);assert.equal(four.wrong,2);assert.equal(four.skips,2);assert.equal(four.timed,6);assert.equal(four.averageMs,13000/6);assert.equal(recent.tables.find(r=>r.table===9).encounters,0);
+assert.equal(JSON.stringify(flights),before);assert.equal(math.tableProgress([]).total.averageMs,null);
+assert.equal(math.tableProgress([{activity:'addition',items:[fact(4,7)]}]).total.encounters,0);
+assert.equal(math.tableProgress([{date:'2026-01-01',activity:'multiplication',items:[fact(21,2)]}]).tables.find(r=>r.table===21).encounters,1);
+console.log('PASS table metrics: shared windows, overlap, squares, reversed facts, mixed reviews, legacy School, skips, untouched exclusions, missing time, higher existing levels and immutable history');

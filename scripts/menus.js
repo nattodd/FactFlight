@@ -24,10 +24,10 @@ function validConfig(c){return !!c&&validSelection(c)&&(c.tableChoices===undefin
 function changeMode(mode){if(cfg.mode===mode)return;cfg.mode=mode;if(mode==='school')delete cfg.selection;cfg.schoolUntimed=false;cfg.count=mode==='quick'?5:mode==='test'||mode==='school'||mode==='free'?60:20;cfg.minutes=2;if(Number(cfg.target)>cfg.count)cfg.target=''}
 let screen='home',trail=[],quickRoute=false,cfg=defaultConfig();
 const drafts=new Map();
-function resetDrafts(){repeatSource=null;drafts.clear();cfg=defaultConfig();replayNote='';quickRoute=false}
+function resetDrafts(){configuredReview=null;reviewDraft=null;repeatSource=null;drafts.clear();cfg=defaultConfig();replayNote='';quickRoute=false}
 function chooseActivity(activity){if(screen==='practice'||screen==='ready')drafts.set(cfg.activity,{...cfg});const quick=FlightProfiles.quickChoice();cfg=drafts.get(activity)||FlightProfiles.practiceChoice(activity)||(quick?.activity===activity?{...defaultConfig(activity),...quick}:defaultConfig(activity));cfg={...cfg};if(quickRoute)changeMode('quick');replayNote=''}
 const selected=(a,b)=>a===b?' selected':'';
-function go(next,remember=true){if(busy()){requestSessionExit();return}show('menuView');if(remember)trail.push(screen);screen=next;render();window.scrollTo(0,0);const heading=$('menuView').querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}}
+function go(next,remember=true){if(busy()){requestSessionExit();return}releaseMicrophone();show('menuView');if(remember)trail.push(screen);screen=next;render();window.scrollTo(0,0);const heading=$('menuView').querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}}
 function back(){if(screen==='practice'||screen==='ready'||screen==='mode')drafts.set(cfg.activity,{...cfg});show('menuView');screen=trail.pop()||'home';if(screen==='home')resetDrafts();render();window.scrollTo(0,0)}
 const steps=stage=>`<div class="steps" aria-label="Setup steps">${(quickRoute?['Activity','Your practice','Ready']:['Activity','Mode','Your practice','Ready']).map((s,i)=>`<span class="${s===stage?'current':''}">${i+1} · ${s}</span>`).join('')}</div>`;
 const backButton=()=>'<button class="quiet back" data-back>← Back</button>';
@@ -44,10 +44,77 @@ function selectionMenu(){
  return toggle+`<h2>Which tables?</h2><p>Choose one or more tables. Each uses factors 1–10.</p><div class="pills section table-choices">${Array.from({length:10},(_,i)=>i+1).map(n=>`<button data-fact-table="${n}" aria-pressed="${tables.includes(n)}" class="${selected(tables.includes(n),true)}">${n}</button>`).join('')}</div><p role="status">${tables.length?'Selected tables: '+tables.join(', '):'Select at least one table to continue.'}</p>`;
 }
 function practice(){const a=activities[cfg.activity],school=cfg.mode==='school';return `${backButton()}${steps('Your practice')}${context()}<h1>${school?'Which times table?':'Pick your challenge.'}</h1><p>${school?'The same school test you know. Pick a table to begin.':cfg.activity==='multiplication'?'Choose a level or pick the tables you want to practice.':'Every level is open. Pick what feels right today.'}</p>${school?`<div class="pills section">${Array.from({length:9},(_,i)=>i+2).map(n=>`<button class="${selected(cfg.table,n)}" aria-pressed="${cfg.table===n}" data-table="${n}">${n}</button>`).join('')}</div>`:selectionMenu()}${cfg.mode==='free'?'<div class="review"><strong>Keep going until you choose Finish</strong><p>No timer and no question limit. Skip moves on; you can review skipped questions afterward.</p></div>':cfg.mode==='school'?`<div class="review"><strong>60 questions · ${cfg.schoolUntimed?'no time limit':'2 minutes'}</strong><p>Finish early if you need to. You can review every answer afterward.</p></div>`:`<section class="section"><h2>How many questions?</h2><div class="pills">${(cfg.mode==='quick'?[5,10,15,20]:[5,10,15,20,30,60]).map(n=>`<button class="${selected(cfg.count,n)}" aria-pressed="${cfg.count===n}" data-count="${n}">${n}</button>`).join('')}</div><p class="small">${['timed','test'].includes(cfg.mode)?'Finish your set or keep going until time runs out.':'No time limit. Take your time.'}</p></section>`}${['timed','test'].includes(cfg.mode)?`<section class="section"><h2>How much time?</h2><div class="pills">${[1,2,5].map(n=>`<button class="${selected(cfg.minutes,n)}" aria-pressed="${cfg.minutes===n}" data-minutes="${n}">${n} ${n===1?'minute':'minutes'}</button>`).join('')}</div><p class="small">The clock starts when you’re ready. Finish early whenever you need to.</p></section>`:''}<div class="footer-action"><p>Next: choose how to answer.</p><button class="primary" data-next ${validSelection(cfg)?'':'disabled'}>Continue →</button></div>`}
-function ready(){return `${backButton()}${steps('Ready')}${context()}<h1>Ready for takeoff?</h1><p>Choose how you want to answer.</p>${replayNote?`<p class="notice">${replayNote}</p>`:''}<div class="pair"><button class="tile${selected(cfg.input,'keypad')}" data-input="keypad" aria-pressed="${cfg.input==='keypad'}"><span class="icon">▦</span><strong>Tap or type</strong><span class="sub">Use the number pad or your keyboard.</span></button><button class="tile${selected(cfg.input,'voice')}" data-input="voice" aria-pressed="${cfg.input==='voice'}"><span class="icon">♪</span><strong>Say it out loud</strong><span class="sub">Use your microphone. Say “ready” to begin.</span></button></div><section class="section"><h2>How do you want to see it?</h2><div class="pair"><button class="tile${selected(cfg.view,'focus')}" data-view="focus" aria-pressed="${cfg.view==='focus'}"><span class="view-art">[ ? ]</span><strong>One at a time</strong><span class="sub">Focus View · one big, clear question.</span></button><button class="tile${selected(cfg.view,'worksheet')}" data-view="worksheet" aria-pressed="${cfg.view==='worksheet'}"><span class="view-art">☷ ☷ ☷</span><strong>The whole sheet</strong><span class="sub">Worksheet View · see your set of facts.</span></button></div></section><div class="review"><strong>${activities[cfg.activity].name} · ${cfg.mode==='school'?cfg.table+' times table':selectionLabel(cfg)}</strong><p>${cfg.mode==='school'?'Original School Test':modes[cfg.mode][0]} · ${cfg.mode==='free'?'Questions until you finish':(cfg.mode==='school'?60:cfg.count)+' questions'} · ${cfg.mode==='school'?(cfg.schoolUntimed?'no time limit':'2 minutes'):['test','timed'].includes(cfg.mode)?cfg.minutes+' '+(cfg.minutes===1?'minute':'minutes'):'no time limit'}</p></div><details><summary>Grown-up options</summary><label for="target">Optional first-try goal</label><p>Leave blank for no goal. ${cfg.mode==='free'?'Choose a goal from 1 to 60 first-try answers, or leave it blank.':'Choose a number up to your question count, or leave it blank.'}</p><input id="target" type="number" min="1" max="${['school','free'].includes(cfg.mode)?60:cfg.count}" value="${cfg.target}" placeholder="No goal"><p>Use Skip, Undo, or Finish during your flight. ${FlightProfiles.isGuest()?"Guest results are temporary and are not saved.":"Review answers and export your learner results from Progress."}</p></details><div class="footer-action"><p>${cfg.input==='voice'?'Allow the microphone, then say “ready.”':'Your keyboard or number pad is ready.'}</p><button class="primary" data-start>Start ${cfg.mode==='school'?'School Test':cfg.mode==='test'?'test':'practice'} →</button></div>`}
-function parents(){return `${backButton()}<div class="hero"><div class="eyebrow">Parent corner</div><h1>A little help for grown-ups.</h1><p>Keep the practice path simple. Keep guidance easy to find.</p></div><button class="primary" data-nav="manageLearners">Manage learners →</button><details open><summary>Microphone help</summary><p>Allow microphone and speech recognition access when your browser asks. During a flight, use Reconnect microphone if listening stops. Browser speech may use an online service. The app stores recognized text with results locally; it does not save audio recordings.</p></details><details><summary>Results and backups</summary><p>Open Progress for activity totals, flight reviews, and JSON/CSV exports. Results stay in this browser unless deliberately exported.</p></details><div class="notice">Profiles save separate progress in this browser. Guest results are temporary and cannot be saved or exported. Change learner before starting to keep future progress.</div>`}
-function render(){const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
+function ready(){return `${backButton()}${steps('Ready')}${context()}<h1>Ready for takeoff?</h1><p>Choose how you want to answer.</p>${replayNote?`<p class="notice">${replayNote}</p>`:''}<div class="pair"><button class="tile${selected(cfg.input,'keypad')}" data-input="keypad" aria-pressed="${cfg.input==='keypad'}"><span class="icon">▦</span><strong>Tap or type</strong><span class="sub">Use the number pad or your keyboard.</span></button><button class="tile${selected(cfg.input,'voice')}" data-input="voice" ${microphoneRestricted()?'disabled title="Parent restricted"':''} aria-pressed="${cfg.input==='voice'}"><span class="icon">♪</span><strong>Say it out loud</strong>${microphoneRestricted()?'<span class="sub">Parent restricted</span>':''}<span class="sub">${microphoneRestricted()?'Use Tap or type instead.':'Use your microphone. Say “ready” to begin.'}</span></button></div><section class="section"><h2>How do you want to see it?</h2><div class="pair"><button class="tile${selected(cfg.view,'focus')}" data-view="focus" aria-pressed="${cfg.view==='focus'}"><span class="view-art">[ ? ]</span><strong>One at a time</strong><span class="sub">Focus View · one big, clear question.</span></button><button class="tile${selected(cfg.view,'worksheet')}" data-view="worksheet" aria-pressed="${cfg.view==='worksheet'}"><span class="view-art">☷ ☷ ☷</span><strong>The whole sheet</strong><span class="sub">Worksheet View · see your set of facts.</span></button></div></section><div class="review"><strong>${activities[cfg.activity].name} · ${cfg.mode==='school'?cfg.table+' times table':selectionLabel(cfg)}</strong><p>${cfg.mode==='school'?'Original School Test':modes[cfg.mode][0]} · ${cfg.mode==='free'?'Questions until you finish':(cfg.mode==='school'?60:cfg.count)+' questions'} · ${cfg.mode==='school'?(cfg.schoolUntimed?'no time limit':'2 minutes'):['test','timed'].includes(cfg.mode)?cfg.minutes+' '+(cfg.minutes===1?'minute':'minutes'):'no time limit'}</p></div><details><summary>Grown-up options</summary><label for="target">Optional first-try goal</label><p>Leave blank for no goal. ${cfg.mode==='free'?'Choose a goal from 1 to 60 first-try answers, or leave it blank.':'Choose a number up to your question count, or leave it blank.'}</p><input id="target" type="number" min="1" max="${['school','free'].includes(cfg.mode)?60:cfg.count}" value="${cfg.target}" placeholder="No goal"><p>Use Skip, Undo, or Finish during your flight. ${FlightProfiles.isGuest()?"Guest results are temporary and are not saved.":"Review answers and export your learner results from Progress."}</p></details><div class="footer-action"><p>${cfg.input==='voice'?'Allow the microphone, then say “ready.”':'Your keyboard or number pad is ready.'}</p><button class="primary" data-start>Start ${cfg.mode==='school'?'School Test':cfg.mode==='test'?'test':'practice'} →</button></div>`}
+function parents(){return `${backButton()}<div class="hero"><div class="eyebrow">Parent corner</div><h1>A little help for grown-ups.</h1><p>Keep the practice path simple. Keep guidance easy to find.</p></div><button class="primary" data-nav="manageLearners">Manage learners →</button><section class="section"><h2>Microphone privacy</h2><label class="microphone-restriction"><input id="disableMicrophone" type="checkbox" ${microphoneRestricted()?'checked':''}> Disable microphone</label><p>Applies to every learner and Guest in this browser on this device. Voice choices are marked Parent restricted. Tap or type remains available.</p><p class="small">This is not a PIN lock. Anyone with access to Parent corner can change it. Other browsers and cleared website data have separate settings. To block microphone access outside Fact Flight, use your browser or device permissions.</p><p id="microphonePolicyStatus" role="status"></p></section><details open><summary>Microphone help</summary><p>Allow microphone and speech recognition access when your browser asks. During a flight, use Reconnect microphone if listening stops. Browser speech may use an online service. The app stores recognized text with results locally; it does not save audio recordings.</p></details><details><summary>Results and backups</summary><p>Open Progress for activity totals, flight reviews, and JSON/CSV exports. Results stay in this browser unless deliberately exported.</p></details><div class="notice">Profiles save separate progress in this browser. Guest results are temporary and cannot be saved or exported. Change learner before starting to keep future progress.</div>`}
+// Presentation only: move existing controls, never clone launch handlers.
+const actionMedia=matchMedia('(max-width:900px)');
+const actionAreas=new Map();
+let actionFrame=0;
+function scheduleActions(){if(!actionFrame)actionFrame=requestAnimationFrame(()=>{actionFrame=0;syncActions()})}
+function registerActions(view,bar,back=null){
+ const old=actionAreas.get(view);old?.observer.disconnect();
+ if(old?.back&&old.marker.isConnected)old.marker.replaceWith(old.back);
+ view.classList.remove('has-bottom-actions');view.style.removeProperty('--action-height');
+ const marker=back?document.createComment('Back button desktop position'):null;
+ if(back)back.before(marker);
+ bar.classList.add('bottom-actions');bar.setAttribute('role','group');bar.setAttribute('aria-label',view.id==='resultsView'?'Next practice actions':'Practice navigation');
+ const observer=new ResizeObserver(scheduleActions);observer.observe(bar);
+ actionAreas.set(view,{bar,back,marker,observer});
+ scheduleActions();
+}
+function syncActions(){
+ let reserved=0;
+ const viewport=window.visualViewport;
+ const available=viewport?.height||innerHeight;
+ const editing=document.activeElement?.matches('textarea,select,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit])');
+ for(const [view,area] of actionAreas){
+  const {bar,back,marker}=area;
+  if(!bar.isConnected){area.observer.disconnect();actionAreas.delete(view);view.classList.remove('has-bottom-actions');continue}
+  if(back){
+   const focused=document.activeElement===back;
+   if(actionMedia.matches&&back.parentElement!==bar)bar.prepend(back);
+   else if(!actionMedia.matches&&marker.parentNode&&back.parentElement===bar)marker.after(back);
+   if(focused)back.focus({preventScroll:true});
+  }
+  // Keep natural flow for keyboards, pinch zoom, short landscape, or very tall text.
+  const mobile=actionMedia.matches&&!view.classList.contains('hidden');
+  const height=Math.ceil(bar.getBoundingClientRect().height);
+  const fixed=mobile&&!editing&&available>=440&&(!viewport||viewport.scale<=1.05)&&height<=available*.4;
+  bar.classList.toggle('is-docked',fixed);
+  if(view.classList.contains('has-bottom-actions')!==fixed)view.classList.toggle('has-bottom-actions',fixed);
+  view.style.setProperty('--action-height',fixed?height+'px':'0px');
+  if(fixed)reserved=height;
+ }
+ document.documentElement.style.setProperty('--bottom-action-space',reserved+'px');
+}
+function setupActions(){
+ const view=$('menuView');
+ if(screen==='review'){registerActions(view,view.querySelector('.footer-action'),view.querySelector('[data-review-back]'));return}
+ if(!['math','mode','practice','ready'].includes(screen)){scheduleActions();return}
+ let bar=view.querySelector('.footer-action');
+ if(!bar){bar=document.createElement('div');bar.className='footer-action back-only';view.append(bar)}
+ const summary=document.createElement('div');summary.className='action-summary';
+ const school=cfg.mode==='school';
+ summary.textContent=screen==='math'?'Choose an activity':screen==='mode'?activities[cfg.activity].name+' · Choose a mode':
+  activities[cfg.activity].name+' · '+(school?'Table '+cfg.table:cfg.selection?.type==='tables'?(cfg.selection.tables.length?selectionLabel(cfg):'Choose at least one table'):selectionLabel(cfg))+
+  ' · '+(cfg.mode==='free'?'Until Finish':(school?60:cfg.count)+' questions')+
+  ' · '+(school?(cfg.schoolUntimed?'Untimed':'2 min'):['timed','test'].includes(cfg.mode)?cfg.minutes+' min':'Untimed');
+ bar.prepend(summary);
+ registerActions(view,bar,view.querySelector('[data-back]'));
+}
+actionMedia.addEventListener('change',scheduleActions);
+window.addEventListener('resize',scheduleActions);
+window.visualViewport?.addEventListener('resize',scheduleActions);
+window.visualViewport?.addEventListener('scroll',scheduleActions);
+document.addEventListener('focusin',scheduleActions);
+document.addEventListener('focusout',scheduleActions);
+const actionVisibility=new MutationObserver(scheduleActions);
+for(const id of ['menuView','resultsView'])actionVisibility.observe($(id),{attributes:true,attributeFilter:['class']});
+
+function render(){if(microphoneRestricted()){cfg.input='keypad';if(reviewDraft)reviewDraft.input='keypad'}const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,review:reviewReady,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();setupActions();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
+ if('reviewBack'in d){reviewDraft.back();return}if('reviewStart'in d){startReview();return}
+ if(d.reviewInput){reviewDraft.input=d.reviewInput;render();return}if(d.reviewView){reviewDraft.view=d.reviewView;render();return}
  if(d.nav){if(d.nav==='progress'){FlightProfiles.progress();return}if(d.nav==='home'){FlightMenu.home();return}go(d.nav);return}if('back'in d){back();return}
  if('quickStart'in d){const q=FlightProfiles.quickChoice();if(q){loadQuick(q);startFromMenu()}else{quickRoute=true;cfg.mode='quick';cfg.count=5;cfg.target='';go('math')}return}
  if('quick'in d){replayNote='';const q=FlightProfiles.quickChoice();if(q){loadQuick(q);go('math')}else{quickRoute=true;cfg.mode='quick';cfg.count=5;cfg.target='';go('math')}return}if('math'in d){quickRoute=false;go('math');return}
@@ -61,7 +128,9 @@ $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if
  if('start'in d){startFromMenu();return}
 });document.addEventListener('input',e=>{if(e.target.id==='target')cfg.target=e.target.value.replace(/[^0-9]/g,'')});
 function startFromMenu(){
+ if(microphoneRestricted())cfg.input='keypad';
  if(busy())return;
+ configuredReview=null;
  if(repeatSource&&!FlightProfiles.canRepeat(repeatSource)){repeatSource=null;FlightMenu.home();return}
  if(!FlightProfiles.hasSelection()){FlightMenu.home();return}
  const school=cfg.mode==='school',count=school||cfg.mode==='free'?60:cfg.count;
@@ -81,6 +150,7 @@ function startFromMenu(){
 }
 const profileBegin=begin;
 begin=function(){
+ if(configuredReview){if(!reviewDraft||!FlightProfiles.reviewAccess(reviewDraft.owner)){if(phase==='checking')cancelCheck();FlightMenu.home();return}profileBegin();if(phase==='running')FlightProfiles.rememberReview(reviewDraft);return}
  if(repeatSource&&!FlightProfiles.canRepeat(repeatSource)){
   repeatSource=null;if(phase==='checking')cancelCheck();FlightMenu.home();return;
  }
@@ -95,6 +165,7 @@ begin=function(){
 function replay(s,action='review'){
  if(busy())return;
  if(!FlightProfiles.canRepeat(s)){FlightMenu.home();return}
+ if(s.activity==='review'){openReview(FlightProfiles.reviewRetryFacts(s),{source:s.review.source,filter:s.review.filter,owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad'});return}
  repeatSource=s;
  const remembered=flightChoices.get(s),school=!s.activity;
  if(remembered){cfg=structuredClone(remembered);replayNote='Review these settings before starting a fresh set.'}
@@ -124,22 +195,98 @@ function canAdvanceTables(s){
  const c=flightChoices.get(s);
  return !!c&&validConfig(c)&&c.selection?.type==='tables'&&c.selection.tables.every(n=>n<10);
 }
+let reviewDraft=null;
+function openReview(facts,options){
+ if(busy()||!FlightProfiles.reviewAccess(options.owner))return;
+ configuredReview=null;repeatSource=null;
+ const remembered=FlightProfiles.reviewChoice();
+ reviewDraft={...options,facts:structuredClone(facts),selected:facts.slice(0,5).map(f=>f.activity+':'+f.key),input:remembered?.input||options.input||'keypad',view:remembered?.view||(matchMedia('(max-width:680px)').matches?'focus':'worksheet'),back:options.back||(()=>FlightProfiles.progress())};
+ show('menuView');go('review',false);window.scrollTo(0,0);
+}
+function reviewReady(){
+ const d=reviewDraft,esc=escapeHTML;
+ return `<button class="quiet back" data-review-back>← Back</button><h1>Review missed facts</h1><p>${d.source==='results'?'Missed or skipped facts from that session.':'Missed or skipped facts from the latest five eligible flights. A fact leaves this review after first-try success in two later flights; leaving the window does not mean mastery.'}</p><p>${d.filter==='all'?'All activities':activities[d.filter].name} · Untimed · Choose up to five facts.</p>${d.facts.length?`<p>${d.facts.length<5?'A short review is enough. You can practice these facts again afterward.':'The most recent missed facts are selected first. You can change the selection.'}</p><div class="review-facts">${d.facts.map((f,i)=>`<label><input type="checkbox" data-review-fact="${i}" ${d.selected.includes(f.activity+':'+f.key)?'checked':''}> <span>${esc(activities[f.activity].name)} · ${esc(f.text)}<small>${f.level!==undefined?'Level '+(f.level+1):f.table?'School table '+f.table:'Tables '+f.selection.tables.join(', ')}</small></span></label>`).join('')}</div><p id="reviewSelectionStatus" role="status"></p><h2>How would you like to answer?</h2><div class="pills"><button data-review-input="keypad" aria-pressed="${d.input==='keypad'}">Tap or type</button><button data-review-input="voice" ${microphoneRestricted()?'disabled title="Parent restricted"':''} aria-pressed="${d.input==='voice'}">Say it out loud${microphoneRestricted()?' · Parent restricted':''}</button></div><h2>Choose your view</h2><div class="pills"><button data-review-view="focus" aria-pressed="${d.view==='focus'}">One at a time</button><button data-review-view="worksheet" aria-pressed="${d.view==='worksheet'}">The whole sheet</button></div>`:'<p>No missed facts to review in this scope. You can choose another activity or start ordinary practice.</p><button data-nav="math">Choose practice →</button>'}<div class="footer-action"><div class="action-summary">${d.selected.length} facts · Untimed review</div><p>${d.input==='voice'?'Allow the microphone, then say “ready.”':'Your keyboard or number pad is ready.'}</p><button class="primary" data-review-start ${d.selected.length?'':'disabled'}>Start review →</button></div>`;
+}
+$('menuView').addEventListener('change',e=>{
+ if(!e.target.matches('[data-review-fact]')||!reviewDraft)return;
+ const f=reviewDraft.facts[Number(e.target.dataset.reviewFact)],key=f.activity+':'+f.key;
+ if(e.target.checked&&reviewDraft.selected.length>=5){e.target.checked=false;$('reviewSelectionStatus').textContent='Choose up to five facts. Uncheck one to choose another.';return}
+ reviewDraft.selected=e.target.checked?[...reviewDraft.selected,key]:reviewDraft.selected.filter(k=>k!==key);
+ $('menuView').querySelector('[data-review-start]').disabled=!reviewDraft.selected.length;
+ $('menuView').querySelector('.action-summary').textContent=reviewDraft.selected.length+' facts · Untimed review';
+ $('reviewSelectionStatus').textContent=reviewDraft.selected.length+' selected';scheduleActions();
+});
+function startReview(){
+ if(microphoneRestricted()&&reviewDraft)reviewDraft.input='keypad';
+ if(busy()||!reviewDraft||!FlightProfiles.reviewAccess(reviewDraft.owner))return;
+ const d=reviewDraft,r={version:1,source:d.source,filter:d.filter,facts:d.facts.filter(f=>d.selected.includes(f.activity+':'+f.key))};
+ if(!FactFlightMath.validReview(r))return;
+ configuredReview=null;configuredSelection=null;configuredPracticeType=null;
+ $('activity').value='addition';configureActivity();$('level').value='0';$('questionCount').value='5';freePractice=false;setMode('practice');
+ configuredReview=r;$('inputMode').value=d.input==='voice'?'voice':'keyboard';$('sessionView').value=d.view;$('threshold').value='';updateSetup();
+ $('sheetTitle').textContent='Missed-fact review · '+(d.filter==='all'?'All activities':activities[d.filter].name);
+ $('sessionScope').textContent=r.facts.length+' facts · Untimed. Each fact keeps its original operation. Skipped facts return later.';
+ show('practiceView');$('start').click();
+}
 function resultActions(s){
  const again=$('again');if(!again)return;
  if(!FlightProfiles.canRepeat(s)){again.remove();return}
  const c=flightChoices.get(s),complete=c&&validConfig(c);
- again.textContent=complete?'Practice Again →':'Review settings →';
+ again.textContent=s.activity==='review'?'Review remaining facts →':complete?'Practice Again →':'Review settings →';
  again.onclick=()=>replay(s,'again');
  const group=document.createElement('div');group.className='repeat-actions';again.before(group);group.append(again);
  if(complete){
   if(canAdvance(s)){const next=document.createElement('button');next.id='nextLevel';next.textContent='Next Level · '+(c.level+2)+' →';next.onclick=()=>replay(s,'next');group.append(next)}
   if(canAdvanceTables(s)){const next=document.createElement('button');next.id='nextTables';next.textContent=(c.selection.tables.length===1?'Next Table':'Next Tables')+' · '+c.selection.tables.map(n=>n+1).join(', ')+' →';next.onclick=()=>replay(s,'nextTables');group.append(next)}
-  const change=document.createElement('button');change.id='changeOptions';change.textContent='Change options';change.onclick=()=>replay(s);group.append(change);
+  const change=document.createElement('button');change.id='changeOptions';change.textContent='Change options';change.onclick=()=>replay(s);group.after(change);
  }
+ const summary=document.createElement('div');summary.className='action-summary';summary.textContent=sessionLabel(s);group.prepend(summary);
+ registerActions($('resultsView'),group);
+ if(!s.guest||s===session){const review=document.createElement('button');review.id='reviewMissed';review.textContent='Review missed facts';review.onclick=()=>{if(!FlightProfiles.canRepeat(s)||(s.guest&&s!==session))return;openReview(FactFlightMath.reviewCandidates([s],'all',false),{source:'results',filter:'all',owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad',back:()=>{renderResult(s);show('resultsView')}})};group.after(review)}
 }
-window.FlightMenu={replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>go(FlightProfiles.hasSelection()?'ready':'home',false),profiles:next=>go(next)};
+// One-shot, tab-local setup recovery; no history, transcripts or active flight are copied.
+const voiceRecoveryKey='fact-flight-voice-recovery-v1';
+function refreshVoice(){
+ if(phase!=='checking'||$('inputMode').value!=='voice')return;
+ const problem=FlightProfiles.voiceRefreshProblem();
+ if(problem){$('micMessage').textContent=problem;return}
+ const payload={version:1,at:Date.now(),owner:FlightProfiles.reviewOwner(),view:$('sessionView').value};
+ if(configuredReview&&reviewDraft){payload.review=structuredClone(configuredReview)}
+ else if(validConfig(cfg)){payload.config=structuredClone(cfg)}
+ else {$('micMessage').textContent='Please cancel and review your practice settings.';return}
+ try{sessionStorage.setItem(voiceRecoveryKey,JSON.stringify(payload))}
+ catch{$('micMessage').textContent='Could not keep your setup for a refresh. Cancel and choose Tap or type, or try the microphone again.';return}
+ releaseMicrophone();location.reload();
+}
+function restoreVoiceSetup(){
+ let payload;
+ try{const raw=sessionStorage.getItem(voiceRecoveryKey);sessionStorage.removeItem(voiceRecoveryKey);if(!raw||raw.length>20000)return;payload=JSON.parse(raw)}catch{return}
+ if(!payload||payload.version!==1||!Number.isFinite(payload.at)||Date.now()-payload.at<0||Date.now()-payload.at>600000||!['focus','worksheet'].includes(payload.view))return;
+ if(payload.review?!FactFlightMath.validReview(payload.review):!validConfig(payload.config))return;
+ if(!FlightProfiles.restoreVoiceOwner(payload.owner))return;
+ if(payload.review){
+  openReview(payload.review.facts,{source:payload.review.source,filter:payload.review.filter,owner:payload.owner,input:'voice'});
+  reviewDraft.input='voice';reviewDraft.view=payload.view;render();
+ }else{cfg={...payload.config,input:'voice',view:payload.view};trail=['home','practice'];go('ready',false)}
+ const notice=document.createElement('p');notice.className='notice';notice.setAttribute('role','status');notice.textContent='Your setup is restored. Tap Reconnect microphone, then say “ready.” The timer has not started.';
+ $('menuView').querySelector('h1').after(notice);
+ $('menuView').querySelector('[data-review-start], [data-start]').textContent='Reconnect microphone →';
+}
+function useTypedSetup(){
+ if(phase!=='checking')return;
+ cfg.input='keypad';if(reviewDraft)reviewDraft.input='keypad';
+ $('inputMode').value='keyboard';cancelCheck();
+}
+window.FlightMenu={useTypedSetup,refreshVoice,openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
 $('homeNav').onclick=()=>FlightMenu.home();$('practiceNav').onclick=()=>FlightMenu.math();
 $('historyNav').onclick=()=>{if(busy()){requestSessionExit();return}FlightProfiles.progress()};
+window.addEventListener('microphonepolicychange',()=>{if(!busy()&&!$('menuView').classList.contains('hidden'))render()});
+$('menuView').addEventListener('change',e=>{if(e.target.id==='disableMicrophone'){
+ const saved=setMicrophoneRestriction(e.target.checked);
+ $('microphonePolicyStatus').textContent=saved?(microphoneRestricted()?'Microphone disabled for all learners in this browser.':'Microphone enabled. It starts only when voice is chosen.'):'Could not save this setting. Microphone stays blocked in this tab; use browser permissions for a lasting restriction.';
+}});
+applyMicrophoneRestriction();
 FlightMenu.home();
+restoreVoiceSetup();
 
 })();

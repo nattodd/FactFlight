@@ -82,6 +82,66 @@ function parseWholeNumber(raw){
  const m=text.match(/^(a|one|two|three|four|five|six|seven|eight|nine) thousand(?: (?:and )?(.+))?$/);if(!m)return null;
  const tail=underThousand(m[2]||'');return tail===null?null:(m[1]==='a'?1:units.indexOf(m[1]))*1000+tail;
 }
-const api={validTables,activities,questionPool,createQuestionSource,parseWholeNumber};
+// Review facts retain their source scope; historical answer state is never reused.
+const reviewPools=new Map();
+function validReviewFact(f){
+ if(!f||!Object.hasOwn(activities,f.activity)||typeof f.text!=='string'||typeof f.key!=='string'||!Number.isInteger(f.answer)||f.answer<0)return false;
+ const school=f.table!==undefined,selected=f.selection!==undefined;
+ if(school?(f.activity!=='multiplication'||!Number.isInteger(f.table)||f.table<2||f.table>10||f.level!==undefined||selected):selected?(f.activity!=='multiplication'||f.selection?.type!=='tables'||!validTables(f.selection.tables)||f.level!==undefined):(!Number.isInteger(f.level)||f.level<0||f.level>4))return false;
+ const settings={activity:f.activity,level:f.level,selection:f.selection,mode:school?'school':'practice',table:f.table};
+ const signature=JSON.stringify(settings);
+ if(!reviewPools.has(signature)){
+  if(reviewPools.size>=12)reviewPools.clear();
+  const pool=questionPool(settings),map=new Map();
+  for(const g of pool)for(const v of g.variants){const operands=school?v.text.match(/^(\d+) × (\d+)$/):null;const key=school?`×:${Math.min(+operands[1],+operands[2])}:${Math.max(+operands[1],+operands[2])}`:g.key;map.set(v.text,{key,answer:v.answer})}
+  reviewPools.set(signature,map);
+ }
+ const expected=reviewPools.get(signature).get(f.text);return !!expected&&expected.key===f.key&&expected.answer===f.answer;
+}
+function reviewFact(s,p){
+ const activity=s.activity==='review'?p.activity:s.activity||'multiplication';
+ const scope=s.activity==='review'?p:s;
+ const f={activity,text:p.text||`${p.a} × ${p.b}`,answer:p.answer,key:p.key};
+ if(scope.selection)f.selection=structuredClone(scope.selection);
+ else if(scope.table!==undefined){f.table=scope.table;f.key=`×:${Math.min(p.a??Number(f.text.split(' × ')[0]),p.b??Number(f.text.split(' × ')[1]))}:${Math.max(p.a??Number(f.text.split(' × ')[0]),p.b??Number(f.text.split(' × ')[1]))}`}
+ else f.level=scope.level;
+ return validReviewFact(f)?f:null;
+}
+function reviewCandidates(flights,filter='all',rolling=true){
+ const eligible=flights.map(s=>({s,entries:s.items.map(p=>({p,f:reviewFact(s,p)})).filter(x=>x.f&&(filter==='all'||x.f.activity===filter))})).filter(x=>x.entries.length).sort((a,b)=>Date.parse(b.s.date)-Date.parse(a.s.date)).slice(0,rolling?5:1);
+ const found=new Map();
+ for(const {s,entries} of eligible.slice().reverse()){
+  const perFlight=new Map();
+  for(const {p,f} of entries){const key=f.activity+':'+f.key,miss=p.skips>0||p.attempts.some(a=>!a.correct),success=p.status==='correct'&&p.skips===0&&p.attempts.length===1&&p.attempts[0].correct;const old=perFlight.get(key);perFlight.set(key,{f,miss:miss||old?.miss,success:success||old?.success})}
+  for(const [key,e] of perFlight){if(e.miss)found.set(key,{fact:e.f,successes:new Set(),date:s.date});else if(e.success&&found.has(key))found.get(key).successes.add(s.id)}
+ }
+ return [...found.values()].filter(x=>!rolling||x.successes.size<2).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).map(x=>x.fact);
+}
+function validReview(r){return !!r&&r.version===1&&['results','progress'].includes(r.source)&&(r.filter==='all'||Object.hasOwn(activities,r.filter))&&Array.isArray(r.facts)&&r.facts.length>=1&&r.facts.length<=5&&new Set(r.facts.map(f=>f?.activity+':'+f?.key)).size===r.facts.length&&r.facts.every(f=>validReviewFact(f)&&(r.filter==='all'||r.filter===f.activity))}
+function createReviewSource(review,random=Math.random){
+ if(!validReview(review))throw Error('Review facts are unavailable. Choose a fresh review.');
+ const map=new Map(review.facts.map(f=>[f.activity+':'+f.key,f]));
+ const source=createQuestionSource({},random,[...map].map(([key,f])=>({key,variants:[{text:f.text,answer:f.answer}]})));
+ return {next(){const p=source.next(),f=map.get(p.key);return {...p,...structuredClone(f)}}};
+}
+// Read-only reporting: each attempted/skipped encounter counts once globally.
+function tableProgress(flights,window='recent'){
+ const eligible=flights.map(s=>({s,entries:(s.items||[]).flatMap(p=>{
+  if((s.activity==='review'?p.activity:s.activity||'multiplication')!=='multiplication'||(!p.attempts?.length&&!p.skips))return [];
+  const match=(p.text||`${p.a} × ${p.b}`).match(/^(\d+) × (\d+)$/);
+  if(!match)return [];
+  const a=Number(match[1]),b=Number(match[2]);
+  return [{p,a,b,key:[a,b].sort((x,y)=>x-y).join(':')}];
+ })})).filter(x=>x.entries.length).sort((a,b)=>Date.parse(b.s.date)-Date.parse(a.s.date));
+ const selected=window==='recent'?eligible.slice(0,5):eligible;
+ const blank=()=>({encounters:0,first:0,wrong:0,skips:0,facts:new Set(),timed:0,ms:0});
+ const total=blank(),tables=new Map(Array.from({length:10},(_,i)=>[i+1,blank()]));
+ for(const {entries} of eligible)for(const e of entries)for(const n of [e.a,e.b])if(!tables.has(n))tables.set(n,blank());
+ const add=(r,{p,key})=>{r.encounters++;r.first+=Number(p.status==='correct'&&!p.skips&&p.attempts.length===1&&p.attempts[0].correct);r.wrong+=p.attempts.filter(a=>!a.correct).length;r.skips+=p.skips||0;r.facts.add(key);if(Number.isFinite(p.ms)&&p.ms>=0){r.timed++;r.ms+=p.ms}};
+ for(const {entries} of selected)for(const e of entries){add(total,e);for(const n of new Set([e.a,e.b])){if(!tables.has(n))tables.set(n,blank());add(tables.get(n),e)}}
+ const finish=r=>({...r,facts:r.facts.size,averageMs:r.timed?r.ms/r.timed:null});
+ return {flights:selected.length,eligibleFlights:eligible.length,total:finish(total),tables:[...tables].sort((a,b)=>a[0]-b[0]).map(([table,r])=>({table,...finish(r)}))};
+}
+const api={tableProgress,validTables,activities,questionPool,createQuestionSource,parseWholeNumber,validReviewFact,reviewFact,reviewCandidates,validReview,createReviewSource};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FactFlightMath=api;
 })(globalThis);

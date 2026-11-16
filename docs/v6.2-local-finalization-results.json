@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-16",
+  "version": "6.2.0",
+  "base": "2072106",
+  "status": "PASS local finalization; not published",
+  "targetedChecks": [
+    {
+      "name": "Executable lab files are absent from the release tree",
+      "status": "PASS"
+    },
+    {
+      "name": "Application assets have no lab dependency and identify the release candidate",
+      "status": "PASS"
+    },
+    {
+      "name": "Static hosting serves the app and returns 404 for both retired lab URLs",
+      "status": "PASS"
+    },
+    {
+      "name": "Older flight replay restores activity, level, mode, count and duration after reload",
+      "status": "PASS"
+    },
+    {
+      "name": "Immediate replay keeps selected view, goal and Free mode without changing Quick shortcut",
+      "status": "PASS"
+    },
+    {
+      "name": "Legacy untimed fixed sets and School replay preserve timers and count",
+      "status": "PASS"
+    },
+    {
+      "name": "Results and activity-filtered Progress backups restore all learner flights and skip duplicates",
+      "status": "PASS"
+    },
+    {
+      "name": "Failed-save and deleted-profile recovery exports are restorable without recreating profiles",
+      "status": "PASS"
+    },
+    {
+      "name": "Imported replay uses recorded voice input and waits for ready",
+      "status": "PASS"
+    },
+    {
+      "name": "Release metadata and no browser errors",
+      "status": "PASS"
+    }
+  ],
+  "staticChecks": [
+    "Only runtime change versus HEAD is final version metadata",
+    "Nine numbered roadmap sections preserved",
+    "New roadmap PNG exists and README references it",
+    "No runtime scripts or styles changed"
+  ],
+  "image": {
+    "path": "docs\\images\\fact-flight-roadmap-2026-11-16.png",
+    "width": 1086,
+    "height": 1448,
+    "sha256": "d3317e39b176faa6ec49af3c95181169802f501bc2be1fc89f3504ff2e6584b0"
+  },
+  "fullRegression": "Prior 286/286 checks and 15/15 stress runs retained; not rerun for documentation/image/metadata-only changes",
+  "manual": "Owner accepted all six release-check groups as reported; no invented per-browser subcase coverage"
+}

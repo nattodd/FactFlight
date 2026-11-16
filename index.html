@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fact Flight · Math practice</title><meta name="application-version" content="6.1.0">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fact Flight · Math practice</title><meta name="application-version" content="6.2.0">
 <link rel="stylesheet" href="styles/brand.css"><link rel="stylesheet" href="styles/menus.css">
 <link rel="icon" href="assets/brand/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/apple-touch-icon.png">
@@ -158,6 +158,7 @@ dialog::backdrop{background:#0B0B0FAA}
 .focus-voice #focusFeedback{display:block}
 #focusFeedback{min-height:24px}
 #factsReport td:first-child{white-space:nowrap}
+.mic-actions{display:flex;flex-direction:column;gap:12px;margin-top:16px}.mic-actions button{width:100%;min-height:44px}
 </style></head><body>
 <header><div class="brand"><img class="brand-art" src="assets/brand/horizontal.svg" alt="Fact Flight" width="725" height="238"></div><nav class="topnav" aria-label="Main navigation"><button id="homeNav" class="quiet">Home</button><button id="practiceNav" class="quiet">Math</button><button id="historyNav" class="quiet">Progress ↗</button><button id="theme" aria-label="Toggle light and dark theme">◐</button></nav></header>
 <main><section id="menuView"></section><div class="hero"><div><div class="eyebrow">Little practice. Big confidence.</div><h1>Ready, set, practice.</h1><p style="margin:8px 0">One fact at a time. Find your rhythm.</p></div><div class="badge">✦ &nbsp; YOUR MATH STUDIO</div></div>
@@ -177,7 +178,7 @@ dialog::backdrop{background:#0B0B0FAA}
   </div>
   <div class="keypad-hint">Tap Enter to submit · Undo and Skip are below the worksheet</div>
 </div>
-<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><p class="small">Uses your browser’s microphone. The timer has not started.</p><div id="iosMicDialogHelp" class="voice-help hidden" role="note"></div><button id="retryMic">Try microphone again</button> <button id="cancelMic" class="quiet">Cancel</button></dialog>
+<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><div class="mic-actions"><button id="retryMic" class="primary">Try microphone again</button><button id="typeInstead" class="quiet">Tap or type instead</button><button id="cancelMic" class="quiet">Cancel</button></div><p class="small">Uses your browser’s microphone. The timer has not started.</p><details id="iosMicDialogHelp" class="voice-help hidden"></details><details id="iosVoiceRecovery" class="hidden"><summary>More recovery options</summary><p class="small">If trying the microphone again does not help, refresh and return to this setup. Saved learner results stay on this device. Refreshing may help, but is not a guaranteed fix.</p><button id="refreshVoice">Refresh &amp; keep setup</button></details><details id="micDiagnostics"><summary>Microphone diagnostics</summary><p class="small">Temporary event timing only—no audio, spoken words or learner details. Cleared when this page refreshes. Download before refreshing to keep this test log.</p><pre id="micDiagnosticLog" style="text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;font-size:11px"></pre><button id="downloadMicLog">Download diagnostic log</button></details></dialog>
 <script src="scripts/math-activities.js"></script>
 <script>
 'use strict';
@@ -205,9 +206,9 @@ function saveSession(record){
 }
 function factText(p){return p.text||`${p.a} × ${p.b}`}
 function questionLabel(p){const text=factText(p);return text.includes('=')?text:text+' ='}
-function sessionLabel(s){if(s.activity==='multiplication'&&s.selection?.type==='tables')return 'Multiplication · Tables '+s.selection.tables.join(', ');return s.activity?`${FactFlightMath.activities[s.activity]?.name||s.activity} · Level ${s.level+1}`:`${s.table}s`}
-function sessionModeLabel(s){const names={quick:'Quick Practice',free:'Free Practice',timed:'Timed Practice',test:'Custom Test'};return names[s.practiceType]?names[s.practiceType]+(s.timeLimitMs?' · '+duration(s.timeLimitMs)+' limit':''):s.mode}
-function selectedCount(){return $('activity').value==='school'?60:Number($('questionCount').value)}
+function sessionLabel(s){if(s.activity==='review')return 'Missed-fact review · '+(s.review.filter==='all'?'All activities':FactFlightMath.activities[s.review.filter].name);if(s.activity==='multiplication'&&s.selection?.type==='tables')return 'Multiplication · Tables '+s.selection.tables.join(', ');return s.activity?`${FactFlightMath.activities[s.activity]?.name||s.activity} · Level ${s.level+1}`:`${s.table}s`}
+function sessionModeLabel(s){const names={review:'Missed-fact review',quick:'Quick Practice',free:'Free Practice',timed:'Timed Practice',test:'Custom Test'};return names[s.practiceType]?names[s.practiceType]+(s.timeLimitMs?' · '+duration(s.timeLimitMs)+' limit':''):s.mode}
+function selectedCount(){if(configuredReview)return configuredReview.facts.length;return $('activity').value==='school'?60:Number($('questionCount').value)}
 function configureActivity(){
  const school=$('activity').value==='school',activity=FactFlightMath.activities[$('activity').value];
  $('sessionView').value=!school&&matchMedia('(max-width: 680px)').matches?'focus':'worksheet';
@@ -274,6 +275,34 @@ function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test')
 $('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
 $('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
 let micRetryTimer=null,micEverConnected=false,micState='not-connected';
+let micShutdown=null,micCleanup=null,micRestartCount=0,iosAttemptCount=0;
+const microphoneRestrictionKey='fact-flight-microphone-disabled-v1';
+let microphoneRestrictionMemory=false;
+function microphoneRestricted(){try{return microphoneRestrictionMemory||localStorage.getItem(microphoneRestrictionKey)==='true'}catch{return true}}
+// Requests release; only physical-device checks can establish native microphone shutdown.
+function releaseMicrophone(){stopMic()}
+function showIOSRecovery(){
+ if(isIOSDevice&&phase==='checking'&&iosAttemptCount>1)$('iosVoiceRecovery').open=true;
+}
+function applyMicrophoneRestriction(){
+ const blocked=microphoneRestricted(),option=$('inputMode').querySelector('[value="voice"]');
+ option.disabled=blocked;option.textContent=blocked?'Microphone · Parent restricted':'Microphone · say your answer';
+ if(blocked){
+  releaseMicrophone();
+  if(phase==='checking')cancelCheck();
+  if(!busy())$('inputMode').value='keyboard';
+  for(const id of ['resume','micReconnectTop','retryMic']){$(id).disabled=true;$(id).title='Parent restricted'}
+  if(phase==='running')micError('Microphone parent restricted. Use Tap or type to continue.');
+ }else for(const id of ['resume','micReconnectTop','retryMic']){$(id).disabled=false;$(id).title=''}
+ window.dispatchEvent(new Event('microphonepolicychange'));
+}
+function setMicrophoneRestriction(disabled){
+ microphoneRestrictionMemory=disabled;
+ let saved=true;try{localStorage.setItem(microphoneRestrictionKey,String(disabled))}catch{saved=false;microphoneRestrictionMemory=true}
+ applyMicrophoneRestriction();return saved;
+}
+window.addEventListener('storage',e=>{if(e.key===microphoneRestrictionKey||e.key===null){microphoneRestrictionMemory=false;applyMicrophoneRestriction()}});
+
 const isIOSDevice=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isChromeIOS=/CriOS/i.test(navigator.userAgent);
 function iosVoiceHelpHTML(){
@@ -284,48 +313,125 @@ function updateIOSVoiceGuidance(){
  const enabled=isIOSDevice&&$('inputMode').value==='voice';
  for(const id of ['iosVoiceHint','iosMicDialogHelp','iosMicTroubleshoot']){
    const el=$(id);if(!el)continue;
-   if(!el.dataset.ready){el.innerHTML=iosVoiceHelpHTML();el.dataset.ready='1'}
+   if(!el.dataset.ready){el.innerHTML=(id==='iosMicDialogHelp'?'<summary>iPhone microphone help</summary>':'')+iosVoiceHelpHTML();el.dataset.ready='1'}
    const show=enabled&&(id!=='iosMicTroubleshoot'||(phase==='running'&&micState==='disconnected'));
    el.classList.toggle('hidden',!show);
  }
 }
 $('inputMode').addEventListener('change',updateIOSVoiceGuidance);
 updateIOSVoiceGuidance();
+$('iosVoiceRecovery').classList.toggle('hidden',!isIOSDevice);
+$('refreshVoice').onclick=()=>window.FlightMenu?.refreshVoice();
 function setMicStatus(state){
  micState=state;
- const names={'connected':'Connected','not-connected':'Not Connected','disconnected':'Disconnected'};
+ const names={'connected':'Connected','not-connected':'Not Connected','disconnected':'Disconnected','waiting':'Waiting for speech'};
  for(const id of ['micStatus','dialogMicStatus']){const el=$(id);if(el){el.dataset.state=state;el.textContent='Microphone: '+names[state]}}
  $('speech').classList.toggle('live',state==='connected');
  if($('resume'))$('resume').textContent=state==='connected'?'Restart microphone':'Reconnect microphone';
  if($('micReconnectTop'))$('micReconnectTop').classList.toggle('hidden',state==='connected'||!(phase==='running'||phase==='checking'));
  updateIOSVoiceGuidance();
 }
+// Bounded, in-memory lifecycle evidence only. Never pass transcripts or user data here.
+const micEvents=[],micTraceStarted=performance.now();
+function micTrace(event,connection=recEpoch,error){
+ const entry={ms:Math.round(performance.now()-micTraceStarted),connection,phase,event};
+ if(error)entry.error=['no-speech','aborted','audio-capture','network','not-allowed','service-not-allowed','bad-grammar','language-not-supported'].includes(error)?error:'unknown';
+ micEvents.push(entry);if(micEvents.length>200)micEvents.shift();
+ if($('micDiagnostics').open)renderMicTrace();
+}
+function renderMicTrace(){$('micDiagnosticLog').textContent=micEvents.map(e=>e.ms+'ms · '+e.connection+' · '+e.phase+' · '+e.event+(e.error?' · '+e.error:'')).join('\n')||'No microphone events yet.'}
+$('micDiagnostics').addEventListener('toggle',renderMicTrace);
+$('downloadMicLog').onclick=()=>{
+ const data={format:1,implementation:'voice-lifecycle-diagnostics-4-continuous-recovery',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+ const a=document.createElement('a');a.href=url;a.download='fact-flight-microphone-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
 function stopMic(){
  recEpoch++;clearTimeout(micRetryTimer);micRetryTimer=null;
- if(rec){rec.onstart=null;rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort()}catch(e){}rec=null}
+ if(micCleanup){micCleanup();micCleanup=null}
+ if(rec){
+   const old=rec,oldEpoch=recEpoch-1;rec=null;micTrace('abort-requested',oldEpoch);
+   old.onstart=null;old.onresult=null;old.onerror=null;old.onspeechstart=null;old.onend=null;old.onaudiostart=null;old.onaudioend=null;old.onsoundstart=null;old.onsoundend=null;old.onspeechend=null;
+   // On iOS, abort is asynchronous. Do not overlap the next recognizer with it.
+   if(isIOSDevice){
+     const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
+     const timeout=setTimeout(()=>{micTrace('shutdown-timeout',oldEpoch);gate.resolve(false)},2500);
+     old.onend=()=>{
+       old.onend=null;clearTimeout(timeout);micTrace('abort-end',oldEpoch);
+       setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
+     };
+   }
+   try{old.abort()}catch(e){/* A missing end event is handled by the shutdown timeout. */}
+ }
  setMicStatus('not-connected');
 }
 function micError(message){
  if(phase==='checking')$('micMessage').textContent=message;
  else if(phase==='running'){$('heard').textContent=message}
 }
-function connectMic(){
+function suspendMicrophone(){
+ releaseMicrophone();
+ if(busy()&&$('inputMode').value==='voice'){setMicStatus('disconnected');micError('Microphone paused. Tap Reconnect when you return.')}
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendMicrophone()});
+window.addEventListener('pagehide',suspendMicrophone);
+function connectMic(automatic=false){
+ if(microphoneRestricted()||document.hidden){releaseMicrophone();micError('Microphone unavailable or parent restricted. Use Tap or type.');return}
+ if(isIOSDevice){if(automatic===true)return;if(phase==='checking')iosAttemptCount++}
+ if(automatic!==true){micRestartCount=0}
  stopMic();
  const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!Speech){setMicStatus('not-connected');micError('Speech recognition is unavailable in this browser. Try Safari with current iOS, Chrome/Edge on desktop, or use keyboard answers.');return}
  if(!window.isSecureContext){setMicStatus('not-connected');micError('Microphone needs an HTTPS website or localhost. Open the hosted link in Safari, not a messaging-app file preview.');return}
- const epoch=recEpoch,recognizer=new Speech();rec=recognizer;
+ const epoch=recEpoch;micTrace(automatic===true?'automatic-connect':'manual-connect',epoch);
+ const launch=()=>{
+ if(epoch!==recEpoch||document.hidden||microphoneRestricted()||!(phase==='checking'||phase==='running'))return;
+ let recognizer;try{recognizer=new Speech()}catch{setMicStatus('disconnected');micError('Speech recognition could not be created. Try microphone again or use Tap or type.');showIOSRecovery();return}
+ rec=recognizer;micTrace('created',epoch);
+ for(const event of ['audiostart','audioend','soundstart','soundend','speechend'])recognizer['on'+event]=()=>{if(epoch===recEpoch&&rec===recognizer)micTrace(event,epoch)};
  recognizer.lang='en-US';recognizer.continuous=true;recognizer.interimResults=true;recognizer.maxAlternatives=1;
- let fatal=false,restarts=0,processed=new Set(),lastFinal='',lastFinalAt=-Infinity,hasStarted=false;
+ let fatal=false,processed=new Set(),lastFinal='',lastFinalAt=-Infinity,hasStarted=false;
  // Safari/iOS may occasionally show an interim number without ever finalizing it.
  // Recover only a single stable numeric interim after a pause. Never apply it twice.
- let interimTimer=null,pendingInterim=null;
+ let interimTimer=null,pendingInterim=null,startupWatchdog=null;
+ function clearWatchdog(){clearTimeout(startupWatchdog);startupWatchdog=null}
+ micCleanup=()=>{clearInterim();clearWatchdog()};
  function clearInterim(){
    if(interimTimer!==null)clearTimeout(interimTimer);
    interimTimer=null;pendingInterim=null;
  }
+ const normalizeReady=text=>text.toLowerCase().replace(/[.!?,]/g,'').trim();
+ const isReady=text=>/^(?:i am |i'm |im )?ready$/.test(normalizeReady(text))||(isIOSDevice&&normalizeReady(text)==='freddy');
+ const parseAnswer=text=>{const normalized=normalizeReady(text),aliases={sex:6,thor:4,poor:4};return isIOSDevice&&Object.prototype.hasOwnProperty.call(aliases,normalized)?aliases[normalized]:parseVoiceNumber(text)};
+ function watchIOSResults(starting=false){
+  if(!isIOSDevice)return;clearWatchdog();
+  startupWatchdog=setTimeout(()=>{
+   if(epoch!==recEpoch||rec!==recognizer||!busy())return;
+   micTrace(starting?'start-timeout':'no-result-timeout',epoch);
+   stopMic();setMicStatus('disconnected');
+   micError(starting?'Recognition did not confirm a start. Try microphone again or use Tap or type.':'No speech results received. Try microphone again or use Tap or type.'+(phase==='running'?' Your answers are kept; the timer continues.':''));
+   showIOSRecovery();
+  },starting||phase==='checking'?8000:20000);
+ }
+ function acceptReady(){
+   if(epoch!==recEpoch||phase!=='checking')return;
+   micTrace('ready-accepted',epoch);$('micDialog').close();begin();watchIOSResults();
+   if(phase==='running'){setMicStatus('connected');$('heard').textContent='Listening — say one answer at a time.'}
+ }
+ function queueReadyInterim(text,resultIndex){
+   $('micMessage').textContent='Hearing “'+text+'”… '+(isReady(text)?'Hold a moment to begin.':'Please say “ready.”');
+   if(!isReady(text)){clearInterim();return}
+   if(pendingInterim?.resultIndex===resultIndex&&pendingInterim?.text===text)return;
+   clearInterim();pendingInterim={text,resultIndex};
+   interimTimer=setTimeout(()=>{
+     const pending=pendingInterim;clearInterim();
+     if(!pending||epoch!==recEpoch||phase!=='checking'||processed.has(resultIndex))return;
+     processed.add(resultIndex);lastFinal=normalizeReady(text);lastFinalAt=performance.now();
+     acceptReady();
+   },1300);
+ }
  function queueStableInterim(text, resultIndex){
-   const value=parseVoiceNumber(text);
+   const value=parseAnswer(text);
    if(phase!=='running'||transitioning||value===null){clearInterim();return}
    if(pendingInterim?.resultIndex===resultIndex&&pendingInterim?.text===text)return;
    clearInterim();
@@ -343,18 +449,35 @@ function connectMic(){
  }
 
  recognizer.onstart=()=>{
-   if(epoch!==recEpoch)return;
-   micEverConnected=true;hasStarted=true;processed.clear();setMicStatus('connected');
-   if(phase==='checking')$('micMessage').textContent='Connected and listening. Say “ready.”';
+   if(epoch!==recEpoch||rec!==recognizer)return;
+   micTrace('start',epoch);micEverConnected=true;hasStarted=true;processed.clear();setMicStatus('waiting');
+   if(isIOSDevice){watchIOSResults();micError(phase==='checking'?'Microphone opened. Say “ready” to check speech.':'Microphone opened. Say one answer at a time.');return}
+   if(phase==='checking'){
+     $('micMessage').textContent='Microphone opened. Say “ready” to check speech.';
+     // Silence is not proof of failure. Hand control back for a fresh user tap.
+     startupWatchdog=setTimeout(()=>{
+       if(epoch!==recEpoch||phase!=='checking')return;
+       micTrace('startup-watchdog',epoch);
+       stopMic();setMicStatus('disconnected');
+       micError('No speech detected yet. Tap Try microphone again, then say “ready.”');
+     },5000);
+   }
    else if(phase==='running')$('prompt').textContent=questionLabel(items[index])+(factText(items[index]).includes('=')?'':' ?');
  };
+ recognizer.onspeechstart=()=>{
+   if(epoch!==recEpoch||rec!==recognizer||!hasStarted)return;
+   micTrace('speechstart',epoch);if(!isIOSDevice)clearWatchdog();setMicStatus('connected');
+   if(phase==='checking')micError('Speech detected. Say “ready.”');
+ };
  recognizer.onresult=e=>{
-   if(epoch!==recEpoch)return;
-   if(transitioning){clearInterim();for(let j=e.resultIndex;j<e.results.length;j++)processed.add(j);return;}
+   if(epoch!==recEpoch||rec!==recognizer||!hasStarted)return;
+   micTrace('result',epoch);clearWatchdog();watchIOSResults();setMicStatus('connected');
+   if(phase==='running'&&transitioning){clearInterim();for(let j=e.resultIndex;j<e.results.length;j++)processed.add(j);return;}
    for(let k=e.resultIndex;k<e.results.length;k++){
      const result=e.results[k],text=result[0].transcript.trim();
      if(!result.isFinal){
-       if(phase==='running'){
+       if(phase==='checking')queueReadyInterim(text,k);
+       else if(phase==='running'){
          $('heard').textContent=`Hearing: “${text}”…`;
          // Do not score partial recognition right away: 'four' may become 'fourteen'.
          queueStableInterim(text,k);
@@ -365,17 +488,15 @@ function connectMic(){
      if(processed.has(k))continue;processed.add(k);
      const normalized=text.toLowerCase().replace(/[.!?,]/g,'').trim(),now=performance.now();
      if(normalized===lastFinal&&now-lastFinalAt<350)continue;
-     lastFinal=normalized;lastFinalAt=now;restarts=0;
+     lastFinal=normalized;lastFinalAt=now;micRestartCount=0;
      if(phase==='checking'){
-       if(/^(?:i am |i'm |im )?ready$/.test(normalized)){
-         $('micDialog').close();begin();
-         if(phase==='running'){setMicStatus('connected');$('heard').textContent='Listening — say one answer at a time.'}
-       }else $('micMessage').textContent=`Heard “${text}”. Please say “ready.”`;
+       if(isReady(normalized))acceptReady();
+       else $('micMessage').textContent=`Heard “${text}”. Please say “ready.”`;
      }else if(phase==='running'){
        $('heard').textContent=`Heard: “${text}”`;
        if(normalized==='skip')submit('skip',text,'voice');
        else{
-         const value=parseVoiceNumber(text);
+         const value=parseAnswer(text);
          if(value===null){$('heard').textContent=`Heard “${text}” — say one number, or “skip”.`;session.unrecognized.push({text,at:now-started});flashAnswerFeedback('unheard')}
          else {
            submit(value,text,'voice');
@@ -390,11 +511,21 @@ function connectMic(){
    }
  };
  recognizer.onerror=e=>{
-   if(epoch!==recEpoch)return;
+   if(epoch!==recEpoch||rec!==recognizer)return;
    clearInterim();
-   const error=e.error||'unknown';
+   const error=e.error||'unknown';micTrace('error',epoch,error);
+   if(isIOSDevice){
+     stopMic();setMicStatus('disconnected');
+     const message=error==='not-allowed'||error==='service-not-allowed'
+       ?'Microphone or speech access was denied or restricted. Check browser/device permissions; Tap or type is available.'
+       :error==='no-speech'?'No speech results received. Try microphone again or use Tap or type.'
+       :error==='aborted'?'Recognition was interrupted. Try microphone again or use Tap or type.'
+       :`Speech service reported ${error}. Try microphone again or use Tap or type.`;
+     micError(message);showIOSRecovery();return;
+   }
    // 'no-speech' can be a routine session timeout. The onend handler handles it.
    if(error==='no-speech')return;
+   clearWatchdog();
    if(['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(error))fatal=true;
    // Do not auto-retry recognition service/network failures; they can cause prompt loops.
    if(['network','aborted'].includes(error))fatal=true;
@@ -404,27 +535,41 @@ function connectMic(){
      :`Microphone issue (${error}). Tap Reconnect or type an answer${phase==='running'?'; the timer continues':''}.`);
  };
  recognizer.onend=()=>{
-   clearInterim();
+   clearInterim();clearWatchdog();
    if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
+   micTrace('end',epoch);rec=null;micCleanup=null;
+   recognizer.onstart=null;recognizer.onresult=null;recognizer.onerror=null;recognizer.onspeechstart=null;recognizer.onend=null;recognizer.onaudiostart=null;recognizer.onaudioend=null;recognizer.onsoundstart=null;recognizer.onsoundend=null;recognizer.onspeechend=null;
    setMicStatus('disconnected');
+   if(isIOSDevice){micError('Listening ended. Try microphone again or use Tap or type.');showIOSRecovery();return}
    if(fatal){micError('Microphone disconnected. Tap Reconnect to try again; keyboard answers remain available.');return}
+   if(phase==='checking'){micError('Listening stopped. Tap Try microphone again, then say “ready.”');return}
    // A normal recognition session can end during silence, even when permission is still valid.
    // Reconnect only after a session successfully started; never loop on initial permission failures.
    if(!hasStarted){micError('Microphone did not connect. Tap Reconnect to try again.');return}
-   if(restarts>=12){micError('Listening stopped after repeated interruptions. Tap Reconnect to resume.');return}
-   restarts++;
+   if(micRestartCount>=12){micError('Listening stopped after repeated interruptions. Tap Reconnect to resume.');return}
+   micRestartCount++;
    micError('Listening paused — reconnecting automatically…');
    micRetryTimer=setTimeout(()=>{
      if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
-     try{recognizer.start()}catch(e){setMicStatus('disconnected');micError('Could not restart listening. Tap Reconnect to try again.')}
-   },Math.min(300+restarts*200,1500));
+     connectMic(true);
+   },Math.min(300+micRestartCount*200,1500));
  };
- try{recognizer.start()}catch(e){setMicStatus('disconnected');micError('Could not start speech recognition. Tap Reconnect or choose Keyboard.')}
+ try{micTrace('start-requested',epoch);watchIOSResults(true);recognizer.start()}catch(e){micTrace('start-threw',epoch);fatal=true;if(isIOSDevice)stopMic();setMicStatus('disconnected');micError('Could not start speech recognition. Try microphone again or use Tap or type.');showIOSRecovery()}
+ };
+ if(isIOSDevice&&micShutdown){
+   micError('Releasing the previous microphone connection…');
+   micShutdown.promise.then(released=>{
+     if(epoch!==recEpoch||!(phase==='checking'||phase==='running'))return;
+     if(released)launch();
+     else{setMicStatus('disconnected');micError('The browser has not confirmed microphone shutdown. Try Refresh & keep setup before a flight, or finish and use Tap or type.');showIOSRecovery()}
+   });
+ }else launch();
 }
-$('start').onclick=()=>{let t=$('threshold').value;if(t&&(!Number.isInteger(+t)||+t<1||+t>selectedCount())){$('threshold').closest('details').open=true;$('threshold').reportValidity();return}controls(true);if($('inputMode').value==='keyboard'){begin();return}phase='checking';$('micMessage').textContent='Allow microphone access, then say “ready.”';$('micDialog').showModal();connectMic()};
-function cancelCheck(){stopMic();phase='idle';controls(false);$('micDialog').close();if(window.FlightMenu)FlightMenu.ready()}
-$('cancelMic').onclick=cancelCheck;$('micDialog').addEventListener('cancel',e=>{e.preventDefault();cancelCheck()});$('retryMic').onclick=connectMic;$('resume').onclick=()=>{if(phase==='running')connectMic()};$('micReconnectTop').onclick=()=>{if(phase==='running')connectMic()};
-let repeatQuestionKeys=[],repeatSchoolFirstFactor=null,configuredSelection=null;
+
+$('start').onclick=()=>{if(microphoneRestricted()){$('inputMode').value='keyboard';applyMicrophoneRestriction()}let t=$('threshold').value;if(t&&(!Number.isInteger(+t)||+t<1||+t>selectedCount())){$('threshold').closest('details').open=true;$('threshold').reportValidity();return}controls(true);if($('inputMode').value==='keyboard'){begin();return}phase='checking';iosAttemptCount=0;$('iosVoiceRecovery').open=false;$('micMessage').textContent='Allow microphone access, then say “ready.”';$('micDialog').showModal();connectMic()};
+function cancelCheck(){releaseMicrophone();phase='idle';controls(false);$('micDialog').close();if(window.FlightMenu)FlightMenu.ready()}
+$('typeInstead').onclick=()=>window.FlightMenu?.useTypedSetup();$('cancelMic').onclick=cancelCheck;$('micDialog').addEventListener('cancel',e=>{e.preventDefault();cancelCheck()});$('retryMic').onclick=connectMic;$('resume').onclick=()=>{if(phase==='running')connectMic()};$('micReconnectTop').onclick=()=>{if(phase==='running')connectMic()};
+let repeatQuestionKeys=[],repeatSchoolFirstFactor=null,configuredSelection=null,configuredReview=null;
 function freshSchoolQuestions(n){
  const questions=generate(n);
  // Both items belong to the first ten-factor round: swapping preserves its
@@ -432,7 +577,7 @@ function freshSchoolQuestions(n){
  if(questions[0].factor===repeatSchoolFirstFactor)[questions[0],questions[1]]=[questions[1],questions[0]];
  return questions;
 }
-function begin(){flightTimeLimitMs=$('activity').value==='school'?120000:configuredTimeLimitMs;completedAt=null;clearAnswerFeedback();activeView=$('sessionView').value;document.body.classList.toggle('focus-session',activeView==='focus');document.body.classList.toggle('focus-voice',activeView==='focus'&&$('inputMode').value==='voice');$('focusAnswer').value='';clearTimeout(advanceTimer);transitioning=false;questionSource=null;items=$('activity').value==='school'?freshSchoolQuestions(table):(()=>{questionSource=FactFlightMath.createQuestionSource({activity:$('activity').value,level:Number($('level').value),mode:'practice',selection:configuredSelection,previousKeys:repeatQuestionKeys});return Array.from({length:freePractice?1:selectedCount()},()=>questionSource.next())})();index=0;undoStack=[];started=turnStart=performance.now();session={id:Date.now(),date:new Date().toISOString(),table,mode,input:$('inputMode').value,target:$('threshold').value?+$('threshold').value:null,unrecognized:[],invalidated:[]};if($('activity').value!=='school'){delete session.table;session.activity=$('activity').value;session.level=Number($('level').value);session.schemaVersion=1;if(configuredSelection?.type==='tables'){session.selection=structuredClone(configuredSelection);session.schemaVersion=2;delete session.level}if(configuredPracticeType){session.practiceType=configuredPracticeType;session.timeLimitMs=mode==='test'?flightTimeLimitMs:null}}phase='running';$('empty').classList.add('hidden');$('playArea').classList.remove('hidden');$('stage').textContent='IN FLIGHT';$('resume').classList.toggle('hidden',session.input!=='voice');$('micReconnectTop').classList.toggle('hidden',session.input!=='voice'||micState==='connected');$('playArea').classList.toggle('keyboard-session',session.input==='keyboard');$('speech').classList.toggle('hidden',session.input==='keyboard');$('keyboardTip').classList.toggle('hidden',session.input!=='keyboard');$('grid').innerHTML='';$('grid').dataset.keyboardSession='';document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=false);renderGrid();updateMetrics();ticker=setInterval(tick,100);if(session.input==='keyboard'){$('micReconnectTop').classList.add('hidden');configureKeyboardInput();focusInlineAnswer();}updateIOSVoiceGuidance();scrollToActiveFact(true);}
+function begin(){if(microphoneRestricted()){$('inputMode').value='keyboard';releaseMicrophone()}flightTimeLimitMs=$('activity').value==='school'?120000:configuredTimeLimitMs;completedAt=null;clearAnswerFeedback();activeView=$('sessionView').value;document.body.classList.toggle('focus-session',activeView==='focus');document.body.classList.toggle('focus-voice',activeView==='focus'&&$('inputMode').value==='voice');$('focusAnswer').value='';clearTimeout(advanceTimer);transitioning=false;questionSource=null;items=configuredReview?(()=>{questionSource=FactFlightMath.createReviewSource(configuredReview);return Array.from({length:selectedCount()},()=>questionSource.next())})():$('activity').value==='school'?freshSchoolQuestions(table):(()=>{questionSource=FactFlightMath.createQuestionSource({activity:$('activity').value,level:Number($('level').value),mode:'practice',selection:configuredSelection,previousKeys:repeatQuestionKeys});return Array.from({length:freePractice?1:selectedCount()},()=>questionSource.next())})();index=0;undoStack=[];started=turnStart=performance.now();session={id:Date.now(),date:new Date().toISOString(),table,mode,input:$('inputMode').value,target:$('threshold').value?+$('threshold').value:null,unrecognized:[],invalidated:[]};if($('activity').value!=='school'){delete session.table;session.activity=$('activity').value;session.level=Number($('level').value);session.schemaVersion=1;if(configuredSelection?.type==='tables'){session.selection=structuredClone(configuredSelection);session.schemaVersion=2;delete session.level}if(configuredPracticeType){session.practiceType=configuredPracticeType;session.timeLimitMs=mode==='test'?flightTimeLimitMs:null}}if(configuredReview){delete session.table;delete session.level;delete session.selection;session.activity='review';session.schemaVersion=3;session.practiceType='review';session.timeLimitMs=null;session.review=structuredClone(configuredReview)}phase='running';$('empty').classList.add('hidden');$('playArea').classList.remove('hidden');$('stage').textContent='IN FLIGHT';$('resume').classList.toggle('hidden',session.input!=='voice');$('micReconnectTop').classList.toggle('hidden',session.input!=='voice'||micState==='connected');$('playArea').classList.toggle('keyboard-session',session.input==='keyboard');$('speech').classList.toggle('hidden',session.input==='keyboard');$('keyboardTip').classList.toggle('hidden',session.input!=='keyboard');$('grid').innerHTML='';$('grid').dataset.keyboardSession='';document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=false);renderGrid();updateMetrics();ticker=setInterval(tick,100);if(session.input==='keyboard'){$('micReconnectTop').classList.add('hidden');configureKeyboardInput();focusInlineAnswer();}updateIOSVoiceGuidance();scrollToActiveFact(true);}
 
 const mobileKeypadMedia=window.matchMedia('(max-width: 680px) and (pointer: coarse)');
 function touchKeypadEnabled(){return !isFocus()&&mobileKeypadMedia.matches}
@@ -519,7 +664,7 @@ function renderFocus(){
  if(!isFocus()){if($('speech').parentElement===$('focusCard'))$('playArea').insertBefore($('speech'),$('keyboardTip'));return}
  if($('speech').parentElement!==$('focusCard'))$('focusCard').append($('speech'));
  const p=items[index];
- $('focusPosition').textContent=freePractice?`Question ${index+1} · Free Practice`:`Question ${index+1} of ${items.length}`;
+ $('focusPosition').textContent=freePractice?`Question ${index+1} · Free Practice`:`Question ${index+1} of ${items.length}`+(session.activity==='review'?' · '+FactFlightMath.activities[p.activity].name:'');
  $('focusEquation').textContent=factText(p)+(factText(p).includes('=')?'':' = ?');
  $('focusEquation').classList.toggle('long-equation',$('focusEquation').textContent.length>13);
  paintAnswerFeedback();
@@ -563,6 +708,8 @@ function renderGridKeyboard(){
  configureKeyboardInput();
 }
 function renderGrid(){
+ $('grid').classList.toggle('short-sheet',!!session?.activity&&items.length<=10);
+ $('grid').classList.toggle('ten-sheet',!!session?.activity&&items.length===10);
  renderFocus();
  if(session&&session.input==='keyboard'){renderGridKeyboard();return}
  $('grid').innerHTML='';
@@ -584,17 +731,25 @@ function submit(value,text,source){if(phase!=='running'||transitioning)return;if
 function advance(){clearAnswerFeedback();$('focusAnswer').value='';if(freePractice){if(index+1===items.length)items.push(questionSource.next());index++;turnStart=performance.now();renderGrid();updateMetrics();scrollToActiveFact();focusInlineAnswer();return}let next=-1;for(let i=index+1;i<items.length;i++)if(items[i].status!=='correct'){next=i;break}if(next===-1){for(let i=0;i<=index;i++)if(items[i].status!=='correct'){next=i;break}}if(next===-1){finish('complete');return}index=next;turnStart=performance.now();renderGrid();updateMetrics();scrollToActiveFact();focusInlineAnswer()}
 $('answerForm').onsubmit=e=>{e.preventDefault();let v=parseNumber($('answer').value);if(v!==null){submit(v,$('answer').value,'keyboard');$('answer').value=''}};$('skip').onclick=()=>submit('skip','skip','button');$('undo').onclick=()=>{if(phase!=='running'||!undoStack.length)return;clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();completedAt=null;let old=undoStack.pop();items[index].ms+=performance.now()-turnStart;let spent=items[old.index].ms;session.invalidated.push(old.action);items[old.index]=old.p;items[old.index].ms=Math.max(spent,old.p.ms);index=old.index;if(items[index].status==='wrong'){feedbackItem=items[index];feedbackKind='wrong'}$('focusAnswer').value='';turnStart=performance.now();renderGrid();updateMetrics();$('heard').textContent='Last answer undone. Try that fact again.';scrollToActiveFact();focusInlineAnswer()};$('end').onclick=()=>{if(phase==='running')finish('manual')};
 function stats(s){return {first:s.items.filter(first).length,correct:s.items.filter(p=>p.status==='correct').length,wrong:s.items.filter(p=>p.status!=='correct'&&p.attempts.some(a=>!a.correct)).length,unanswered:s.items.filter(p=>p.status!=='correct'&&!p.attempts.some(a=>!a.correct)).length,errors:s.items.reduce((a,p)=>a+p.attempts.filter(x=>!x.correct).length,0),skips:s.items.reduce((a,p)=>a+p.skips,0)}}
-function finish(reason){if(phase!=='running')return;if($('exitDialog').open)$('exitDialog').close();clearInterval(ticker);clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();let now=performance.now();if(items[index].status!=='correct')items[index].ms+=now-turnStart;phase='done';document.body.classList.remove('focus-session','focus-voice','mobile-keypad-open');$('mobileKeypad').classList.add('hidden');if(session.input==='keyboard'&&document.activeElement?.blur)document.activeElement.blur();stopMic();if(completedAt!==null){now=completedAt;reason='complete'}session.elapsed=Math.min(now-started,mode==='test'?flightTimeLimitMs:Infinity);session.reason=reason;session.items=structuredClone(freePractice?items.filter(p=>p.attempts.length||p.skips):items);history.unshift(session);try{saveSession(session)}catch(e){storageOK=false}$('saveStatus').textContent=storageOK?'Saved on this browser. Export your history for a backup.':'Could not save in this browser. Export this session now to keep it.';controls(false);$('historyNav').disabled=false;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=true);$('stage').textContent='FLIGHT COMPLETE';renderGrid();updateMetrics();$('clock').textContent=duration(mode==='test'?Math.max(0,flightTimeLimitMs-session.elapsed):session.elapsed);renderResult(session);show('resultsView');window.scrollTo({top:0,behavior:'smooth'})}
+function finish(reason){if(phase!=='running')return;if($('exitDialog').open)$('exitDialog').close();clearInterval(ticker);clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();let now=performance.now();if(items[index].status!=='correct')items[index].ms+=now-turnStart;phase='done';document.body.classList.remove('focus-session','focus-voice','mobile-keypad-open');$('mobileKeypad').classList.add('hidden');if(session.input==='keyboard'&&document.activeElement?.blur)document.activeElement.blur();releaseMicrophone();if(completedAt!==null){now=completedAt;reason='complete'}session.elapsed=Math.min(now-started,mode==='test'?flightTimeLimitMs:Infinity);session.reason=reason;session.items=structuredClone(freePractice?items.filter(p=>p.attempts.length||p.skips):items);history.unshift(session);try{saveSession(session)}catch(e){storageOK=false}$('saveStatus').textContent=storageOK?'Saved on this browser. Export your history for a backup.':'Could not save in this browser. Export this session now to keep it.';controls(false);$('historyNav').disabled=false;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=true);$('stage').textContent='FLIGHT COMPLETE';renderGrid();updateMetrics();$('clock').textContent=duration(mode==='test'?Math.max(0,flightTimeLimitMs-session.elapsed):session.elapsed);renderResult(session);show('resultsView');window.scrollTo({top:0,behavior:'smooth'})}
 function factsTable(s){return s.items.map((p,i)=>`<tr><td>${i+1}</td><td>${escapeHTML(factText(p))}</td><td>${p.answer}</td><td>${p.status==='correct'?(first(p)?'First try ✓':'Corrected ✓'):p.attempts.some(a=>!a.correct)?'Unresolved error':'Unanswered'}</td><td>${p.attempts.map(a=>escapeHTML(a.transcript)+(a.correct?' ✓':' ✕')).join(', ')||'—'}</td><td>${p.skips}</td><td>${(p.ms/1000).toFixed(1)}s</td></tr>`).join('')}
 function renderResult(s){let a=stats(s);$('resultsView').innerHTML=`<div class="eyebrow">${s.reason==='time'?'Time’s up':s.reason==='manual'?'Session ended':'All facts complete'} · ${escapeHTML(sessionLabel(s))} · ${escapeHTML(sessionModeLabel(s))}</div><h1>Every try builds confidence.</h1><p>Here’s how this flight went.</p><div class="resultscore">${a.first}<span style="font-size:25px;color:var(--muted)"> / ${s.items.length} first try</span></div><p>${s.target===null?'No pass target set — check with your teacher.':`${a.first>=s.target?'Target reached ✓':'Keep practicing'} · target ${s.target}/${s.items.length} first try.`}</p><div class="resultgrid"><div class="metric"><span>Correct after retries</span><strong>${a.correct}/${s.items.length}</strong></div><div class="metric"><span>Unresolved wrong</span><strong>${a.wrong}</strong></div><div class="metric"><span>Unanswered</span><strong>${a.unanswered}</strong></div><div class="metric"><span>Total time</span><strong>${duration(s.elapsed)}</strong></div></div><p class="small">${a.errors} wrong attempts · ${a.skips} skips · ${s.invalidated.length} undone inputs · ${s.unrecognized.length} unrecognized phrases. First-try accuracy: ${(s.items.length?Math.round(a.first/s.items.length*100):0)}%. Time includes listening and feedback.</p>${!storageOK?'<p style="color:var(--red)">Browser saving is unavailable. Export your results before closing.</p>':''}<div class="controls"><button class="primary" id="again">Practice again →</button><button id="resultHome">Return Home</button><button id="seeProgress">See all progress</button><button id="exportOne">Export session JSON</button></div><details><summary>Review all ${s.items.length} facts & spoken answers</summary><div class="tablewrap"><table><thead><tr><th>#</th><th>Fact</th><th>Answer</th><th>Result</th><th>Attempts</th><th>Skips</th><th>Active time</th></tr></thead><tbody>${factsTable(s)}</tbody></table></div></details>`;$('resultHome').onclick=()=>FlightMenu.home();$('again').onclick=()=>FlightMenu.replay(s);$('seeProgress').onclick=()=>{renderHistory();show('historyView')};$('exportOne').onclick=()=>download(`fact-flight-${s.id}.json`,JSON.stringify(s,null,2),'application/json')}
-function patterns(list=history){let map={};for(let s of list)for(let p of s.items){let key=s.activity?s.activity+':'+p.key:s.table+'×'+p.factor,m=map[key]||(map[key]={text:s.activity?factText(p):s.table+' × '+p.factor,activity:s.activity||'multiplication',table:s.table,factor:p.factor,seen:0,first:0,wrong:0,skips:0,ms:0,attempts:[]});if(p.attempts.length||p.skips){m.seen++;m.first+=first(p)?1:0;m.wrong+=p.attempts.filter(a=>!a.correct).length;m.skips+=p.skips;m.ms+=p.ms;for(let a of p.attempts)if(!a.correct)m.attempts.push(a.value)}}return Object.values(map).filter(m=>m.seen>0).sort((a,b)=>(b.wrong+b.skips)-(a.wrong+a.skips))}
+function patterns(list=history){let map={};for(let s of list)for(let p of s.items){let key=s.activity==='review'?p.activity+':'+p.key:s.activity?s.activity+':'+p.key:s.table+'×'+p.factor,m=map[key]||(map[key]={text:s.activity?factText(p):s.table+' × '+p.factor,activity:p.activity||s.activity||'multiplication',table:s.table,factor:p.factor,seen:0,first:0,wrong:0,skips:0,ms:0,attempts:[]});if(p.attempts.length||p.skips){m.seen++;m.first+=first(p)?1:0;m.wrong+=p.attempts.filter(a=>!a.correct).length;m.skips+=p.skips;m.ms+=p.ms;for(let a of p.attempts)if(!a.correct)m.attempts.push(a.value)}}return Object.values(map).filter(m=>m.seen>0).sort((a,b)=>(b.wrong+b.skips)-(a.wrong+a.skips))}
 function bindReportToggle(buttonId,tableId,countId,total,label){
  const button=$(buttonId);if(!button)return;
  button.onclick=()=>{const expanded=button.getAttribute('aria-expanded')!=='true';button.setAttribute('aria-expanded',String(expanded));$(tableId).querySelectorAll('[data-report-extra]').forEach(row=>row.classList.toggle('hidden',!expanded));button.textContent=expanded?`Show fewer ${label} ▴`:`Show all ${total} ${label} ▾`;$(countId).textContent=`Showing ${expanded?total:Math.min(3,total)} of ${total} ${label}`+(label==='flights'?' · newest first':'')};
 }
-function renderHistory(activity=null){const list=activity?history.filter(s=>(s.activity||'multiplication')===activity):history;const factRows=patterns(list);let total=list.reduce((n,s)=>n+stats(s).first,0);$('historyView').innerHTML=`<div class="sheetbar"><div><div class="eyebrow">The bigger picture</div><h1>Your practice, taking flight.</h1></div><button id="back">← Practice</button></div><div class="metrics"><div class="metric"><span>Sessions</span><strong>${list.length}</strong></div><div class="metric"><span>First-try facts</span><strong>${total}</strong></div><div class="metric"><span>Practice time</span><strong>${duration(list.reduce((n,s)=>n+s.elapsed,0))}</strong></div></div>${activity?`<h2>${FactFlightMath.activities[activity].name}</h2><button id="allActivities">All activities</button>`:`<h2>Progress by activity</h2><div class="activity-progress">${Object.entries(FactFlightMath.activities).map(([id,a])=>{const flights=history.filter(s=>(s.activity||'multiplication')===id),totals=flights.reduce((sum,s)=>{const t=stats(s);for(const key of Object.keys(sum))sum[key]+=t[key];return sum},{first:0,correct:0,wrong:0,unanswered:0,errors:0});return `<button data-activity-progress="${id}"><strong>${a.name}</strong><span>${flights.length} flights · ${totals.correct} correct · ${totals.wrong} incorrect at finish</span><span>${totals.first} first-attempt correct · ${totals.unanswered} unanswered · ${totals.errors} wrong attempts</span></button>`}).join('')}</div>`}<h2>Facts to focus on</h2><details><summary>About these numbers</summary><p class="small">Equivalent addition and multiplication orders are grouped together. Activities stay separate. Untouched facts are excluded. Start with the most errors and skips. Seen counts encounters, including reversed equivalent facts; time is an average, not a maximum. Incorrect values are submitted answers, not counts, and can come from speech, typing or keypad. Up to 12 recent incorrect values are shown.</p></details><p class="small" id="factsPreviewCount">Showing ${Math.min(3,factRows.length)} of ${factRows.length} facts</p><div class="tablewrap"><table id="factsReport"><thead><tr><th>Fact</th><th>Seen</th><th>First-try %</th><th>Wrong attempts</th><th>Skips</th><th>Avg active time</th><th>Recent incorrect values</th></tr></thead><tbody>${factRows.map((m,i)=>`<tr${i>=3?' class="hidden" data-report-extra':''}><td><b>${escapeHTML(m.text)}</b></td><td>${m.seen}</td><td>${Math.round(m.first/m.seen*100)}%</td><td>${m.wrong}</td><td>${m.skips}</td><td>${(m.ms/m.seen/1000).toFixed(1)}s</td><td>${m.attempts.slice(-12).map(v=>'Answer: '+escapeHTML(v)).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="7">Your first session will start your story here.</td></tr>'}</tbody></table></div>${factRows.length>3?`<button id="toggleFacts" aria-expanded="false" aria-controls="factsReport">Show all ${factRows.length} facts ▾</button>`:''}<h2 style="margin-top:30px">Flight log</h2><p class="small" id="flightsPreviewCount">Showing ${Math.min(3,list.length)} of ${list.length} flights · newest first</p><div class="tablewrap"><table id="flightsReport"><thead><tr><th>Date</th><th>Table / mode</th><th>First try</th><th>Final correct</th><th>Time</th><th></th></tr></thead><tbody>${list.map((s,i)=>{let a=stats(s);return `<tr${i>=3?' class="hidden" data-report-extra':''}><td>${new Date(s.date).toLocaleString()}</td><td>${escapeHTML(sessionLabel(s))} · ${escapeHTML(sessionModeLabel(s))}</td><td>${a.first}/${s.items.length}</td><td>${a.correct}/${s.items.length}</td><td>${duration(s.elapsed)}</td><td><button data-review="${i}">Review</button></td></tr>`}).join('')}</tbody></table></div>${list.length>3?`<button id="toggleFlights" aria-expanded="false" aria-controls="flightsReport">Show all ${list.length} flights ▾</button>`:''}<div class="controls"><button id="exportAll">Export full history JSON</button><button id="exportCSV">Export attempts CSV</button></div><p class="small">Saved only in this browser on this device. Clearing browser data removes saved progress. Export includes per-question attempts, recognized words, timing, skips, and corrections.</p>`;bindReportToggle('toggleFacts','factsReport','factsPreviewCount',factRows.length,'facts');bindReportToggle('toggleFlights','flightsReport','flightsPreviewCount',list.length,'flights');document.querySelectorAll('[data-activity-progress]').forEach(b=>b.onclick=()=>renderHistory(b.dataset.activityProgress));if($('allActivities'))$('allActivities').onclick=()=>renderHistory();$('back').textContent='← Home';$('back').onclick=()=>FlightMenu.home();$('exportAll').onclick=()=>download('fact-flight-history.json',JSON.stringify(history,null,2),'application/json');$('exportCSV').onclick=exportCSV;document.querySelectorAll('[data-review]').forEach(b=>b.onclick=()=>{renderResult(list[+b.dataset.review]);show('resultsView')})}
+function activityFlights(activity){return history.flatMap(s=>{if(s.activity==='review'){const selected=s.items.filter(p=>p.activity===activity);return selected.length?[{...s,items:selected,elapsed:selected.reduce((n,p)=>n+p.ms,0)}]:[]}return (s.activity||'multiplication')===activity?[s]:[]})}
+function openActivityProgress(activity=null){
+ // Complete the profile/table-report render before positioning the new report.
+ renderHistory(activity);
+ const heading=$('activityProgressHeading');
+ heading.focus({preventScroll:true});
+ heading.scrollIntoView({block:'start',behavior:'instant'});
+}
+function renderHistory(activity=null){const list=activity?activityFlights(activity):history;const factRows=patterns(list);let total=list.reduce((n,s)=>n+stats(s).first,0);$('historyView').innerHTML=`<div class="sheetbar"><div><div class="eyebrow">The bigger picture</div><h1>Your practice, taking flight.</h1></div><button id="back">← Practice</button></div><div class="metrics"><div class="metric"><span>Sessions</span><strong>${list.length}</strong></div><div class="metric"><span>First-try facts</span><strong>${total}</strong></div><div class="metric"><span>Practice time</span><strong>${duration(list.reduce((n,s)=>n+s.elapsed,0))}</strong></div></div>${activity?`<h2 id="activityProgressHeading" tabindex="-1">${FactFlightMath.activities[activity].name}</h2><button id="allActivities">All activities</button>`:`<h2 id="activityProgressHeading" tabindex="-1">Progress by activity</h2><div class="activity-progress">${Object.entries(FactFlightMath.activities).map(([id,a])=>{const flights=activityFlights(id),totals=flights.reduce((sum,s)=>{const t=stats(s);for(const key of Object.keys(sum))sum[key]+=t[key];return sum},{first:0,correct:0,wrong:0,unanswered:0,errors:0});return `<button data-activity-progress="${id}"><strong>${a.name}</strong><span>${flights.length} flights · ${totals.correct} correct · ${totals.wrong} incorrect at finish</span><span>${totals.first} first-attempt correct · ${totals.unanswered} unanswered · ${totals.errors} wrong attempts</span></button>`}).join('')}</div>`}<h2>Facts to focus on</h2><details><summary>About these numbers</summary><p class="small">Equivalent addition and multiplication orders are grouped together. Activities stay separate. Mixed review flights count in each relevant activity using only its facts; do not add activity flight counts together. Filtered review time is matching facts’ active time. Untouched facts are excluded. Start with the most errors and skips. Seen counts encounters, including reversed equivalent facts; time is an average, not a maximum. Incorrect values are submitted answers, not counts, and can come from speech, typing or keypad. Up to 12 recent incorrect values are shown.</p></details><p class="small" id="factsPreviewCount">Showing ${Math.min(3,factRows.length)} of ${factRows.length} facts</p><div class="tablewrap"><table id="factsReport"><thead><tr><th>Fact</th><th>Seen</th><th>First-try %</th><th>Wrong attempts</th><th>Skips</th><th>Avg active time</th><th>Recent incorrect values</th></tr></thead><tbody>${factRows.map((m,i)=>`<tr${i>=3?' class="hidden" data-report-extra':''}><td><b>${escapeHTML(m.text)}</b></td><td>${m.seen}</td><td>${Math.round(m.first/m.seen*100)}%</td><td>${m.wrong}</td><td>${m.skips}</td><td>${(m.ms/m.seen/1000).toFixed(1)}s</td><td>${m.attempts.slice(-12).map(v=>'Answer: '+escapeHTML(v)).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="7">Your first session will start your story here.</td></tr>'}</tbody></table></div>${factRows.length>3?`<button id="toggleFacts" aria-expanded="false" aria-controls="factsReport">Show all ${factRows.length} facts ▾</button>`:''}<h2 class="report-section-title">Flight log</h2><p class="small" id="flightsPreviewCount">Showing ${Math.min(3,list.length)} of ${list.length} flights · newest first</p><div class="tablewrap"><table id="flightsReport"><thead><tr><th>Date</th><th>Table / mode</th><th>First try</th><th>Final correct</th><th>Time</th><th></th></tr></thead><tbody>${list.map((s,i)=>{let a=stats(s);return `<tr${i>=3?' class="hidden" data-report-extra':''}><td>${new Date(s.date).toLocaleString()}</td><td>${escapeHTML(sessionLabel(s))} · ${escapeHTML(sessionModeLabel(s))}</td><td>${a.first}/${s.items.length}</td><td>${a.correct}/${s.items.length}</td><td>${duration(s.elapsed)}</td><td><button data-review="${i}">Review</button></td></tr>`}).join('')}</tbody></table></div>${list.length>3?`<button id="toggleFlights" aria-expanded="false" aria-controls="flightsReport">Show all ${list.length} flights ▾</button>`:''}<div class="controls"><button id="exportAll">Export full history JSON</button><button id="exportCSV">Export attempts CSV</button></div><p class="small">Saved only in this browser on this device. Clearing browser data removes saved progress. Export includes per-question attempts, recognized words, timing, skips, and corrections.</p>`;bindReportToggle('toggleFacts','factsReport','factsPreviewCount',factRows.length,'facts');bindReportToggle('toggleFlights','flightsReport','flightsPreviewCount',list.length,'flights');document.querySelectorAll('[data-activity-progress]').forEach(b=>b.onclick=()=>openActivityProgress(b.dataset.activityProgress));if($('allActivities'))$('allActivities').onclick=()=>openActivityProgress();$('back').textContent='← Home';$('back').onclick=()=>FlightMenu.home();$('exportAll').onclick=()=>download('fact-flight-history.json',JSON.stringify(history,null,2),'application/json');$('exportCSV').onclick=exportCSV;document.querySelectorAll('[data-review]').forEach(b=>b.onclick=()=>{renderResult(history.find(s=>s.id===list[+b.dataset.review].id)||list[+b.dataset.review]);show('resultsView')})}
 function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-function exportCSV(){let rows=[['session','date','table','mode','question','fact','expected','status','skips','active_seconds','attempt','answer','correct','recognized','source','elapsed_seconds','activity','level','practice_type','time_limit_seconds','selected_tables']];for(let s of history)s.items.forEach((p,i)=>{const list=p.attempts.length?p.attempts:[null];list.forEach((a,j)=>rows.push([s.id,s.date,s.table??'',s.mode,i+1,factText(p),p.answer,p.status,p.skips,(p.ms/1000).toFixed(2),a?j+1:'',a?.value??'',a?.correct??'',a?.transcript??'',a?.source??'',a?(a.at/1000).toFixed(2):'',s.activity||'multiplication',s.activity?(s.selection?.type==='tables'?'':s.level+1):'School table '+s.table,s.practiceType||'',s.timeLimitMs?s.timeLimitMs/1000:'',s.selection?.type==='tables'?s.selection.tables.join(';'):'']))});download('fact-flight-attempts.csv',rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv')}
+function exportCSV(){let rows=[['session','date','table','mode','question','fact','expected','status','skips','active_seconds','attempt','answer','correct','recognized','source','elapsed_seconds','activity','level','practice_type','time_limit_seconds','selected_tables']];for(let s of history)s.items.forEach((p,i)=>{const list=p.attempts.length?p.attempts:[null];list.forEach((a,j)=>rows.push([s.id,s.date,s.table??'',s.mode,i+1,factText(p),p.answer,p.status,p.skips,(p.ms/1000).toFixed(2),a?j+1:'',a?.value??'',a?.correct??'',a?.transcript??'',a?.source??'',a?(a.at/1000).toFixed(2):'',p.activity||s.activity||'multiplication',s.activity==='review'?(p.level!==undefined?p.level+1:p.table?'School table '+p.table:''):s.activity?(s.selection?.type==='tables'?'':s.level+1):'School table '+s.table,s.practiceType||'',s.timeLimitMs?s.timeLimitMs/1000:'',(p.selection||s.selection)?.type==='tables'?(p.selection||s.selection).tables.join(';'):'']))});download('fact-flight-attempts.csv',rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv')}
 window.addEventListener('beforeunload',e=>{if(phase==='running'){e.preventDefault();e.returnValue=''}});
 function requestSessionExit(){if(phase==='running'){if(!$('exitDialog').open)$('exitDialog').showModal()}else if(phase!=='checking')FlightMenu.home()}
 $('sessionHome').onclick=requestSessionExit;
