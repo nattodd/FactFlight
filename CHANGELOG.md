@@ -8,7 +8,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
-Local finalized version: `6.2.0`, owner-accepted but not published. The release-check groups passed as reported; iOS voice retry remains a documented limitation and voice is frozen. Entries remain **Unreleased** until explicit production approval; no release date/tag has been assigned. See [final review](docs/v6.2-local-final-review.md).
+No unreleased changes.
+
+## [6.2.0] - 2026-11-16
+
+Owner-accepted mobile practice, targeted review and progress improvements. iOS voice retry remains a known limitation; keypad fallback is supported. See [release notes](docs/v6.2-release-notes.md).
 
 ### Fixed
 - Learner saving is limited to one open tab to prevent concurrent whole-family writes from replacing another learner or flight. Other tabs show a warning, retain viewing/export and Guest practice, and keep unsaved flights exportable. Close the saving tab and reload the other tab to transfer saving; export unsaved results before reloading. Existing records and backup formats are unchanged.
@@ -28,11 +32,11 @@ Local finalized version: `6.2.0`, owner-accepted but not published. The release-
 - Downloadable, temporary microphone event diagnostics exclude audio, recognized words and learner details. Experimental lab code is excluded from the release tree; its history remains in Git.
 
 ### Changed
-- Finalized local `6.2.0` metadata and removed the standalone microphone lab HTML/script from the static release tree. Voice experiments are frozen; no further speech lifecycle changes are included. v6.2 remains unpublished; this finalization is local until separately authorized.
+- Finalized `6.2.0` metadata and removed the standalone microphone lab HTML/script from the static release tree. Voice experiments are frozen; no further speech lifecycle changes are included. The owner approved publication to main/GitHub Pages; Netlify production remains unchanged.
 - Mobile setup keeps Back and Continue/Start in a persistent bottom action area; Results keeps repeat and eligible Next Level/Table actions reachable. It reserves space and returns to ordinary flow for editing, short viewports, zoom or oversized text.
 - Microphone retry and Cancel appear directly below status; iPhone help and refresh options are collapsed. Progress table/activity cards initially show three entries with independent Show all / Show fewer controls.
 - New review records and backups require a v6.2-compatible reader. Older history is preserved; local-only result storage and optional voice remain unchanged.
-- Final regression updated older test expectations for waiting-for-speech status, scoped replay notices and collapsed activity cards. See [automated evidence](docs/v6.2-final-regression.md) and [remaining manual checks](docs/v6.2-manual-release-checklist.md). Earlier experimental voice notes are consolidated here into final behavior; their chronology remains in the increment verification documents. v6.2 is unreleased.
+- Final regression updated older test expectations for waiting-for-speech status, scoped replay notices and collapsed activity cards. See [automated evidence](docs/v6.2-final-regression.md) and [remaining manual checks](docs/v6.2-manual-release-checklist.md). Earlier experimental voice notes are consolidated here into final behavior; their chronology remains in the increment verification documents. Version 6.2.0 is the released scope.
 
 ## [6.1.0] - 2026-11-15
 

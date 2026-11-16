@@ -2,9 +2,9 @@
 
 **Vision:** *Little practice. Big confidence.* Simple, enjoyable practice for children ages 2–12 without unnecessary accounts, subscriptions, advertisements, complex menus or prescribed learning paths.
 
-**Current stable release:** `v6.1.0`, published to GitHub Pages from main `f760615`, with annotated tag and [GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.1.0). Production voice is owner-accepted on Windows Chrome and physical iPhone Chrome/Safari. **Current development checkout:** `v6.2-development`, created with owner approval from verified production `main` / v6.1.0 `f760615`. Release-completion notes and the reviewed documentation/image were carried forward; the owner approved committing this documentation-only update locally.
+**Current stable release:** `v6.2.0`, released 2026-11-16 to main/GitHub Pages; see the [GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.2.0) and [release record](docs/v6.2-release-record.md). **Development branch:** `v6.2-development`. Netlify production remains `v6-development`. v6.1.0 at `f760615` is the previous stable release; rollback requires separate approval and compatibility with v6.2 review records.
 
-**Local finalization — 2026-11-16:** v6.2.0 implementation and release-check groups are owner-accepted. Metadata is finalized locally; publication is not approved. The updated README roadmap image labels v6.1 Available Now, v6.2 Ready for Release / Not Yet Published, and v6.3–v6.7 Coming Soon. Voice is frozen, retry reliability remains a known limitation, and future physical-usability improvements belong to v6.3. Earlier authorization/status paragraphs below are historical and superseded by this current status.
+**Publication — 2026-11-16:** The owner verified Netlify Branch Deploy `a9fe516`, accepted the release-check groups and approved v6.2.0 publication to main/GitHub Pages with tag and GitHub release. The updated image marks v6.2 Available Now and v6.3–v6.7 Coming Soon. Earlier local-only/pending status notes below are historical. Voice remains frozen and retry reliability remains a known limitation. Netlify production is unchanged.
 
 **Planning agreement — 2026-11-15:** The owner agreed to the post-v6.1 milestone sequence and authorized this roadmap update only. Future features remain planned, not implemented or verified. This agreement does not authorize application changes, branch creation, commits, pushes, deployments or Netlify configuration changes. Milestone suffixes identify independently testable increments, not promised version tags or dates. Detailed product defaults below remain proposals to confirm before their implementation.
 
@@ -131,7 +131,7 @@ Completed releases are listed first, followed by the agreed future sequence. All
 
 **Evidence:** Published main `6cff208`, annotated tag and GitHub release. See [release notes](docs/v6-release-notes.md) and [production verification](docs/v6-release-plan.md#completed-production-verification) for reported checks and coverage limits. Full-family backup, legacy association and offline were not delivered. v6.0.0 cannot be assumed to read new v6.1 targeted-table backups correctly.
 
-### v6.1.0 — Targeted practice and easier repeat sessions (COMPLETE — current production)
+### v6.1.0 — Targeted practice and easier repeat sessions (COMPLETE — previous release)
 
 Released scope: G/E/F/A plus Next Table(s) and the heading correction. Earlier scope and acceptance records are preserved in the historical appendix; they are not outstanding release gates.
 
@@ -154,7 +154,7 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 **Milestone closed:** completed release and production voice verification are recorded above; accepted coverage limitations remain visible. No new app change or publication is part of this documentation update.
 
-### v6.2 — Targeted review and mobile setup usability (READY FOR RELEASE — not yet published)
+### v6.2 — Targeted review and mobile setup usability (COMPLETE — current production)
 
 **Owner release-check acceptance — 2026-11-16:** Microphone checks, keypad fallback, two-tab recovery (including export from the non-saving tab and successful import into the saving tab), final practice/data smoke testing, family safeguards and physical usability passed as reported after preview `2072106`. Further physical-usability improvements are deferred to v6.3; specifics are not yet defined. Voice remains frozen. Local release finalization is complete; explicit production approval remains outstanding. v6.2 is Ready for Release, not yet published. See the [acceptance record](docs/v6.2-manual-release-checklist.md).
 
