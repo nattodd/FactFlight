@@ -26,16 +26,24 @@
 <option value="flight">D · Hands-free flight</option>
 <option value="continuous">E · One short cue per flight</option>
 <option value="shortFlight">F · Short cue before each answer</option>
+<option value="fastFlight">G · Faster cue + heard display</option>
 </select>
 <p id="description">Single-phrase recognition. The browser ends the session itself.</p>
 <p id="status" role="status" aria-live="polite">Ready to test. Microphone is off.</p>
 <button id="start" class="primary">Start attempt</button>
 <button id="cancel" disabled>Cancel &amp; release microphone</button>
+<div id="heardPanel" hidden>
+<p><strong>Heard (temporary)</strong></p>
+<p id="heardText" style="overflow-wrap:anywhere" aria-live="polite"></p>
+<button id="clearHeard">Clear heard text</button>
+<small>Shown only in Mode G. Clears for the next phrase, on cancellation, mode change or reload. A final mismatch stays visible until cleared. Never included in the downloaded log.</small>
+</div>
 <p id="counts" class="muted">No attempts yet.</p>
 <p>Tap Start attempt, wait for “Say ready,” then say <strong>“ready”</strong> once. Wait for the session to end before repeating. Aim for 10 attempts per mode.</p>
 <p><strong>Mode D:</strong> Tap Start, say “ready” at Listening, then answer five displayed sums. Tap Next flight for five more answers, without another “ready.” Wait for Listening before each answer; do not refresh between flights.</p>
 <p><strong>Mode E:</strong> The same sequence, with a short “E” cue only at each flight’s start. Keep answering as the displayed question changes. The microphone stays open between answers and stops at the flight’s end. This tests whether the repeated cue delay can be removed; the short cue may or may not be audible.</p>
 <p><strong>Mode F:</strong> Exactly Mode D’s sequence, with “E” replacing “Your turn” before ready and every answer. The 400 ms cooldown and natural endings are unchanged. Compare two flights in each mode; shorter text is not a guarantee of faster or reliable recognition.</p>
+<p><strong>Mode G:</strong> Mode D with “Your turn” at synthesis rate 2 and the same 400 ms cooldown. The log records cue request, start and end events to distinguish startup from speaking time. If an answer is rejected, read the temporary Heard display before restarting; the log still contains no spoken text.</p>
 <small>A–C count result arrivals only. D checks ready and the five expected answers without saving spoken text. No five-second reset: after 20 seconds we show a notice but keep listening until you cancel or the browser ends.</small>
 </section>
 <section>

@@ -149,5 +149,31 @@ async function continuousWord(p,text,index,final=true){await p.evaluate(({text,i
   await p.locator('#start').click();await cueEnd(p);await speak(p,'PRIVATE WRONG PHRASE');await naturalEnd(p);
   assert.match(await p.locator('#status').textContent(),/stopped before completion/);assert.equal(await p.evaluate(()=>cues.length),2);await c.close();
  });
+ await check('Mode G keeps D natural endings and 400ms cooldown with rate-2 cues and timing events',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('fastFlight');await p.locator('#start').click();
+  for(const word of ['ready','2','3','4','5','6']){
+   await p.evaluate(()=>cues.at(-1).onstart());await cueEnd(p);await speak(p,word);
+   const before=await p.evaluate(()=>cues.length);await p.evaluate(()=>instances.at(-1).onend());await p.clock.runFor(399);
+   assert.equal(await p.evaluate(()=>cues.length),before);await p.clock.runFor(1);
+  }
+  await p.locator('#start').click();for(const word of ['2','3','4','5','6']){await p.evaluate(()=>cues.at(-1).onstart());await cueEnd(p);await speak(p,word);await naturalEnd(p)}
+  assert.match(await p.locator('#status').textContent(),/Flight complete/);
+  assert(await p.evaluate(()=>cues.length===11&&cues.every(u=>u.text==='Your turn'&&u.rate===2)));
+  assert(await p.evaluate(()=>instances.every(r=>!r.continuous&&!r.stopped&&!r.aborted)));
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'));
+  assert.equal(data.events.filter(e=>e.event==='cue-start').length,11);assert(data.events.filter(e=>e.event==='cue-requested').every(e=>e.rate===2));
+  await p.locator('#mode').selectOption('flight');await p.locator('#start').click();assert.equal(await p.evaluate(()=>cues.at(-1).rate),undefined);assert.equal(await p.evaluate(()=>cues.at(-1).text),'Your turn');await c.close();
+ });
+ await check('Mode G heard text uses plain text, survives mismatch, never exports and clears on retry/cancel/mode change',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('fastFlight');await p.locator('#start').click();await cueEnd(p);
+  const secret='<img src=x> PRIVATE SIX MISMATCH';await speak(p,secret);await naturalEnd(p);
+  assert.equal(await p.locator('#heardText').textContent(),'Final: '+secret);assert.equal(await p.locator('#heardText img').count(),0);
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=fs.readFileSync(await (await pending).path(),'utf8');assert(!data.includes('PRIVATE SIX MISMATCH'));
+  assert.deepEqual(await p.evaluate(()=>Object.entries(localStorage)),[['lab-history-sentinel','unchanged']]);assert.equal(await p.evaluate(()=>sessionStorage.length),0);
+  await p.locator('#clearHeard').click();assert.equal(await p.locator('#heardText').textContent(),'');
+  await p.locator('#start').click();await cueEnd(p);await speak(p,'ready');await naturalEnd(p);assert.equal(await p.locator('#heardText').textContent(),'');
+  await cueEnd(p);await speak(p,'2');await p.locator('#cancel').click();assert.equal(await p.locator('#heardText').textContent(),'');await p.clock.runFor(400);
+  await p.locator('#mode').selectOption('flight');assert(await p.locator('#heardPanel').isHidden());await c.close();
+ });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});
