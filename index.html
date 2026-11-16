@@ -324,6 +324,25 @@ function connectMic(){
    if(interimTimer!==null)clearTimeout(interimTimer);
    interimTimer=null;pendingInterim=null;
  }
+ const normalizeReady=text=>text.toLowerCase().replace(/[.!?,]/g,'').trim();
+ const isReady=text=>/^(?:i am |i'm |im )?ready$/.test(normalizeReady(text));
+ function acceptReady(){
+   if(epoch!==recEpoch||phase!=='checking')return;
+   $('micDialog').close();begin();
+   if(phase==='running'){setMicStatus('connected');$('heard').textContent='Listening — say one answer at a time.'}
+ }
+ function queueReadyInterim(text,resultIndex){
+   $('micMessage').textContent='Hearing “'+text+'”… '+(isReady(text)?'Hold a moment to begin.':'Please say “ready.”');
+   if(!isReady(text)){clearInterim();return}
+   if(pendingInterim?.resultIndex===resultIndex&&pendingInterim?.text===text)return;
+   clearInterim();pendingInterim={text,resultIndex};
+   interimTimer=setTimeout(()=>{
+     const pending=pendingInterim;clearInterim();
+     if(!pending||epoch!==recEpoch||phase!=='checking'||processed.has(resultIndex))return;
+     processed.add(resultIndex);lastFinal=normalizeReady(text);lastFinalAt=performance.now();
+     acceptReady();
+   },1300);
+ }
  function queueStableInterim(text, resultIndex){
    const value=parseVoiceNumber(text);
    if(phase!=='running'||transitioning||value===null){clearInterim();return}
@@ -350,11 +369,12 @@ function connectMic(){
  };
  recognizer.onresult=e=>{
    if(epoch!==recEpoch)return;
-   if(transitioning){clearInterim();for(let j=e.resultIndex;j<e.results.length;j++)processed.add(j);return;}
+   if(phase==='running'&&transitioning){clearInterim();for(let j=e.resultIndex;j<e.results.length;j++)processed.add(j);return;}
    for(let k=e.resultIndex;k<e.results.length;k++){
      const result=e.results[k],text=result[0].transcript.trim();
      if(!result.isFinal){
-       if(phase==='running'){
+       if(phase==='checking')queueReadyInterim(text,k);
+       else if(phase==='running'){
          $('heard').textContent=`Hearing: “${text}”…`;
          // Do not score partial recognition right away: 'four' may become 'fourteen'.
          queueStableInterim(text,k);
@@ -367,10 +387,8 @@ function connectMic(){
      if(normalized===lastFinal&&now-lastFinalAt<350)continue;
      lastFinal=normalized;lastFinalAt=now;restarts=0;
      if(phase==='checking'){
-       if(/^(?:i am |i'm |im )?ready$/.test(normalized)){
-         $('micDialog').close();begin();
-         if(phase==='running'){setMicStatus('connected');$('heard').textContent='Listening — say one answer at a time.'}
-       }else $('micMessage').textContent=`Heard “${text}”. Please say “ready.”`;
+       if(isReady(normalized))acceptReady();
+       else $('micMessage').textContent=`Heard “${text}”. Please say “ready.”`;
      }else if(phase==='running'){
        $('heard').textContent=`Heard: “${text}”`;
        if(normalized==='skip')submit('skip',text,'voice');

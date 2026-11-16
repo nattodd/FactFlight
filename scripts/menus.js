@@ -164,7 +164,7 @@ begin=function(){
 function replay(s,action='review'){
  if(busy())return;
  if(!FlightProfiles.canRepeat(s)){FlightMenu.home();return}
- if(s.activity==='review'){openReview(s.review.facts,{source:s.review.source,filter:s.review.filter,owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad'});return}
+ if(s.activity==='review'){openReview(FlightProfiles.reviewRetryFacts(s),{source:s.review.source,filter:s.review.filter,owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad'});return}
  repeatSource=s;
  const remembered=flightChoices.get(s),school=!s.activity;
  if(remembered){cfg=structuredClone(remembered);replayNote='Review these settings before starting a fresh set.'}
@@ -230,7 +230,7 @@ function resultActions(s){
  const again=$('again');if(!again)return;
  if(!FlightProfiles.canRepeat(s)){again.remove();return}
  const c=flightChoices.get(s),complete=c&&validConfig(c);
- again.textContent=complete?'Practice Again →':'Review settings →';
+ again.textContent=s.activity==='review'?'Review remaining facts →':complete?'Practice Again →':'Review settings →';
  again.onclick=()=>replay(s,'again');
  const group=document.createElement('div');group.className='repeat-actions';again.before(group);group.append(again);
  if(complete){

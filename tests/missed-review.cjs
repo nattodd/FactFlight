@@ -115,6 +115,43 @@ async function seed(p){
   await p.evaluate(()=>FlightProfiles.rememberReview({input:'keypad',view:'focus'}));assert.equal(await p.evaluate(()=>FlightProfiles.reviewChoice().view),'focus');
   await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();assert.equal(await p.evaluate(()=>FlightProfiles.reviewChoice()),null);await c.close();
  });
+ await test('Results retry removes facts after two successful review flights',async()=>{
+  const [c,p]=await page();await seed(p);await p.locator('#progressReview').click();await p.locator('[data-review-view=focus]').click();
+  for(let round=0;round<2;round++){
+   assert.equal(await p.locator('[data-review-fact]:checked').count(),5);await p.locator('[data-review-start]').click();
+   for(let i=0;i<5;i++)await answer(p);
+   await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
+   await p.locator('#again').click();
+  }
+  assert.equal(await p.locator('[data-review-fact]').count(),0);assert(await p.locator('[data-review-start]').isDisabled());
+  await p.locator('#historyNav').click();await p.locator('#progressReview').click();assert.equal(await p.locator('[data-review-fact]').count(),0);await c.close();
+ });
+ await test('Repeated voice review accepts stable interim ready and reconnect',async()=>{
+  const [c,p]=await page({viewport:{width:390,height:844}});await seed(p);
+  await p.evaluate(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});
+  const say=(text,final=true)=>p.evaluate(({text,final})=>{const r=[{transcript:text}];r.isFinal=final;testRecognition.onresult({resultIndex:0,results:[r]})},{text,final});
+  await p.locator('#progressReview').click();await p.locator('[data-review-input=voice]').click();await p.locator('[data-review-start]').click();await say('ready');await finish(p);
+  await p.locator('#again').click();await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
+  await say('ready',false);await p.waitForFunction(()=>phase==='running',{},{timeout:3500});await finish(p);
+  await p.locator('#again').click();await p.locator('[data-review-start]').click();await p.locator('#retryMic').click();await say('I am ready',false);await p.waitForFunction(()=>phase==='running',{},{timeout:3500});await c.close();
+ });
+ await test('Interim ready replacement, cancellation, stale reconnect and final-result guards',async()=>{
+  const [c,p]=await page();await seed(p);await p.evaluate(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}});
+  const say=(text,final=false)=>p.evaluate(({text,final})=>{const r=[{transcript:text}];r.isFinal=final;testRecognition.onresult({resultIndex:0,results:[r]})},{text,final});
+  await p.locator('#progressReview').click();await p.locator('[data-review-input=voice]').click();await p.locator('[data-review-start]').click();
+  await say('ready');await say('ready or not');await p.waitForTimeout(1450);assert.equal(await p.evaluate(()=>phase),'checking');assert((await p.locator('#micMessage').innerText()).includes('ready or not'));
+  await say('ready');await p.locator('#cancelMic').click();await p.waitForTimeout(1450);assert.equal(await p.evaluate(()=>phase),'idle');
+  await p.locator('[data-review-start]').click();await say('ready');await p.locator('#retryMic').click();await p.waitForTimeout(1450);assert.equal(await p.evaluate(()=>phase),'checking');
+  await say('ready');await say('ready',true);assert.equal(await p.evaluate(()=>phase),'running');const id=await p.evaluate(()=>session.id);await p.waitForTimeout(1450);assert.equal(await p.evaluate(()=>session.id),id);assert(await p.evaluate(()=>items.every(q=>q.attempts.length===0)));await c.close();
+ });
+ await test('Ordinary Practice Again starts after complete spoken-answer flight',async()=>{
+  const [c,p]=await page({viewport:{width:390,height:844}});await p.evaluate(()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this;this.results=[]}start(){this.onstart?.()}abort(){}}});
+  const say=text=>p.evaluate(text=>{const r=[{transcript:text}];r.isFinal=true;const rec=testRecognition;rec.results.push(r);rec.onresult({resultIndex:rec.results.length-1,results:rec.results})},text);
+  await choose(p,{input:'voice'});await say('ready');
+  for(let i=0;i<5;i++){await say(String(await p.evaluate(()=>items[index].answer)));await require('./feedback-wait.cjs')(p)}
+  await p.waitForFunction(()=>phase==='done');await p.locator('#again').click();assert.equal(await p.evaluate(()=>phase),'checking');await say('hello there');assert((await p.locator('#micMessage').innerText()).includes('hello there'));
+  await p.locator('#retryMic').click();await say('ready');assert.equal(await p.evaluate(()=>phase),'running');await say(String(await p.evaluate(()=>items[index].answer)));await require('./feedback-wait.cjs')(p);assert.equal(await p.evaluate(()=>items.filter(q=>q.status==='correct').length),1);await c.close();
+ });
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'missed-review-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});

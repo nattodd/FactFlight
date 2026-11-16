@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+### Fixed
+- Review retries now refresh eligibility from the learner's current saved and unsaved flights, removing facts retired after two first-try successes. The Results shortcut is labeled Review remaining facts and stays within its original fact selection.
+- Voice readiness now displays interim transcripts and accepts an exact, stable interim “ready” after a short pause when no final result arrives. Cancellation, reconnection and late-result guards prevent stale recognition from starting another flight. The owner confirmed microphone reinitialization between tests in the local browser; physical iPhone Chrome confirmation of this follow-up remains pending.
+
 ### Added
 - Missed-fact review from Results uses only that flight. Progress defaults to All activities, with a single-activity option, and considers the latest five eligible flights for the selected learner. Choose up to five unique missed or skipped facts for untimed practice, with voice or keypad/keyboard and Focus or Worksheet views.
 - Mixed reviews preserve each fact's activity and original level/table context in new results, replay, learner backups and CSV exports. Older records are not rewritten. Backups containing review sessions require a v6.2-compatible reader. Guest reviews remain temporary and limited to the current completed flight.
@@ -15,7 +19,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ### Changed
 - Mobile practice setup keeps Back and Continue/Start in a bottom action area with a compact selection summary. Results keep Practice Again (or Review settings) and eligible Next Level/Table actions within reach. Existing voice-ready and repeat behavior is preserved.
-- The action area reserves content space, respects safe-area insets, and returns to normal page flow while editing text inputs, on short viewports, when zoomed, or when enlarged text makes it too tall. The v6.2a layout and voice were owner-accepted on iPhone Safari and Chrome through the branch preview; v6.2b review remains local and unverified on physical devices. v6.2 is unreleased.
+- The action area reserves content space, respects safe-area insets, and returns to normal page flow while editing text inputs, on short viewports, when zoomed, or when enlarged text makes it too tall. The v6.2a layout and voice were owner-accepted on iPhone Safari and Chrome through the branch preview; v6.2b review is available on the branch preview; the subsequent retry and voice fixes are owner-accepted locally and await physical-device verification. v6.2 is unreleased.
 
 ## [6.1.0] - 2026-11-15
 

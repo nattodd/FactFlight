@@ -102,6 +102,14 @@ $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if
 $('menuView').addEventListener('submit',async e=>{if(e.target.id!=='profileForm')return;e.preventDefault();const form=e.target,button=form.querySelector('button'),value=$('nickname').value;button.disabled=true;try{const p=await store.add(value);refresh();select(p.id)}catch(err){if(form.isConnected){$('profileError').textContent=err.message;button.disabled=false}}});
 
 function canRepeat(s){return hasSelection(true)&&(s.guest?active==='guest'&&guest.includes(s):!!s.learnerId&&s.learnerId===active)}
+function reviewRetryFacts(s){
+ if(!canRepeat(s)||s.activity!=='review')return [];
+ // Recheck current saved and unsaved flights rather than replaying a stale pool.
+ // Keep this shortcut restricted to its original selected facts.
+ const eligible=FactFlightMath.reviewCandidates(s.guest?[s]:records(active),s.review.filter,!s.guest);
+ const keys=new Set(eligible.map(f=>f.activity+':'+f.key));
+ return s.review.facts.filter(f=>keys.has(f.activity+':'+f.key));
+}
 function reviewAccess(owner){return hasSelection(true)&&active===owner&&owner!=='previous'}
 function hasSelection(force=false){
  if(active&&active!=='guest'&&(!busy()||force)){refresh();if(!storeError&&!family.profiles.some(p=>p.id===active)){active=null;viewing=null;history=[];session=null}}
@@ -209,6 +217,6 @@ $('renameLearnerForm').onsubmit=async e=>{
 };
 $('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
-window.FlightProfiles={reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
+window.FlightProfiles={reviewRetryFacts,reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();
