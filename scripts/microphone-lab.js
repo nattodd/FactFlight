@@ -1,7 +1,8 @@
-/* Isolated diagnostic experiment. No quiz imports, storage, audio recording or uploads. */
+/* Isolated diagnostic experiment. No learner data, audio recording or uploads. Reads only the browser microphone restriction. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  function restricted(){try{return localStorage.getItem('fact-flight-microphone-disabled-v1')==='true'}catch{return true}}
   const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
   const descriptions = {
     natural: 'Single-phrase recognition. The browser ends the session itself.',
@@ -29,7 +30,7 @@
   function status(message) { $('status').textContent = message; }
   function controls() {
     $('start').textContent = isFlight($('mode').value) && nextFlight ? 'Next flight' : 'Start attempt';
-    $('start').disabled = !Speech || !window.isSecureContext || !!current || cooling;
+    $('start').disabled = restricted() || !Speech || !window.isSecureContext || !!current || cooling;
     $('mode').disabled = !!current || cooling;
     $('cancel').disabled = !current && !flight;
     $('counts').textContent = attempts.length ? Object.keys(descriptions).map(mode => {
@@ -91,6 +92,7 @@
   }
   function launch(run) {
     if (current !== run || run.cancelled) return;
+    if(restricted()){cancel('parent-restricted');status('Microphone parent restricted. Change it in Fact Flight Parent corner.');return;}
     clearTimeout(run.cueTimer);
     let rec;
     try { rec = new Speech(); } catch (_) { trace('constructor-threw', run); finish(run, 'constructor-failed'); return; }
@@ -181,6 +183,7 @@
     clearTimeout(run.observation);
     run.observation = setTimeout(() => {
       if (current !== run || run.cancelled) return;
+    if(restricted()){cancel('parent-restricted');status('Microphone parent restricted. Change it in Fact Flight Parent corner.');return;}
       trace('observation-20s', run, {receivedResults: run.results > 0});
       if (run.mode === 'audioFlight' && !run.audioStarted) {
         status('Browser has not reported audio capture after 20 seconds. Cancel to release the session.'); return;
@@ -212,6 +215,7 @@
     };
     utterance.onend = () => {
       if (current !== run || run.cancelled) return;
+    if(restricted()){cancel('parent-restricted');status('Microphone parent restricted. Change it in Fact Flight Parent corner.');return;}
       utterance.onstart = utterance.onend = utterance.onerror = null;
       trace('cue-end', run); launch(run);
     };
@@ -221,7 +225,7 @@
     catch (_) { cancel('cue-threw'); }
   }
   $('start').onclick = () => {
-    if (current || cooling || !Speech || !window.isSecureContext) return;
+    if (restricted() || current || cooling || !Speech || !window.isSecureContext) return;
     if (isFlight($('mode').value)) flight = {id:++flightCount};
     const run = newRun($('mode').value, isFlight($('mode').value) && nextFlight ? 1 : 0);
     trace('tap-start', run); beginRun(run);
@@ -244,6 +248,8 @@
   };
   document.addEventListener('visibilitychange', () => { if (document.hidden) cancel('page-hidden'); });
   window.addEventListener('pagehide', () => cancel('page-exit'));
+  window.addEventListener('storage',e=>{if(e.key==='fact-flight-microphone-disabled-v1'||e.key===null){if(restricted()){cancel('parent-restricted');status('Microphone parent restricted.')}controls();}});
   controls();
+  if(restricted())status('Microphone parent restricted. Change it in Fact Flight Parent corner.');
   if (!Speech || !window.isSecureContext) status('Speech recognition requires a supported browser and HTTPS or localhost.');
 })();

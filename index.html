@@ -275,7 +275,36 @@ function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test')
 $('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
 $('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
 let micRetryTimer=null,micEverConnected=false,micState='not-connected';
-let micShutdown=null,micCleanup=null,micRestartCount=0,iosCue=null;
+let micShutdown=null,micCleanup=null,micRestartCount=0,iosCue=null,endedIOSRecognizer=null;
+const microphoneRestrictionKey='fact-flight-microphone-disabled-v1';
+let microphoneRestrictionMemory=false;
+function microphoneRestricted(){try{return microphoneRestrictionMemory||localStorage.getItem(microphoneRestrictionKey)==='true'}catch{return true}}
+function releaseMicrophone(){
+ stopMic();
+ // Natural end has already been confirmed: do not wait for a second end event.
+ const ended=endedIOSRecognizer;endedIOSRecognizer=null;
+ if(ended){micTrace('terminal-release');try{ended.abort()}catch{}}
+ if(isIOSDevice)try{window.speechSynthesis?.cancel()}catch{}
+}
+function applyMicrophoneRestriction(){
+ const blocked=microphoneRestricted(),option=$('inputMode').querySelector('[value="voice"]');
+ option.disabled=blocked;option.textContent=blocked?'Microphone · Parent restricted':'Microphone · say your answer';
+ if(blocked){
+  releaseMicrophone();
+  if(phase==='checking')cancelCheck();
+  if(!busy())$('inputMode').value='keyboard';
+  for(const id of ['resume','micReconnectTop','retryMic']){$(id).disabled=true;$(id).title='Parent restricted'}
+  if(phase==='running')micError('Microphone parent restricted. Use Tap or type to continue.');
+ }else for(const id of ['resume','micReconnectTop','retryMic']){$(id).disabled=false;$(id).title=''}
+ window.dispatchEvent(new Event('microphonepolicychange'));
+}
+function setMicrophoneRestriction(disabled){
+ microphoneRestrictionMemory=disabled;
+ let saved=true;try{localStorage.setItem(microphoneRestrictionKey,String(disabled))}catch{saved=false;microphoneRestrictionMemory=true}
+ applyMicrophoneRestriction();return saved;
+}
+window.addEventListener('storage',e=>{if(e.key===microphoneRestrictionKey||e.key===null){microphoneRestrictionMemory=false;applyMicrophoneRestriction()}});
+
 const isIOSDevice=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isChromeIOS=/CriOS/i.test(navigator.userAgent);
 function iosVoiceHelpHTML(){
@@ -343,19 +372,19 @@ function micError(message){
  if(phase==='checking')$('micMessage').textContent=message;
  else if(phase==='running'){$('heard').textContent=message}
 }
-function suspendIOSMic(){
- if(isIOSDevice&&busy()&&$('inputMode').value==='voice'){
-   stopMic();setMicStatus('disconnected');micError('Microphone paused. Tap Reconnect when you return.');
- }
+function suspendMicrophone(){
+ releaseMicrophone();
+ if(busy()&&$('inputMode').value==='voice'){setMicStatus('disconnected');micError('Microphone paused. Tap Reconnect when you return.')}
 }
-document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendIOSMic()});
-window.addEventListener('pagehide',suspendIOSMic);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendMicrophone()});
+window.addEventListener('pagehide',suspendMicrophone);
 // iOS Mode H: one natural-ending recognition per phrase. Desktop stays below.
 function connectIOSMic(automatic=false){
+ if(microphoneRestricted()||document.hidden){releaseMicrophone();return}
  if(!automatic)micRestartCount=0;
  stopMic();
  const epoch=recEpoch,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
- const active=()=>epoch===recEpoch&&(phase==='checking'||phase==='running');
+ const active=()=>!microphoneRestricted()&&!document.hidden&&epoch===recEpoch&&(phase==='checking'||phase==='running');
  const fail=text=>{if(!active())return;stopMic();setMicStatus('disconnected');micError(text)};
  if(!Speech||!window.isSecureContext){micError('Voice needs a supported browser and HTTPS. Tap or type remains available.');return}
  micTrace(automatic?'automatic-connect':'manual-connect',epoch);
@@ -378,7 +407,7 @@ function connectIOSMic(automatic=false){
  function launch(){
   if(!active())return;
   let r;try{r=new Speech()}catch(_){fail('Could not open microphone. Tap Reconnect or use Tap or type.');return}
-  rec=r;r.lang='en-US';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+  endedIOSRecognizer=null;rec=r;r.lang='en-US';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
   const checking=phase==='checking',question=checking?null:items[index];
   let finalText=null,failed=false,received=false,audioStarted=false;
   const valid=()=>active()&&rec===r;
@@ -399,7 +428,7 @@ function connectIOSMic(automatic=false){
   r.onerror=e=>{if(valid()){failed=true;micTrace('error',epoch,e.error);setMicStatus('disconnected');micError('Microphone issue. Tap Reconnect or use Tap or type.')}};
   r.onend=()=>{
    if(!valid())return;
-   clearTimeout(timer);micCleanup=null;rec=null;micTrace('end',epoch);
+   clearTimeout(timer);micCleanup=null;rec=null;endedIOSRecognizer=r;micTrace('end',epoch);
    for(const name of ['onstart','onaudiostart','onspeechstart','onresult','onerror','onend'])r[name]=null;
    const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
    setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
@@ -433,6 +462,7 @@ function connectIOSMic(automatic=false){
  }else prepare();
 }
 function connectMic(automatic=false){
+ if(microphoneRestricted()||document.hidden){releaseMicrophone();micError('Microphone unavailable or parent restricted. Use Tap or type.');return}
  if(isIOSDevice)return connectIOSMic(automatic===true);
  if(automatic!==true){micRestartCount=0}
  stopMic();
@@ -603,8 +633,8 @@ function connectMic(automatic=false){
  }else launch();
 }
 
-$('start').onclick=()=>{let t=$('threshold').value;if(t&&(!Number.isInteger(+t)||+t<1||+t>selectedCount())){$('threshold').closest('details').open=true;$('threshold').reportValidity();return}controls(true);if($('inputMode').value==='keyboard'){begin();return}phase='checking';$('micMessage').textContent='Allow microphone access, then say “ready.”';$('micDialog').showModal();connectMic()};
-function cancelCheck(){stopMic();phase='idle';controls(false);$('micDialog').close();if(window.FlightMenu)FlightMenu.ready()}
+$('start').onclick=()=>{if(microphoneRestricted()){$('inputMode').value='keyboard';applyMicrophoneRestriction()}let t=$('threshold').value;if(t&&(!Number.isInteger(+t)||+t<1||+t>selectedCount())){$('threshold').closest('details').open=true;$('threshold').reportValidity();return}controls(true);if($('inputMode').value==='keyboard'){begin();return}phase='checking';$('micMessage').textContent='Allow microphone access, then say “ready.”';$('micDialog').showModal();connectMic()};
+function cancelCheck(){releaseMicrophone();phase='idle';controls(false);$('micDialog').close();if(window.FlightMenu)FlightMenu.ready()}
 $('cancelMic').onclick=cancelCheck;$('micDialog').addEventListener('cancel',e=>{e.preventDefault();cancelCheck()});$('retryMic').onclick=connectMic;$('resume').onclick=()=>{if(phase==='running')connectMic()};$('micReconnectTop').onclick=()=>{if(phase==='running')connectMic()};
 let repeatQuestionKeys=[],repeatSchoolFirstFactor=null,configuredSelection=null,configuredReview=null;
 function freshSchoolQuestions(n){
@@ -614,7 +644,7 @@ function freshSchoolQuestions(n){
  if(questions[0].factor===repeatSchoolFirstFactor)[questions[0],questions[1]]=[questions[1],questions[0]];
  return questions;
 }
-function begin(){flightTimeLimitMs=$('activity').value==='school'?120000:configuredTimeLimitMs;completedAt=null;clearAnswerFeedback();activeView=$('sessionView').value;document.body.classList.toggle('focus-session',activeView==='focus');document.body.classList.toggle('focus-voice',activeView==='focus'&&$('inputMode').value==='voice');$('focusAnswer').value='';clearTimeout(advanceTimer);transitioning=false;questionSource=null;items=configuredReview?(()=>{questionSource=FactFlightMath.createReviewSource(configuredReview);return Array.from({length:selectedCount()},()=>questionSource.next())})():$('activity').value==='school'?freshSchoolQuestions(table):(()=>{questionSource=FactFlightMath.createQuestionSource({activity:$('activity').value,level:Number($('level').value),mode:'practice',selection:configuredSelection,previousKeys:repeatQuestionKeys});return Array.from({length:freePractice?1:selectedCount()},()=>questionSource.next())})();index=0;undoStack=[];started=turnStart=performance.now();session={id:Date.now(),date:new Date().toISOString(),table,mode,input:$('inputMode').value,target:$('threshold').value?+$('threshold').value:null,unrecognized:[],invalidated:[]};if($('activity').value!=='school'){delete session.table;session.activity=$('activity').value;session.level=Number($('level').value);session.schemaVersion=1;if(configuredSelection?.type==='tables'){session.selection=structuredClone(configuredSelection);session.schemaVersion=2;delete session.level}if(configuredPracticeType){session.practiceType=configuredPracticeType;session.timeLimitMs=mode==='test'?flightTimeLimitMs:null}}if(configuredReview){delete session.table;delete session.level;delete session.selection;session.activity='review';session.schemaVersion=3;session.practiceType='review';session.timeLimitMs=null;session.review=structuredClone(configuredReview)}phase='running';$('empty').classList.add('hidden');$('playArea').classList.remove('hidden');$('stage').textContent='IN FLIGHT';$('resume').classList.toggle('hidden',session.input!=='voice');$('micReconnectTop').classList.toggle('hidden',session.input!=='voice'||micState==='connected');$('playArea').classList.toggle('keyboard-session',session.input==='keyboard');$('speech').classList.toggle('hidden',session.input==='keyboard');$('keyboardTip').classList.toggle('hidden',session.input!=='keyboard');$('grid').innerHTML='';$('grid').dataset.keyboardSession='';document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=false);renderGrid();updateMetrics();ticker=setInterval(tick,100);if(session.input==='keyboard'){$('micReconnectTop').classList.add('hidden');configureKeyboardInput();focusInlineAnswer();}updateIOSVoiceGuidance();scrollToActiveFact(true);}
+function begin(){if(microphoneRestricted()){$('inputMode').value='keyboard';releaseMicrophone()}flightTimeLimitMs=$('activity').value==='school'?120000:configuredTimeLimitMs;completedAt=null;clearAnswerFeedback();activeView=$('sessionView').value;document.body.classList.toggle('focus-session',activeView==='focus');document.body.classList.toggle('focus-voice',activeView==='focus'&&$('inputMode').value==='voice');$('focusAnswer').value='';clearTimeout(advanceTimer);transitioning=false;questionSource=null;items=configuredReview?(()=>{questionSource=FactFlightMath.createReviewSource(configuredReview);return Array.from({length:selectedCount()},()=>questionSource.next())})():$('activity').value==='school'?freshSchoolQuestions(table):(()=>{questionSource=FactFlightMath.createQuestionSource({activity:$('activity').value,level:Number($('level').value),mode:'practice',selection:configuredSelection,previousKeys:repeatQuestionKeys});return Array.from({length:freePractice?1:selectedCount()},()=>questionSource.next())})();index=0;undoStack=[];started=turnStart=performance.now();session={id:Date.now(),date:new Date().toISOString(),table,mode,input:$('inputMode').value,target:$('threshold').value?+$('threshold').value:null,unrecognized:[],invalidated:[]};if($('activity').value!=='school'){delete session.table;session.activity=$('activity').value;session.level=Number($('level').value);session.schemaVersion=1;if(configuredSelection?.type==='tables'){session.selection=structuredClone(configuredSelection);session.schemaVersion=2;delete session.level}if(configuredPracticeType){session.practiceType=configuredPracticeType;session.timeLimitMs=mode==='test'?flightTimeLimitMs:null}}if(configuredReview){delete session.table;delete session.level;delete session.selection;session.activity='review';session.schemaVersion=3;session.practiceType='review';session.timeLimitMs=null;session.review=structuredClone(configuredReview)}phase='running';$('empty').classList.add('hidden');$('playArea').classList.remove('hidden');$('stage').textContent='IN FLIGHT';$('resume').classList.toggle('hidden',session.input!=='voice');$('micReconnectTop').classList.toggle('hidden',session.input!=='voice'||micState==='connected');$('playArea').classList.toggle('keyboard-session',session.input==='keyboard');$('speech').classList.toggle('hidden',session.input==='keyboard');$('keyboardTip').classList.toggle('hidden',session.input!=='keyboard');$('grid').innerHTML='';$('grid').dataset.keyboardSession='';document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=false);renderGrid();updateMetrics();ticker=setInterval(tick,100);if(session.input==='keyboard'){$('micReconnectTop').classList.add('hidden');configureKeyboardInput();focusInlineAnswer();}updateIOSVoiceGuidance();scrollToActiveFact(true);}
 
 const mobileKeypadMedia=window.matchMedia('(max-width: 680px) and (pointer: coarse)');
 function touchKeypadEnabled(){return !isFocus()&&mobileKeypadMedia.matches}
@@ -768,7 +798,7 @@ function submit(value,text,source){if(phase!=='running'||transitioning)return;if
 function advance(){clearAnswerFeedback();$('focusAnswer').value='';if(freePractice){if(index+1===items.length)items.push(questionSource.next());index++;turnStart=performance.now();renderGrid();updateMetrics();scrollToActiveFact();focusInlineAnswer();return}let next=-1;for(let i=index+1;i<items.length;i++)if(items[i].status!=='correct'){next=i;break}if(next===-1){for(let i=0;i<=index;i++)if(items[i].status!=='correct'){next=i;break}}if(next===-1){finish('complete');return}index=next;turnStart=performance.now();renderGrid();updateMetrics();scrollToActiveFact();focusInlineAnswer()}
 $('answerForm').onsubmit=e=>{e.preventDefault();let v=parseNumber($('answer').value);if(v!==null){submit(v,$('answer').value,'keyboard');$('answer').value=''}};$('skip').onclick=()=>submit('skip','skip','button');$('undo').onclick=()=>{if(phase!=='running'||!undoStack.length)return;clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();completedAt=null;let old=undoStack.pop();items[index].ms+=performance.now()-turnStart;let spent=items[old.index].ms;session.invalidated.push(old.action);items[old.index]=old.p;items[old.index].ms=Math.max(spent,old.p.ms);index=old.index;if(items[index].status==='wrong'){feedbackItem=items[index];feedbackKind='wrong'}$('focusAnswer').value='';turnStart=performance.now();renderGrid();updateMetrics();$('heard').textContent='Last answer undone. Try that fact again.';scrollToActiveFact();focusInlineAnswer()};$('end').onclick=()=>{if(phase==='running')finish('manual')};
 function stats(s){return {first:s.items.filter(first).length,correct:s.items.filter(p=>p.status==='correct').length,wrong:s.items.filter(p=>p.status!=='correct'&&p.attempts.some(a=>!a.correct)).length,unanswered:s.items.filter(p=>p.status!=='correct'&&!p.attempts.some(a=>!a.correct)).length,errors:s.items.reduce((a,p)=>a+p.attempts.filter(x=>!x.correct).length,0),skips:s.items.reduce((a,p)=>a+p.skips,0)}}
-function finish(reason){if(phase!=='running')return;if($('exitDialog').open)$('exitDialog').close();clearInterval(ticker);clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();let now=performance.now();if(items[index].status!=='correct')items[index].ms+=now-turnStart;phase='done';document.body.classList.remove('focus-session','focus-voice','mobile-keypad-open');$('mobileKeypad').classList.add('hidden');if(session.input==='keyboard'&&document.activeElement?.blur)document.activeElement.blur();stopMic();if(completedAt!==null){now=completedAt;reason='complete'}session.elapsed=Math.min(now-started,mode==='test'?flightTimeLimitMs:Infinity);session.reason=reason;session.items=structuredClone(freePractice?items.filter(p=>p.attempts.length||p.skips):items);history.unshift(session);try{saveSession(session)}catch(e){storageOK=false}$('saveStatus').textContent=storageOK?'Saved on this browser. Export your history for a backup.':'Could not save in this browser. Export this session now to keep it.';controls(false);$('historyNav').disabled=false;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=true);$('stage').textContent='FLIGHT COMPLETE';renderGrid();updateMetrics();$('clock').textContent=duration(mode==='test'?Math.max(0,flightTimeLimitMs-session.elapsed):session.elapsed);renderResult(session);show('resultsView');window.scrollTo({top:0,behavior:'smooth'})}
+function finish(reason){if(phase!=='running')return;if($('exitDialog').open)$('exitDialog').close();clearInterval(ticker);clearTimeout(advanceTimer);transitioning=false;clearAnswerFeedback();let now=performance.now();if(items[index].status!=='correct')items[index].ms+=now-turnStart;phase='done';document.body.classList.remove('focus-session','focus-voice','mobile-keypad-open');$('mobileKeypad').classList.add('hidden');if(session.input==='keyboard'&&document.activeElement?.blur)document.activeElement.blur();releaseMicrophone();if(completedAt!==null){now=completedAt;reason='complete'}session.elapsed=Math.min(now-started,mode==='test'?flightTimeLimitMs:Infinity);session.reason=reason;session.items=structuredClone(freePractice?items.filter(p=>p.attempts.length||p.skips):items);history.unshift(session);try{saveSession(session)}catch(e){storageOK=false}$('saveStatus').textContent=storageOK?'Saved on this browser. Export your history for a backup.':'Could not save in this browser. Export this session now to keep it.';controls(false);$('historyNav').disabled=false;document.querySelectorAll('#answerForm button,#answer').forEach(e=>e.disabled=true);$('stage').textContent='FLIGHT COMPLETE';renderGrid();updateMetrics();$('clock').textContent=duration(mode==='test'?Math.max(0,flightTimeLimitMs-session.elapsed):session.elapsed);renderResult(session);show('resultsView');window.scrollTo({top:0,behavior:'smooth'})}
 function factsTable(s){return s.items.map((p,i)=>`<tr><td>${i+1}</td><td>${escapeHTML(factText(p))}</td><td>${p.answer}</td><td>${p.status==='correct'?(first(p)?'First try ✓':'Corrected ✓'):p.attempts.some(a=>!a.correct)?'Unresolved error':'Unanswered'}</td><td>${p.attempts.map(a=>escapeHTML(a.transcript)+(a.correct?' ✓':' ✕')).join(', ')||'—'}</td><td>${p.skips}</td><td>${(p.ms/1000).toFixed(1)}s</td></tr>`).join('')}
 function renderResult(s){let a=stats(s);$('resultsView').innerHTML=`<div class="eyebrow">${s.reason==='time'?'Time’s up':s.reason==='manual'?'Session ended':'All facts complete'} · ${escapeHTML(sessionLabel(s))} · ${escapeHTML(sessionModeLabel(s))}</div><h1>Every try builds confidence.</h1><p>Here’s how this flight went.</p><div class="resultscore">${a.first}<span style="font-size:25px;color:var(--muted)"> / ${s.items.length} first try</span></div><p>${s.target===null?'No pass target set — check with your teacher.':`${a.first>=s.target?'Target reached ✓':'Keep practicing'} · target ${s.target}/${s.items.length} first try.`}</p><div class="resultgrid"><div class="metric"><span>Correct after retries</span><strong>${a.correct}/${s.items.length}</strong></div><div class="metric"><span>Unresolved wrong</span><strong>${a.wrong}</strong></div><div class="metric"><span>Unanswered</span><strong>${a.unanswered}</strong></div><div class="metric"><span>Total time</span><strong>${duration(s.elapsed)}</strong></div></div><p class="small">${a.errors} wrong attempts · ${a.skips} skips · ${s.invalidated.length} undone inputs · ${s.unrecognized.length} unrecognized phrases. First-try accuracy: ${(s.items.length?Math.round(a.first/s.items.length*100):0)}%. Time includes listening and feedback.</p>${!storageOK?'<p style="color:var(--red)">Browser saving is unavailable. Export your results before closing.</p>':''}<div class="controls"><button class="primary" id="again">Practice again →</button><button id="resultHome">Return Home</button><button id="seeProgress">See all progress</button><button id="exportOne">Export session JSON</button></div><details><summary>Review all ${s.items.length} facts & spoken answers</summary><div class="tablewrap"><table><thead><tr><th>#</th><th>Fact</th><th>Answer</th><th>Result</th><th>Attempts</th><th>Skips</th><th>Active time</th></tr></thead><tbody>${factsTable(s)}</tbody></table></div></details>`;$('resultHome').onclick=()=>FlightMenu.home();$('again').onclick=()=>FlightMenu.replay(s);$('seeProgress').onclick=()=>{renderHistory();show('historyView')};$('exportOne').onclick=()=>download(`fact-flight-${s.id}.json`,JSON.stringify(s,null,2),'application/json')}
 function patterns(list=history){let map={};for(let s of list)for(let p of s.items){let key=s.activity==='review'?p.activity+':'+p.key:s.activity?s.activity+':'+p.key:s.table+'×'+p.factor,m=map[key]||(map[key]={text:s.activity?factText(p):s.table+' × '+p.factor,activity:p.activity||s.activity||'multiplication',table:s.table,factor:p.factor,seen:0,first:0,wrong:0,skips:0,ms:0,attempts:[]});if(p.attempts.length||p.skips){m.seen++;m.first+=first(p)?1:0;m.wrong+=p.attempts.filter(a=>!a.correct).length;m.skips+=p.skips;m.ms+=p.ms;for(let a of p.attempts)if(!a.correct)m.attempts.push(a.value)}}return Object.values(map).filter(m=>m.seen>0).sort((a,b)=>(b.wrong+b.skips)-(a.wrong+a.skips))}

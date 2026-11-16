@@ -211,5 +211,9 @@ async function continuousWord(p,text,index,final=true){await p.evaluate(({text,i
   const pending=p.waitForEvent('download');await p.locator('#download').click();assert(!fs.readFileSync(await (await pending).path(),'utf8').includes('PRIVATE H PHRASE'));
   await p.locator('#cancel').click();assert.equal(await p.locator('#heardText').textContent(),'');await c.close();
  });
+ await check('Parent restriction blocks lab starts and cancels an active capture across tabs',async()=>{
+ const {c,p}=await setup();await p.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','true'));await p.reload();assert(await p.locator('#start').isDisabled());assert.match(await p.locator('#status').textContent(),/parent restricted/);
+ await p.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','false'));await p.reload();await p.locator('#start').click();const other=await c.newPage();await other.goto(base+'/microphone-lab.html');await other.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','true'));await p.waitForFunction(()=>instances.at(-1).aborted);assert(await p.locator('#start').isDisabled());await c.close();
+ });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});

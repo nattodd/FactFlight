@@ -1,0 +1,1294 @@
+{
+  "base": "affac47",
+  "candidate": "local uncommitted microphone cleanup and parent restriction changes",
+  "date": "2026-11-15",
+  "browser": "isolated Windows Chrome 157.0.8103.51",
+  "speech": "mocked; physical microphone release unverified",
+  "total": 288,
+  "suites": [
+    {
+      "suite": "answer-feedback",
+      "checks": 8,
+      "tests": [
+        {
+          "name": "Wrong stays red and shakes again; correct holds green then advances once",
+          "status": "PASS"
+        },
+        {
+          "name": "Skip clears wrong; Undo cancels pending advance and restores scoring",
+          "status": "PASS"
+        },
+        {
+          "name": "Unrecognized speech flashes neutral without scoring, repeated unclear speech returns to red",
+          "status": "PASS"
+        },
+        {
+          "name": "Finish during feedback saves once; timer expiry cancels delayed advance",
+          "status": "PASS"
+        },
+        {
+          "name": "Last correct answer before deadline retains complete outcome and exact completion time",
+          "status": "PASS"
+        },
+        {
+          "name": "Both themes have distinct feedback colors and reduced motion retains visible labels",
+          "status": "PASS"
+        },
+        {
+          "name": "Worksheet input keeps immediate advancement and wrong-answer row feedback",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "brand-regression",
+      "checks": 18,
+      "tests": [
+        {
+          "name": "Logo loaded, no remote requests, theme toggle and reload",
+          "status": "PASS"
+        },
+        {
+          "name": "School Test generation: 60 questions, three columns, factors and spacing",
+          "status": "PASS"
+        },
+        {
+          "name": "Keyboard scoring, correction, skip, undo and non-color symbols",
+          "status": "PASS"
+        },
+        {
+          "name": "Detailed results, JSON/CSV export and history persistence",
+          "status": "PASS"
+        },
+        {
+          "name": "Untimed completion and preservation of existing synthetic history",
+          "status": "PASS"
+        },
+        {
+          "name": "Timed expiry at two minutes using simulated clock",
+          "status": "PASS"
+        },
+        {
+          "name": "Speech unavailable: cancel setup and use keyboard fallback",
+          "status": "PASS"
+        },
+        {
+          "name": "Speech ready gate, duplicate protection and reconnect with mocked recognition",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 320x568 touch=true",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 390x844 touch=true",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 844x390 touch=true",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 768x1024 touch=true",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 1024x768 touch=true",
+          "status": "PASS"
+        },
+        {
+          "name": "Layout and answer controls 1440x900 touch=false",
+          "status": "PASS"
+        },
+        {
+          "name": "No uncaught page errors",
+          "status": "PASS"
+        },
+        {
+          "name": "Light/dark semantic text, control and focus contrast",
+          "status": "PASS"
+        },
+        {
+          "name": "Keyboard focus indicator, enlarged-text reflow and reduced motion",
+          "status": "PASS"
+        },
+        {
+          "name": "Skipped question is revisited and cannot earn first-try credit",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "configurable-sessions",
+      "checks": 14,
+      "tests": [
+        {
+          "name": "Configured 1-minute deadlines in both modes and views",
+          "status": "PASS"
+        },
+        {
+          "name": "Configured 2-minute deadlines in both modes and views",
+          "status": "PASS"
+        },
+        {
+          "name": "Configured 5-minute deadlines in both modes and views",
+          "status": "PASS"
+        },
+        {
+          "name": "All eight activities support custom counts; completion and repeat retain settings",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom deadline preserves final green hold completion and rejects late answers",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice ready starts chosen clock; School remains fixed after custom session",
+          "status": "PASS"
+        },
+        {
+          "name": "New metadata rejects invalid imports; old exports stay accepted and unchanged",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom setup layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom setup layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom setup layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom setup layout 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "Custom setup layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "All count choices, goal bounds, and JSON restore preserve configuration",
+          "status": "PASS"
+        },
+        {
+          "name": "No browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "focus-integration",
+      "checks": 11,
+      "tests": [
+        {
+          "name": "Focus and Worksheet score identical scripted attempts without changing saved schema",
+          "status": "PASS"
+        },
+        {
+          "name": "School Focus voice ready, heard text, retry, advance, reconnect and expiry",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 1024x768",
+          "status": "PASS"
+        },
+        {
+          "name": "Focus layouts and keypad 1440x900",
+          "status": "PASS"
+        },
+        {
+          "name": "School voice phone layout and keypad fallback",
+          "status": "PASS"
+        },
+        {
+          "name": "School Focus nonvoice completion, first-try and history preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "No uncaught browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "import-learner",
+      "checks": 16,
+      "tests": [
+        {
+          "name": "Export/delete/restore round trip preserves profile, complete results and reload analytics",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancel makes no writes; duplicates ignore property order and new flights merge once",
+          "status": "PASS"
+        },
+        {
+          "name": "Restoring one learner preserves another learner and both Previous progress keys",
+          "status": "PASS"
+        },
+        {
+          "name": "Changed results, changed profile details, and conflicting duplicate IDs block all writes",
+          "status": "PASS"
+        },
+        {
+          "name": "Same nickname different ID stays separate; flight-ID ownership collision is flagged",
+          "status": "PASS"
+        },
+        {
+          "name": "Malformed, incompatible, mixed-owner, injected, and incomplete exports are rejected",
+          "status": "PASS"
+        },
+        {
+          "name": "Changed storage requires fresh review; failed quota write preserves everything",
+          "status": "PASS"
+        },
+        {
+          "name": "Empty learner restore and file text escaping",
+          "status": "PASS"
+        },
+        {
+          "name": "All eight activities and School with undo/skip detail pass export validation",
+          "status": "PASS"
+        },
+        {
+          "name": "Mock speech transcripts and unrecognized phrases survive learner restore",
+          "status": "PASS"
+        },
+        {
+          "name": "Concurrent restores cannot duplicate flights or overwrite a newer review",
+          "status": "PASS"
+        },
+        {
+          "name": "Import review layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Import review layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Import review layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Import review layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "manage-learners",
+      "checks": 11,
+      "tests": [
+        {
+          "name": "Export, cancel, and confirmed deletion isolate one learner and preserve both legacy keys",
+          "status": "PASS"
+        },
+        {
+          "name": "Delete active and last profile, zero-flight export, and Guest remain available",
+          "status": "PASS"
+        },
+        {
+          "name": "Changed target snapshot blocks deletion; unrelated changes are retained",
+          "status": "PASS"
+        },
+        {
+          "name": "Write failure leaves all records intact and confirmation reports failure",
+          "status": "PASS"
+        },
+        {
+          "name": "Cross-tab deletion cannot resurrect learner from a running flight",
+          "status": "PASS"
+        },
+        {
+          "name": "Unsaved failed flight can be exported then explicitly deleted with its profile",
+          "status": "PASS"
+        },
+        {
+          "name": "Management and confirmation layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Management and confirmation layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Management and confirmation layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Management and confirmation layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "math-integration",
+      "checks": 12,
+      "tests": [
+        {
+          "name": "All 40 activity/level choices, fresh questions and variable-count completion",
+          "status": "PASS"
+        },
+        {
+          "name": "Synthetic v5 records remain byte-identical; mixed-history review, stats and exports",
+          "status": "PASS"
+        },
+        {
+          "name": "Spoken whole-number parser covers 0\u20132500, aliases and duplicate numeric transcripts",
+          "status": "PASS"
+        },
+        {
+          "name": "Mock speech ready, advanced answer, reconnect and timed expiry retain results",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 1024x768",
+          "status": "PASS"
+        },
+        {
+          "name": "New activity layouts and four-digit answers 1440x900",
+          "status": "PASS"
+        },
+        {
+          "name": "Malformed stored JSON is preserved and does not get overwritten on finish",
+          "status": "PASS"
+        },
+        {
+          "name": "No uncaught browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "menu-integration",
+      "checks": 13,
+      "tests": [
+        {
+          "name": "Home tiles and Quick completion for all eight activities in both views",
+          "status": "PASS"
+        },
+        {
+          "name": "Free Practice exceeds 120 answers, preserves skip/undo and excludes unseen tail",
+          "status": "PASS"
+        },
+        {
+          "name": "Home/Progress guard retains session, finish saves once, timer expires through dialog",
+          "status": "PASS"
+        },
+        {
+          "name": "School original preset and voice ready/retry/reconnect through tile menus",
+          "status": "PASS"
+        },
+        {
+          "name": "Microphone cancellation returns to selected ready step and keyboard fallback",
+          "status": "PASS"
+        },
+        {
+          "name": "Empty Free finish, target validation, Back and activity reports",
+          "status": "PASS"
+        },
+        {
+          "name": "Tile menu and session layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Tile menu and session layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Tile menu and session layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Tile menu and session layout 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "Tile menu and session layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Short Focus viewport keeps the top and scrollable controls reachable",
+          "status": "PASS"
+        },
+        {
+          "name": "No uncaught browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "mic-lifecycle",
+      "checks": 16,
+      "tests": [
+        {
+          "name": "iOS cue, audiostart prompt, final-only readiness and natural end cooldown",
+          "status": "PASS"
+        },
+        {
+          "name": "iOS five flights use fresh natural sessions, preserve scoring/history and retry",
+          "status": "PASS"
+        },
+        {
+          "name": "iOS substitutions are exact and independent of correct answer; freddy is readiness only",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancel during cue prevents late start; cue failure and timeout permit fallback",
+          "status": "PASS"
+        },
+        {
+          "name": "Retry waits for confirmed end plus 400ms; missing shutdown blocks overlap",
+          "status": "PASS"
+        },
+        {
+          "name": "Silent and error sessions never loop; observation does not forcibly stop speech",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancellation during cooldown invalidates next cue and late recognition",
+          "status": "PASS"
+        },
+        {
+          "name": "Desktop retains continuous recognition, immediate final ready, interim fallback and no cues",
+          "status": "PASS"
+        },
+        {
+          "name": "iOS timed expiry cancels pending cue; keyboard fallback and background stop remain usable",
+          "status": "PASS"
+        },
+        {
+          "name": "Diagnostics exclude speech and learner data",
+          "status": "PASS"
+        },
+        {
+          "name": "Completed iOS flights explicitly release final recognizer; background cannot restart it",
+          "status": "PASS"
+        },
+        {
+          "name": "Parent restriction persists, disables all learners and blocks direct reconnects and remembered voice",
+          "status": "PASS"
+        },
+        {
+          "name": "Restriction arriving during iOS cue or recognition cancels capture and stale callbacks",
+          "status": "PASS"
+        },
+        {
+          "name": "Cross-tab parent restriction interrupts running voice and fails closed on storage errors",
+          "status": "PASS"
+        },
+        {
+          "name": "Parent restriction covers missed review and remembered Quick start without touching history",
+          "status": "PASS"
+        },
+        {
+          "name": "No browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "microphone-lab",
+      "checks": 20,
+      "tests": [
+        {
+          "name": "Ten natural sessions use fresh objects, no forced stops, and cooldown before next tap",
+          "status": "PASS"
+        },
+        {
+          "name": "Silent recognition remains open after 20 seconds; cancel blocks overlap until end",
+          "status": "PASS"
+        },
+        {
+          "name": "Explicit-stop mode ignores interim results and stops on final result",
+          "status": "PASS"
+        },
+        {
+          "name": "Cue mode waits for synthesis end; cancelled cue cannot start recognition",
+          "status": "PASS"
+        },
+        {
+          "name": "Cue timeout and permission error recover without overlapping sessions",
+          "status": "PASS"
+        },
+        {
+          "name": "Export excludes transcripts; storage intact; page hide releases capture",
+          "status": "PASS"
+        },
+        {
+          "name": "Phone and landscape layouts fit without horizontal overflow",
+          "status": "PASS"
+        },
+        {
+          "name": "Hands-free flight uses one tap for ready plus five answers, next flight skips ready",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancellation during automatic cooldown prevents next cue and invalidates late callbacks",
+          "status": "PASS"
+        },
+        {
+          "name": "Wrong final answer and recognition error end flight without automatic retries",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode E uses one short cue and one continuous recognizer per flight, no question restarts",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode E premature end, mismatch, and cancellation stop without automatic retries",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode F preserves D sequencing and cooldown, with E before all eleven phrases",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode F cancellation blocks automatic next, and mismatch stops the flight",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode G keeps D natural endings and 400ms cooldown with rate-2 cues and timing events",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode G heard text uses plain text, survives mismatch, never exports and clears on retry/cancel/mode change",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode H waits for audiostart on every phrase; Mode G still prompts at start",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode H missing or late audio events cannot falsely prompt after cancellation/error",
+          "status": "PASS"
+        },
+        {
+          "name": "Mode H temporary mismatch text stays out of exports and clears on cancel",
+          "status": "PASS"
+        },
+        {
+          "name": "Parent restriction blocks lab starts and cancels an active capture across tabs",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "missed-review",
+      "checks": 18,
+      "tests": [
+        {
+          "name": "Mixed five-fact review, fresh state, per-activity analytics, export and reload replay",
+          "status": "PASS"
+        },
+        {
+          "name": "Activity filter, Results-only scope, empty and tiny pools",
+          "status": "PASS"
+        },
+        {
+          "name": "Mock voice readiness, cancel, duplicate-start guard and return to ordinary practice",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner ownership and Guest scope",
+          "status": "PASS"
+        },
+        {
+          "name": "Review defaults and remembered retry choices desktop",
+          "status": "PASS"
+        },
+        {
+          "name": "Review defaults and remembered retry choices mobile",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice review preferences save after ready, cancel preserves them, Guest clears them",
+          "status": "PASS"
+        },
+        {
+          "name": "Results retry removes facts after two successful review flights",
+          "status": "PASS"
+        },
+        {
+          "name": "Repeated voice review accepts stable interim ready and reconnect",
+          "status": "PASS"
+        },
+        {
+          "name": "Interim ready replacement, cancellation, stale reconnect and final-result guards",
+          "status": "PASS"
+        },
+        {
+          "name": "Ordinary Practice Again starts after complete spoken-answer flight",
+          "status": "PASS"
+        },
+        {
+          "name": "iPhone recovery restores selected review and learner without starting or changing history",
+          "status": "PASS"
+        },
+        {
+          "name": "iPhone recovery preserves ordinary quick settings and voice-ready gate",
+          "status": "PASS"
+        },
+        {
+          "name": "iPhone recovery preserves ordinary timed settings and voice-ready gate",
+          "status": "PASS"
+        },
+        {
+          "name": "iPhone recovery preserves ordinary school settings and voice-ready gate",
+          "status": "PASS"
+        },
+        {
+          "name": "Recovery blocks Guest, unsaved results and unavailable session storage",
+          "status": "PASS"
+        },
+        {
+          "name": "Recovery rejects expired, malformed and deleted-owner setup",
+          "status": "PASS"
+        },
+        {
+          "name": "No browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "mobile-actions",
+      "checks": 8,
+      "tests": [
+        {
+          "name": "Setup/results actions 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Setup/results actions 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Setup/results actions 430x932",
+          "status": "PASS"
+        },
+        {
+          "name": "Keyboard editing, landscape fallback, desktop Back",
+          "status": "PASS"
+        },
+        {
+          "name": "Large text and long table summary",
+          "status": "PASS"
+        },
+        {
+          "name": "Mobile voice ready, cancellation and guarded repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Dock adapts to resizing, focus navigation and dark theme without duplicated controls",
+          "status": "PASS"
+        },
+        {
+          "name": "No browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "profile-integration",
+      "checks": 15,
+      "tests": [
+        {
+          "name": "Separate learners, ownership, exports, Home, activity totals, and reload",
+          "status": "PASS"
+        },
+        {
+          "name": "Guest never saves or exports, survives Home, clears on learner switch/reload",
+          "status": "PASS"
+        },
+        {
+          "name": "Synthetic v5 and expanded legacy history stay byte-for-byte intact and readable",
+          "status": "PASS"
+        },
+        {
+          "name": "Damaged/unsupported family data is preserved; Guest still works",
+          "status": "PASS"
+        },
+        {
+          "name": "Quota failure retains unsaved profile flight and allows export without claiming saved",
+          "status": "PASS"
+        },
+        {
+          "name": "Two tabs retain overlapping profile creations and session saves",
+          "status": "PASS"
+        },
+        {
+          "name": "Optional and unsafe nicknames render as plain text; same names keep separate IDs",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner Home and creation layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner Home and creation layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner Home and creation layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner Home and creation layout 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "Learner Home and creation layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Store refuses unknown owners, conflicting IDs, and unsafe unlocked writes",
+          "status": "PASS"
+        },
+        {
+          "name": "Profile picker dark theme, long nickname and creation controls remain reachable",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "progress-disclosure",
+      "checks": 7,
+      "tests": [
+        {
+          "name": "Screenshot numbers distinguish one wrong answer value from count and average",
+          "status": "PASS"
+        },
+        {
+          "name": "Three-row previews expand independently, support keyboard, collapse and retain all backups",
+          "status": "PASS"
+        },
+        {
+          "name": "Empty and short histories need no expansion control",
+          "status": "PASS"
+        },
+        {
+          "name": "Compact progress 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Compact progress 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Compact progress 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "quick-preferences",
+      "checks": 10,
+      "tests": [
+        {
+          "name": "First setup, direct fresh start, reload, and non-Quick isolation",
+          "status": "PASS"
+        },
+        {
+          "name": "Learners keep independent choices; Guest remembers only until switch or reload",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice shortcut waits for ready; cancellation does not replace remembered setup",
+          "status": "PASS"
+        },
+        {
+          "name": "Invalid preferences fall back safely; failed save is temporary and explained",
+          "status": "PASS"
+        },
+        {
+          "name": "Deleting learner removes their saved preferences",
+          "status": "PASS"
+        },
+        {
+          "name": "Remembered shortcut layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Remembered shortcut layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Remembered shortcut layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Remembered shortcut layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "readability",
+      "checks": 9,
+      "tests": [
+        {
+          "name": "Readable menus and questions 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Readable menus and questions 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Readable menus and questions 430x932",
+          "status": "PASS"
+        },
+        {
+          "name": "Readable menus and questions 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Readable menus and questions 768x1024",
+          "status": "PASS"
+        },
+        {
+          "name": "Readable menus and questions 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Large School prompt and voice feedback in light and dark phone themes",
+          "status": "PASS"
+        },
+        {
+          "name": "Larger original School worksheet keeps three columns and touch input",
+          "status": "PASS"
+        },
+        {
+          "name": "No browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "release-fixes",
+      "checks": 7,
+      "tests": [
+        {
+          "name": "Older flight replay restores activity, level, mode, count and duration after reload",
+          "status": "PASS"
+        },
+        {
+          "name": "Immediate replay keeps selected view, goal and Free mode without changing Quick shortcut",
+          "status": "PASS"
+        },
+        {
+          "name": "Legacy untimed fixed sets and School replay preserve timers and count",
+          "status": "PASS"
+        },
+        {
+          "name": "Results and activity-filtered Progress backups restore all learner flights and skip duplicates",
+          "status": "PASS"
+        },
+        {
+          "name": "Failed-save and deleted-profile recovery exports are restorable without recreating profiles",
+          "status": "PASS"
+        },
+        {
+          "name": "Imported replay uses recorded voice input and waits for ready",
+          "status": "PASS"
+        },
+        {
+          "name": "Release metadata and no browser errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "rename-learner",
+      "checks": 9,
+      "tests": [
+        {
+          "name": "Rename preserves IDs, flights, other learners and legacy stores after reload",
+          "status": "PASS"
+        },
+        {
+          "name": "Renamed learner accepts old-name backup as duplicates and retains current name",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancel, empty names, overlong names and failed writes do not change data",
+          "status": "PASS"
+        },
+        {
+          "name": "Stale rename does not overwrite another tab; same names remain separate",
+          "status": "PASS"
+        },
+        {
+          "name": "Rename dialog layout and escaped name 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Rename dialog layout and escaped name 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Rename dialog layout and escaped name 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Rename dialog layout and escaped name 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "repeat-actions",
+      "checks": 18,
+      "tests": [
+        {
+          "name": "One tap repeat preserves quick settings and completed history",
+          "status": "PASS"
+        },
+        {
+          "name": "One tap repeat preserves timed settings and completed history",
+          "status": "PASS"
+        },
+        {
+          "name": "One tap repeat preserves test settings and completed history",
+          "status": "PASS"
+        },
+        {
+          "name": "One tap repeat preserves free settings and completed history",
+          "status": "PASS"
+        },
+        {
+          "name": "One tap repeat preserves school settings and completed history",
+          "status": "PASS"
+        },
+        {
+          "name": "All activities advance exactly one level through Level 5 with no next action there",
+          "status": "PASS"
+        },
+        {
+          "name": "Next Level supports continuous Free Practice and preserves an optional goal",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice repeat and Next Level wait for ready; double invocation cannot start twice",
+          "status": "PASS"
+        },
+        {
+          "name": "Cross-learner and deleted-owner repeats cannot launch; Guest remains temporary",
+          "status": "PASS"
+        },
+        {
+          "name": "School and historical configurations do not offer meaningless Next Level",
+          "status": "PASS"
+        },
+        {
+          "name": "Repeat chooses disjoint facts when possible; small pools change sequence",
+          "status": "PASS"
+        },
+        {
+          "name": "Results actions fit 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Results actions fit 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Results actions fit 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "School repeat has a different sequence even with identical random draws",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice cancellation and owner deletion while waiting cannot create a flight",
+          "status": "PASS"
+        },
+        {
+          "name": "Repeating before save completion preserves two distinct flights",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "setup-preferences",
+      "checks": 10,
+      "tests": [
+        {
+          "name": "Last started activity settings survive Home and reload; selecting the same mode preserves count and timer",
+          "status": "PASS"
+        },
+        {
+          "name": "Activities and learners stay separate; abandoned drafts do not replace started choices",
+          "status": "PASS"
+        },
+        {
+          "name": "Back preserves draft choices, switching mode clears incompatible goal",
+          "status": "PASS"
+        },
+        {
+          "name": "Guest general preferences are memory-only and clear on learner change",
+          "status": "PASS"
+        },
+        {
+          "name": "Cancelled voice start does not overwrite the previous started configuration",
+          "status": "PASS"
+        },
+        {
+          "name": "Corrupt preferences fall back; failed saves remain usable and deletion clears preferences",
+          "status": "PASS"
+        },
+        {
+          "name": "School Test restores table and view but retains its fixed preset",
+          "status": "PASS"
+        },
+        {
+          "name": "Selected mode remains visible at 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Selected mode remains visible at 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "table-progress-integration",
+      "checks": 15,
+      "tests": [
+        {
+          "name": "Table report uses selected learner, activity, window and exact counts without writes",
+          "status": "PASS"
+        },
+        {
+          "name": "Empty selected table, keyboard selection and timing caveat are accessible",
+          "status": "PASS"
+        },
+        {
+          "name": "Table report layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Table report layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Table report layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Table report layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Progress previews expand independently and reset with filters",
+          "status": "PASS"
+        },
+        {
+          "name": "Short worksheet answer alignment 390",
+          "status": "PASS"
+        },
+        {
+          "name": "Short worksheet answer alignment 800",
+          "status": "PASS"
+        },
+        {
+          "name": "Short worksheet answer alignment 1440",
+          "status": "PASS"
+        },
+        {
+          "name": "Ten-question worksheet grid 390",
+          "status": "PASS"
+        },
+        {
+          "name": "Ten-question worksheet grid 1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Ten-question worksheet grid 1440",
+          "status": "PASS"
+        },
+        {
+          "name": "Existing report toggles have consistent space after the table",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "suite": "table-selection",
+      "checks": 23,
+      "tests": [
+        {
+          "name": "Tables support quick / focus, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support quick / worksheet, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support free / focus, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support free / worksheet, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support timed / focus, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support timed / worksheet, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support test / focus, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables support test / worksheet, scoring and direct repeat",
+          "status": "PASS"
+        },
+        {
+          "name": "Empty selection blocks Continue; keyboard toggles retain focus; By Level restores level",
+          "status": "PASS"
+        },
+        {
+          "name": "Tables survive reload, Quick shortcut, historical review and learner switching",
+          "status": "PASS"
+        },
+        {
+          "name": "Mixed backups restore without rewriting existing flights and reject invalid table metadata",
+          "status": "PASS"
+        },
+        {
+          "name": "Voice waits for ready and preserves tables on repeat; Guest creates no durable data",
+          "status": "PASS"
+        },
+        {
+          "name": "School Test remains fixed after a table-selected flight; division has no selector",
+          "status": "PASS"
+        },
+        {
+          "name": "Table selector layout 320x568",
+          "status": "PASS"
+        },
+        {
+          "name": "Table selector layout 390x844",
+          "status": "PASS"
+        },
+        {
+          "name": "Table selector layout 844x390",
+          "status": "PASS"
+        },
+        {
+          "name": "Table selector layout 1440x1000",
+          "status": "PASS"
+        },
+        {
+          "name": "Selected 3 and 9 heading in focus",
+          "status": "PASS"
+        },
+        {
+          "name": "Selected 3 and 9 heading in worksheet",
+          "status": "PASS"
+        },
+        {
+          "name": "Next Table boundaries 2",
+          "status": "PASS"
+        },
+        {
+          "name": "Next Table boundaries 9",
+          "status": "PASS"
+        },
+        {
+          "name": "Next Table boundaries 2,10",
+          "status": "PASS"
+        },
+        {
+          "name": "No page errors",
+          "status": "PASS"
+        }
+      ]
+    }
+  ]
+}

@@ -148,6 +148,8 @@ let browser;
     const firstIndex = await q.evaluate(() => index);
     await say('99'); assert.equal(await q.evaluate(() => index), firstIndex);
     await q.locator('#resume').click();
+    assert.equal(await q.locator('#micStatus').getAttribute('data-state'), 'waiting');
+    await q.evaluate(() => testRecognition.onspeechstart?.());
     assert.equal(await q.locator('#micStatus').getAttribute('data-state'), 'connected');
     await q.locator('#end').click(); await c.close();
   });
