@@ -51,6 +51,15 @@ function rememberQuick(q){
 const unsaved=new Map(),saveStates=new Map(),pendingWrites=new Map();
 let deleteTarget=null,managementMessage="",importCandidate=null,importReview=null;
 try{store=FlightProfileStore.create(localStorage,navigator.locks);family=store.read()}catch(e){storeError=e.message}
+// Keep read/export available in other tabs, but make the saving restriction
+// visible before a learner starts. Failed saves retain the existing export path.
+if(store){
+ const warning=document.createElement('p');warning.className='notice';warning.setAttribute('role','status');warning.hidden=true;
+ $('menuView').before(warning);
+ const showWriteAccess=()=>{warning.textContent=store.writeError();warning.hidden=!warning.textContent};
+ store.writeReady.then(showWriteAccess);
+ window.addEventListener('pageshow',showWriteAccess);
+}
 function refresh(){try{if(!store)throw Error('Browser storage is unavailable.');family=store.read();storeError=''}catch(e){storeError=e.message}return family}
 function name(id){return id==='guest'?'Guest':id==='previous'?'Previous progress':family.profiles.find(p=>p.id===id)?.name||'Learner'}
 function records(id){if(id==='guest')return guest;if(id==='previous')return previous;refresh();const saved=family.sessions.filter(s=>s.learnerId===id);return [...unsaved.values()].filter(s=>s.learnerId===id&&!saved.some(r=>r.id===s.id)).concat(saved).sort((a,b)=>new Date(b.date)-new Date(a.date))}

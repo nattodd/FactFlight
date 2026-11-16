@@ -2,6 +2,26 @@
 (function(root){
  'use strict';
  const KEY='fact-flight-family-v1';
+ // A page owns the writer lock for its lifetime. Per-write locking still
+ // allowed competing snapshots in the two-tab browser regression.
+ // Never take over in an already-open page: close the writer, then reload.
+ const writers=new WeakMap();
+ const writerMessage='Another Fact Flight tab is using learner saving. Use that tab, or export any unsaved flight here, close the other tab, then reload this one. Guest practice and viewing/exporting saved results are still available.';
+ function writer(storage,locks){
+  if(!locks?.request)return {ready:Promise.resolve(),error:'Safe saving is unavailable in this browser. Try an updated browser, or continue as Guest.'};
+  let state=writers.get(storage);if(state)return state;
+  let ready,release;
+  state={error:'Checking learner saving…',ended:false,ready:new Promise(resolve=>ready=resolve)};
+  writers.set(storage,state);
+  const end=()=>{state.ended=true;state.error='This page stopped saving. Export any unsaved flight, then reload before saving learner changes.';release?.()};
+  root.addEventListener('pagehide',end);
+  locks.request(KEY,{ifAvailable:true},lock=>{
+   if(!lock||state.ended){state.error=state.ended?state.error:writerMessage;ready();return}
+   state.error='';ready();
+   return new Promise(resolve=>release=resolve);
+  }).catch(()=>{state.error='Safe learner saving is unavailable. Export any unsaved flight before reloading, or continue as Guest.';ready()});
+  return state;
+ }
  // Canonical comparison ignores JSON property order, but preserves every stored field/value.
  function canonical(value){
   if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
@@ -73,13 +93,16 @@
   return data;
  }
  function create(storage,locks){
+  const access=writer(storage,locks);
   const read=()=>validate(JSON.parse(storage.getItem(KEY)||'{"version":1,"profiles":[],"sessions":[]}'));
   async function update(change){
-   if(!locks?.request)throw Error('Safe saving is unavailable in this browser. Try an updated browser, or continue as Guest.');
-   return locks.request(KEY,()=>{const data=read();const result=change(data);validate(data);storage.setItem(KEY,JSON.stringify(data));return result});
+   await access.ready;
+   if(access.error)throw Error(access.error);
+   // No await between read and write: same-page mutations run to completion.
+   const data=read();const result=change(data);validate(data);storage.setItem(KEY,JSON.stringify(data));return result;
   }
   const snapshot=(data,id)=>JSON.stringify({profile:data.profiles.find(p=>p.id===id),sessions:data.sessions.filter(s=>s.learnerId===id)});
-  return {read,snapshot,
+  return {read,snapshot,writeReady:access.ready,writeError:()=>access.error,
    rename:(id,name,expectedName)=>update(data=>{
     const profile=data.profiles.find(p=>p.id===id);
     if(!profile)throw Error('This learner no longer exists. Close this form and refresh the list.');
