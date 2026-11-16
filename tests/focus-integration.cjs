@@ -29,7 +29,7 @@ await test('School Focus voice ready, heard text, retry, advance, reconnect and 
  await say('ready');assert.equal(await p.evaluate(()=>items.length),60);assert(await p.locator('#focusEquation').isVisible());assert(!(await p.locator('#grid').isVisible()));
  await say('9999');assert.equal(await p.evaluate(()=>index),0);assert((await p.locator('#heard').innerText()).includes('9999'));assert((await p.locator('#focusFeedback').innerText()).includes('try'));
  await say(String(await p.evaluate(()=>items[index].answer)));await require('./feedback-wait.cjs')(p);assert.equal(await p.evaluate(()=>index),1);assert((await p.locator('#focusPosition').innerText()).toLowerCase().includes('2 of 60'));
- await p.evaluate(()=>setMicStatus('disconnected'));await p.locator('#micReconnectTop').click();assert.equal(await p.locator('#micStatus').getAttribute('data-state'),'connected');
+ await p.evaluate(()=>setMicStatus('disconnected'));await p.locator('#micReconnectTop').click();assert.equal(await p.locator('#micStatus').getAttribute('data-state'),'waiting');
  await p.clock.fastForward(120100);assert(await p.locator('#resultsView').isVisible());assert.equal(await p.evaluate(()=>history[0].elapsed),120000);assert.equal(await p.evaluate(()=>history[0].activity),undefined);await c.close();
 });
 for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,768],[1440,900]])await test(`Focus layouts and keypad ${width}x${height}`,async()=>{

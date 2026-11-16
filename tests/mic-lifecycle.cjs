@@ -27,98 +27,85 @@ async function finish(p){await p.locator('#end').click();await p.waitForFunction
 async function home(p){await p.locator('#resultHome').click()}
 async function download(p,selector){const pending=p.waitForEvent('download');await p.locator(selector).click();return JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'))}
 
+
 const ios={viewport:{width:390,height:844},userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 CriOS/140 Mobile/15E148 Safari/604.1'};
-async function setup(){
- const [c,p]=await page(ios);await p.clock.install();await p.clock.pauseAt(new Date());
- await p.evaluate(()=>{window.instances=[];window.abortEnds=true;window.SpeechRecognition=class{
-  constructor(){this.starts=0;instances.push(this);window.testRecognition=this}
-  start(){this.starts++;this.onstart?.()}
-  abort(){this.aborted=true;if(abortEnds)setTimeout(()=>this.onend?.(),50)}
- }});await choose(p,{input:'voice'});return [c,p];
+async function setup(mobile=true){
+ const [c,p]=await page(mobile?ios:{});await p.clock.install();await p.clock.pauseAt(new Date());
+ await p.evaluate(()=>{
+ window.instances=[];window.cues=[];window.abortEnds=true;
+ window.SpeechSynthesisUtterance=class{constructor(text){this.text=text}};
+ Object.defineProperty(window,'speechSynthesis',{value:{speak(u){cues.push(u)},cancel(){}}});
+ window.SpeechRecognition=class{
+ constructor(){this.starts=0;instances.push(this);window.testRecognition=this}
+ start(){this.starts++;this.onstart?.()}
+ abort(){this.aborted=true;if(abortEnds)setTimeout(()=>this.onend?.(),50)}
+ };
+ });await choose(p,{input:'voice'});return [c,p];
 }
-async function ready(p){await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})})}
+async function cue(p){await p.evaluate(()=>cues.at(-1).onend());}
+async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,final,end})=>{const r=[{transcript:text}];r.isFinal=final;testRecognition.onresult({resultIndex:0,results:[r]});if(end)testRecognition.onend?.()},{text,final,end})}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url='http://127.0.0.1:'+server.address().port;browser=await chromium.launch({headless:true,channel:'chrome'});
- await test('Manual reconnect waits for end plus cooldown and uses a fresh recognizer',async()=>{
-  const [c,p]=await setup();await p.locator('#retryMic').click();assert.equal(await p.evaluate(()=>instances.length),1);
-  await p.clock.runFor(449);assert.equal(await p.evaluate(()=>instances.length),1);
-  await p.clock.runFor(1);assert.equal(await p.evaluate(()=>instances.length),2);assert(await p.evaluate(()=>instances.every(r=>r.starts===1)));
-  await ready(p);assert.equal(await p.evaluate(()=>phase),'running');await c.close();
+ await test('iOS cue, audiostart prompt, final-only readiness and natural end cooldown',async()=>{
+ const [c,p]=await setup();assert.equal(await p.evaluate(()=>instances.length),0);assert.deepEqual(await p.evaluate(()=>[cues[0].text,cues[0].rate]),['Your turn',2]);await cue(p);
+ assert.equal(await p.evaluate(()=>testRecognition.continuous),false);assert((await p.locator('#micMessage').innerText()).includes('Wait'));
+ await p.evaluate(()=>{testRecognition.onaudiostart();testRecognition.onstart()});assert((await p.locator('#micMessage').innerText()).includes('Listening'));
+ await speech(p,'freddy',{final:false,end:false});await p.clock.runFor(1500);assert.equal(await p.evaluate(()=>phase),'checking');
+ await speech(p,'freddy',{end:false});assert.equal(await p.evaluate(()=>phase),'checking');await p.evaluate(()=>testRecognition.onend());assert.equal(await p.evaluate(()=>phase),'running');
+ await p.clock.runFor(399);assert.equal(await p.evaluate(()=>cues.length),1);await p.clock.runFor(1);assert.equal(await p.evaluate(()=>cues.length),2);
+ assert(await p.evaluate(()=>instances.every(r=>!r.aborted)));await c.close();
  });
- await test('Manual retry during a natural-end cooldown cannot bypass the delay',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>{const late=testRecognition.onresult;testRecognition.onend();const r=[{transcript:'ready'}];r.isFinal=true;late({resultIndex:0,results:[r]})});assert.equal(await p.evaluate(()=>phase),'checking');await p.locator('#retryMic').click();await p.clock.runFor(399);assert.equal(await p.evaluate(()=>instances.length),1);await p.clock.runFor(1);assert.equal(await p.evaluate(()=>instances.length),2);await p.clock.runFor(1100);assert.equal(await p.evaluate(()=>instances.length),2);await c.close();
+ await test('iOS five flights use fresh natural sessions, preserve scoring/history and retry',async()=>{
+ const [c,p]=await setup();const ids=[];
+ for(let f=0;f<5;f++){
+ await cue(p);await speech(p,'ready');ids.push(await p.evaluate(()=>session.id));
+ for(let q=0;q<5;q++){await p.clock.runFor(400);await cue(p);await speech(p,await p.evaluate(()=>String(items[index].answer)));}
+ await p.clock.runFor(400);await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
+ assert.equal(await p.evaluate(()=>phase),'done');assert(await p.evaluate(()=>session.items.every(first)));assert.equal(await p.evaluate(()=>rec),null);
+ if(f<4){await p.locator('#again').click();await p.clock.runFor(400)}
+ }
+ assert.equal(new Set(ids).size,5);assert.equal(await p.evaluate(()=>instances.length),30);assert(await p.evaluate(()=>instances.every(r=>r.starts===1&&!r.aborted)));
+ assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);await p.reload();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);await c.close();
  });
- await test('Automatic end reconnect creates fresh objects and remains bounded',async()=>{
-  const [c,p]=await setup();await ready(p);
-  for(let i=0;i<12;i++){await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(1500)}
-  assert.equal(await p.evaluate(()=>instances.length),13);assert(await p.evaluate(()=>instances.every(r=>r.starts===1)));
-  await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>instances.length),13);assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
+ await test('iOS substitutions are exact and independent of correct answer; freddy is readiness only',async()=>{
+ const [c,p]=await setup();await cue(p);await speech(p,'ready');
+ for(const [word,value] of [['sex',6],['thor',4],['poor',4]]){
+ await p.clock.runFor(400);await cue(p);await p.evaluate(()=>items[index].answer=99);await speech(p,word);assert.equal(await p.evaluate(()=>items[index].attempts.at(-1).value),value);assert.equal(await p.evaluate(()=>items[index].attempts.at(-1).correct),false);
+ }
+ await p.clock.runFor(400);await cue(p);const n=await p.evaluate(()=>items[index].attempts.length);await speech(p,'freddy');assert.equal(await p.evaluate(()=>items[index].attempts.length),n);assert.equal(await p.evaluate(()=>session.unrecognized.at(-1).text),'freddy');await c.close();
  });
- await test('Silent ready startup stops after five seconds and requires a fresh tap',async()=>{
-  const [c,p]=await setup();assert.equal(await p.evaluate(()=>micState),'waiting');
-  await p.clock.runFor(4999);assert.equal(await p.evaluate(()=>micState),'waiting');
-  await p.clock.runFor(1);assert.equal(await p.evaluate(()=>phase),'checking');assert.equal(await p.evaluate(()=>micState),'disconnected');assert.equal(await p.evaluate(()=>session),null);
-  await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),1);
-  await p.locator('#retryMic').click();await ready(p);assert.equal(await p.evaluate(()=>phase),'running');await c.close();
+ await test('Cancel during cue prevents late start; cue failure and timeout permit fallback',async()=>{
+ const [c,p]=await setup();await p.evaluate(()=>window.lateCue=cues[0].onend);await p.locator('#cancelMic').click();await p.evaluate(()=>lateCue());assert.equal(await p.evaluate(()=>instances.length),0);assert.equal(await p.evaluate(()=>phase),'idle');await c.close();
+ for(const timeout of [false,true]){const [c,p]=await setup();if(timeout)await p.clock.runFor(10000);else await p.evaluate(()=>cues[0].onerror());assert.equal(await p.evaluate(()=>micState),'disconnected');assert.equal(await p.evaluate(()=>session),null);assert.equal(await p.evaluate(()=>instances.length),0);await c.close()}
  });
- await test('Natural end in ready check stops without automatic retries',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),1);assert.equal(await p.evaluate(()=>phase),'checking');assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
+ await test('Retry waits for confirmed end plus 400ms; missing shutdown blocks overlap',async()=>{
+ const [c,p]=await setup();await cue(p);await p.locator('#retryMic').click();await p.clock.runFor(449);assert.equal(await p.evaluate(()=>cues.length),1);await p.clock.runFor(1);assert.equal(await p.evaluate(()=>cues.length),2);await cue(p);
+ await p.evaluate(()=>abortEnds=false);await p.locator('#retryMic').click();await p.clock.runFor(3000);assert.equal(await p.evaluate(()=>cues.length),2);assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
  });
- await test('Speech detection cancels startup watchdog and thinking time never restarts a flight',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>testRecognition.onspeechstart());await p.clock.runFor(10000);assert.equal(await p.evaluate(()=>instances.length),1);
-  await ready(p);await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>instances.length),1);assert.equal(await p.evaluate(()=>phase),'running');await c.close();
+ await test('Silent and error sessions never loop; observation does not forcibly stop speech',async()=>{
+ for(const error of [null,'not-allowed','audio-capture','network']){
+ const [c,p]=await setup();await cue(p);await p.evaluate(()=>testRecognition.onaudiostart());await p.clock.runFor(20000);assert.equal(await p.evaluate(()=>!!testRecognition.aborted),false);assert.equal(await p.evaluate(()=>phase),'checking');
+ if(error)await p.evaluate(error=>testRecognition.onerror({error}),error);await p.evaluate(()=>testRecognition.onend());await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>cues.length),1);assert.equal(await p.evaluate(()=>micState),'disconnected');await c.close();
+ }
  });
- await test('Cancel during shutdown invalidates pending launch and late callbacks',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>{window.lateResult=testRecognition.onresult;window.lateStart=testRecognition.onstart});
-  await p.locator('#retryMic').click();await p.locator('#cancelMic').click();await p.clock.runFor(1000);
-  await p.evaluate(()=>{lateStart();const r=[{transcript:'ready'}];r.isFinal=true;lateResult({resultIndex:0,results:[r]})});
-  assert.equal(await p.evaluate(()=>instances.length),1);assert.equal(await p.evaluate(()=>phase),'idle');assert.equal(await p.evaluate(()=>session),null);await c.close();
+ await test('Cancellation during cooldown invalidates next cue and late recognition',async()=>{
+ const [c,p]=await setup();await cue(p);await p.evaluate(()=>window.lateResult=testRecognition.onresult);await speech(p,'not ready');await p.locator('#cancelMic').click();await p.clock.runFor(500);await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;lateResult({resultIndex:0,results:[r]})});assert.equal(await p.evaluate(()=>cues.length),1);assert.equal(await p.evaluate(()=>phase),'idle');await c.close();
  });
- await test('Missing shutdown confirmation blocks overlap; late end permits a later manual retry',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>abortEnds=false);await p.locator('#retryMic').click();await p.clock.runFor(3000);
-  assert.equal(await p.evaluate(()=>instances.length),1);assert((await p.locator('#micMessage').innerText()).includes('not confirmed'));
-  await p.locator('#retryMic').click();assert.equal(await p.evaluate(()=>instances.length),1);
-  await p.evaluate(()=>instances[0].onend());await p.clock.runFor(400);await p.locator('#retryMic').click();assert.equal(await p.evaluate(()=>instances.length),2);await ready(p);assert.equal(await p.evaluate(()=>phase),'running');await c.close();
+ await test('Desktop retains continuous recognition, immediate final ready, interim fallback and no cues',async()=>{
+ const [c,p]=await setup(false);assert.equal(await p.evaluate(()=>testRecognition.continuous),true);assert.equal(await p.evaluate(()=>cues.length),0);
+ await speech(p,'freddy',{final:false,end:false});assert.equal(await p.evaluate(()=>phase),'checking');await speech(p,'ready',{end:false});assert.equal(await p.evaluate(()=>phase),'running');
+ await p.evaluate(()=>{const r=[{transcript:String(items[index].answer)}];r.isFinal=false;testRecognition.onresult({resultIndex:1,results:[[],r]})});await p.clock.runFor(1300);await p.clock.runFor(400);assert.equal(await p.evaluate(()=>index),1);assert.equal(await p.evaluate(()=>parseVoiceNumber('sex')),null);assert.equal(await p.evaluate(()=>cues.length),0);await c.close();
  });
- await test('Repeated taps launch only the latest request; permission failures never auto-loop',async()=>{
-  const [c,p]=await setup();await p.locator('#retryMic').click();await p.locator('#retryMic').click();await p.clock.runFor(450);assert.equal(await p.evaluate(()=>instances.length),2);
-  await p.evaluate(()=>{testRecognition.onerror({error:'not-allowed'});testRecognition.onend()});await p.clock.runFor(30000);assert.equal(await p.evaluate(()=>instances.length),2);assert.equal(await p.evaluate(()=>phase),'checking');await c.close();
+
+ await test('iOS timed expiry cancels pending cue; keyboard fallback and background stop remain usable',async()=>{
+ const [c,p]=await setup();await cue(p);await speech(p,'ready');await p.clock.runFor(400);
+ await p.evaluate(()=>{window.lateCue=cues.at(-1).onend;mode='test';flightTimeLimitMs=60000;started=performance.now()-60000;tick()});
+ await p.evaluate(()=>lateCue());assert.equal(await p.evaluate(()=>phase),'done');assert.equal(await p.evaluate(()=>instances.length),1);assert.equal(await p.evaluate(()=>history[0].elapsed),60000);await c.close();
+ const [c2,p2]=await setup();await cue(p2);await speech(p2,'ready');await p2.clock.runFor(400);await p2.evaluate(()=>window.dispatchEvent(new Event('pagehide')));assert.equal(await p2.evaluate(()=>micState),'disconnected');
+ await p2.locator('#focusAnswer').fill(await p2.evaluate(()=>String(items[index].answer)));await p2.locator('#focusAnswer').press('Enter');await p2.clock.runFor(400);assert.equal(await p2.evaluate(()=>index),1);assert.equal(await p2.evaluate(()=>cues.length),2);await c2.close();
  });
- await test('Five completed voice flights stop and restart without rewriting earlier results',async()=>{
-  const [c,p]=await setup();const ids=[];
-  for(let i=0;i<5;i++){
-   await ready(p);ids.push(await p.evaluate(()=>session.id));
-   for(let k=1;k<=5;k++){
-    await p.evaluate(k=>{const r=[{transcript:String(items[index].answer)}];r.isFinal=true;testRecognition.onresult({resultIndex:k,results:Array(k+1).fill(r)})},k);
-    await p.clock.runFor(400);
-   }
-   await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
-   assert.equal(await p.evaluate(()=>phase),'done');assert(await p.evaluate(()=>session.items.every(first)));
-   assert.equal(await p.evaluate(()=>rec),null);
-   if(i<4){await p.locator('#again').click();await p.clock.runFor(450);assert.equal(await p.evaluate(()=>phase),'checking')}
-  }
-  assert.equal(new Set(ids).size,5);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);assert(await p.evaluate(()=>instances.every(r=>r.starts===1&&r.aborted)));await c.close();
- });
- await test('Diagnostic export contains bounded event metadata but no speech or learner data',async()=>{
-  const [c,p]=await setup();
-  await p.evaluate(()=>{testRecognition.onaudiostart();testRecognition.onsoundstart();testRecognition.onspeechstart();
-   for(let i=0;i<210;i++){const r=[{transcript:'private spoken words'}];r.isFinal=false;testRecognition.onresult({resultIndex:0,results:[r]})}
-   testRecognition.onerror({error:'private error details'});
-  });
-  await p.locator('#micDiagnostics summary').click();assert((await p.locator('#micDiagnosticLog').innerText()).includes('result'));
-  const pending=p.waitForEvent('download');await p.locator('#downloadMicLog').click();const raw=fs.readFileSync(await (await pending).path(),'utf8'),data=JSON.parse(raw);
-  assert.equal(data.events.length,200);assert.equal(data.ios,true);assert.equal(data.events.at(-1).error,'unknown');
-  assert(!raw.includes('private'));assert(!raw.includes('Test learner'));assert(!raw.includes('learnerId'));assert(!raw.includes('transcript'));
-  assert(data.events.every(e=>Object.keys(e).every(k=>['ms','connection','phase','event','error'].includes(k))));
-  await p.reload();assert.equal(await p.evaluate(()=>micEvents.length),0);await c.close();
- });
- await test('Trace distinguishes audio startup from absent recognition on the repeated flight',async()=>{
-  const [c,p]=await setup();await p.evaluate(()=>testRecognition.onaudiostart());await ready(p);await finish(p);
-  await p.locator('#again').click();await p.clock.runFor(450);await p.evaluate(()=>testRecognition.onaudiostart());await p.clock.runFor(5000);
-  const trace=await p.evaluate(()=>micEvents);const started=trace.filter(e=>e.event==='start');assert(started.length>=2);
-  const repeat=trace.filter(e=>e.connection===started[1].connection);
-  assert(repeat.some(e=>e.event==='audiostart'));assert(repeat.some(e=>e.event==='startup-watchdog'));assert(!repeat.some(e=>e.event==='result'));
-  await c.close();
+ await test('Diagnostics exclude speech and learner data',async()=>{
+ const [c,p]=await setup();await cue(p);await speech(p,'private spoken words');await p.locator('#micDiagnostics summary').click();const data=await download(p,'#downloadMicLog');const raw=JSON.stringify(data);assert(!raw.includes('private'));assert(!raw.includes('Test learner'));assert(!raw.includes('transcript'));await c.close();
  });
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'mic-lifecycle-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;

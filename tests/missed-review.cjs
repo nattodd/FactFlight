@@ -154,7 +154,7 @@ async function seed(p){
  });
  const ios={viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 CriOS/140 Mobile/15E148 Safari/604.1'};
  async function mockRecoveryVoice(p){
-  const install=()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){setTimeout(()=>this.onend?.(),0)}}};
+  const install=()=>{window.SpeechSynthesisUtterance=class{};Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{speak(u){u.onend?.()},cancel(){}}});window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){setTimeout(()=>this.onend?.(),0)}}};
   await p.addInitScript(install);await p.evaluate(install);
  }
  await test('iPhone recovery restores selected review and learner without starting or changing history',async()=>{
@@ -168,7 +168,7 @@ async function seed(p){
   assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);
   assert.equal(await p.evaluate(()=>sessionStorage.getItem('fact-flight-voice-recovery-v1')),null);
   await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
-  await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})});
+  await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]});testRecognition.onend()});
   assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>session.items?.length||items.length),4);
   await finish(p);await p.locator('#again').click();await p.locator('[data-review-start]').click();await refreshVoice(p);await p.locator('[data-review-start]').waitFor();
   await p.locator('[data-review-start]').click();await p.locator('#cancelMic').click();assert.equal(await p.evaluate(()=>phase),'idle');
@@ -191,7 +191,7 @@ async function seed(p){
   await p.locator('#homeNav').click();await p.locator('[data-change-learner]').click();await p.locator('[data-learner]:not([data-learner=guest])').first().click();
   await choose(p,{input:'voice'});await p.waitForFunction(()=>rec&&micState==='waiting');await p.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(this===sessionStorage)throw Error('blocked');return originalSet.call(this,k,v)}});
   await refreshVoice(p);assert((await p.locator('#micMessage').innerText()).includes('Could not keep your setup'));assert.equal(await p.evaluate(()=>phase),'checking');
-  await p.evaluate(()=>{Storage.prototype.setItem=originalSet;const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]});Storage.prototype.setItem=function(k,v){if(k==='fact-flight-family-v1')throw Error('quota');return originalSet.call(this,k,v)}});
+  await p.evaluate(()=>{Storage.prototype.setItem=originalSet;const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]});testRecognition.onend();Storage.prototype.setItem=function(k,v){if(k==='fact-flight-family-v1')throw Error('quota');return originalSet.call(this,k,v)}});
   await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.includes('Could not save'));
   await p.locator('#again').click();await refreshVoice(p);assert((await p.locator('#micMessage').innerText()).includes('Results are still saving'));assert.equal(await p.evaluate(()=>phase),'checking');await c.close();
  });

@@ -85,6 +85,8 @@ Android generally does **not** have the same separate, system-wide **Speech Reco
 3. Check that the intended microphone is selected and not muted.
 4. Reload the page and start a new voice session.
 
+The local v6.2 development version uses the tested Mode H sequence on iOS: wait for **Listening**, say “ready,” then say each answer when Listening appears again. A short “Your turn” cue prepares each phrase; it may be inaudible on some devices. Lab transitions averaged about two seconds. Timed sessions keep running during these transitions. Exact voice substitutions recognize “sex” as six, “thor”/“poor” as four, and “freddy” as ready only during setup. Desktop voice behavior is unchanged. The integrated quiz still needs physical iPhone Safari/Chrome verification; this is not a production-release claim.
+
 ### If voice answers still do not work
 
 - Confirm that the app says **Microphone: Connected** before answering.

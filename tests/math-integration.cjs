@@ -58,7 +58,7 @@ await test('Mock speech ready, advanced answer, reconnect and timed expiry retai
  await say('ready');assert.equal(await p.evaluate(()=>phase),'running');
  // Feed the actual selected answer; final 2500 word parsing is also checked exhaustively above.
  await say(String(await p.evaluate(()=>items[index].answer)));assert.equal(await p.evaluate(()=>stats({items}).correct),1);
- await p.locator('#resume').click();assert.equal(await p.locator('#micStatus').getAttribute('data-state'),'connected');
+ await p.locator('#resume').click();assert.equal(await p.locator('#micStatus').getAttribute('data-state'),'waiting');
  await p.clock.fastForward(120100);assert.equal(await p.evaluate(()=>history[0].reason),'time');assert.equal(await p.evaluate(()=>history[0].activity),'squares');await c.close();
 });
 for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,768],[1440,900]])await test(`New activity layouts and four-digit answers ${width}x${height}`,async()=>{

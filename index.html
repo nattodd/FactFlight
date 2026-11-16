@@ -275,7 +275,7 @@ function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test')
 $('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
 $('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
 let micRetryTimer=null,micEverConnected=false,micState='not-connected';
-let micShutdown=null,micCleanup=null,micRestartCount=0;
+let micShutdown=null,micCleanup=null,micRestartCount=0,iosCue=null;
 const isIOSDevice=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isChromeIOS=/CriOS/i.test(navigator.userAgent);
 function iosVoiceHelpHTML(){
@@ -315,12 +315,13 @@ function micTrace(event,connection=recEpoch,error){
 function renderMicTrace(){$('micDiagnosticLog').textContent=micEvents.map(e=>e.ms+'ms · '+e.connection+' · '+e.phase+' · '+e.event+(e.error?' · '+e.error:'')).join('\n')||'No microphone events yet.'}
 $('micDiagnostics').addEventListener('toggle',renderMicTrace);
 $('downloadMicLog').onclick=()=>{
- const data={format:1,implementation:'voice-lifecycle-diagnostics-1',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
+ const data={format:1,implementation:'voice-lifecycle-diagnostics-2-ios-mode-h',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
  const a=document.createElement('a');a.href=url;a.download='fact-flight-microphone-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 function stopMic(){
  recEpoch++;clearTimeout(micRetryTimer);micRetryTimer=null;
+ if(iosCue){const cue=iosCue;iosCue=null;cue.onend=cue.onerror=cue.onstart=null;window.speechSynthesis?.cancel()}
  if(micCleanup){micCleanup();micCleanup=null}
  if(rec){
    const old=rec,oldEpoch=recEpoch-1;rec=null;micTrace('abort-requested',oldEpoch);
@@ -342,7 +343,97 @@ function micError(message){
  if(phase==='checking')$('micMessage').textContent=message;
  else if(phase==='running'){$('heard').textContent=message}
 }
+function suspendIOSMic(){
+ if(isIOSDevice&&busy()&&$('inputMode').value==='voice'){
+   stopMic();setMicStatus('disconnected');micError('Microphone paused. Tap Reconnect when you return.');
+ }
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendIOSMic()});
+window.addEventListener('pagehide',suspendIOSMic);
+// iOS Mode H: one natural-ending recognition per phrase. Desktop stays below.
+function connectIOSMic(automatic=false){
+ if(!automatic)micRestartCount=0;
+ stopMic();
+ const epoch=recEpoch,Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const active=()=>epoch===recEpoch&&(phase==='checking'||phase==='running');
+ const fail=text=>{if(!active())return;stopMic();setMicStatus('disconnected');micError(text)};
+ if(!Speech||!window.isSecureContext){micError('Voice needs a supported browser and HTTPS. Tap or type remains available.');return}
+ micTrace(automatic?'automatic-connect':'manual-connect',epoch);
+ function prepare(){
+  if(!active())return;
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){fail('Voice preparation is unavailable. Please use Tap or type.');return}
+  setMicStatus('waiting');micError('Preparing microphone. Wait for Listening before speaking.');
+  const cue=new SpeechSynthesisUtterance('Your turn');cue.lang='en-US';cue.rate=2;iosCue=cue;
+  const timeout=setTimeout(()=>fail('Voice preparation timed out. Tap Reconnect or use Tap or type.'),10000);
+  micCleanup=()=>clearTimeout(timeout);
+  cue.onstart=()=>{if(active())micTrace('cue-start',epoch)};
+  cue.onerror=()=>fail('Voice preparation failed. Tap Reconnect or use Tap or type.');
+  cue.onend=()=>{
+   if(!active()||iosCue!==cue)return;
+   clearTimeout(timeout);cue.onstart=cue.onend=cue.onerror=null;iosCue=null;micCleanup=null;
+   micTrace('cue-end',epoch);launch();
+  };
+  try{micTrace('cue-requested',epoch);window.speechSynthesis.speak(cue)}catch(_){fail('Could not prepare voice. Tap Reconnect or use Tap or type.')}
+ }
+ function launch(){
+  if(!active())return;
+  let r;try{r=new Speech()}catch(_){fail('Could not open microphone. Tap Reconnect or use Tap or type.');return}
+  rec=r;r.lang='en-US';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+  const checking=phase==='checking',question=checking?null:items[index];
+  let finalText=null,failed=false,received=false,audioStarted=false;
+  const valid=()=>active()&&rec===r;
+  const timer=setTimeout(()=>{if(valid())micError(received?'Waiting for speech to finish. Reconnect if needed.':'No speech received yet. Tap Reconnect or use Tap or type.')},20000);
+  micCleanup=()=>clearTimeout(timer);
+  r.onstart=()=>{if(valid()){micTrace('start',epoch);micEverConnected=true;if(!audioStarted&&!received&&!failed)micError('Opening microphone. Wait before speaking.')}};
+  r.onaudiostart=()=>{if(valid()&&!failed&&!received){audioStarted=true;micTrace('audiostart',epoch);setMicStatus('connected');micError(checking?'Listening — say “ready”.':'Listening — say one answer at a time.')}};
+  r.onspeechstart=()=>{if(valid())micTrace('speechstart',epoch)};
+  r.onresult=e=>{
+   if(!valid()||failed||finalText!==null)return;
+   received=true;micTrace('result',epoch);
+   for(let k=e.resultIndex;k<e.results.length;k++){
+    const result=e.results[k],text=String(result[0]?.transcript||'').trim();
+    micError(`Heard: “${text}”`);
+    if(result.isFinal){finalText=text;break}
+   }
+  };
+  r.onerror=e=>{if(valid()){failed=true;micTrace('error',epoch,e.error);setMicStatus('disconnected');micError('Microphone issue. Tap Reconnect or use Tap or type.')}};
+  r.onend=()=>{
+   if(!valid())return;
+   clearTimeout(timer);micCleanup=null;rec=null;micTrace('end',epoch);
+   for(const name of ['onstart','onaudiostart','onspeechstart','onresult','onerror','onend'])r[name]=null;
+   const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
+   setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
+   setMicStatus('waiting');
+   if(failed||finalText===null){setMicStatus('disconnected');micError('No answer received. Tap Reconnect to try again; Tap or type remains available.');return}
+   // Score only after natural end, so finishing the last fact does not abort iOS.
+   const normalized=finalText.toLowerCase().replace(/[.!?,]/g,'').trim();
+   if(checking&&phase==='checking'){
+    if(/^(?:(?:i am |i'm |im )?ready|freddy)$/.test(normalized)){
+     micTrace('ready-accepted',epoch);$('micDialog').close();begin();
+    }else micError(`Heard “${finalText}”. Please say “ready.”`);
+   }else if(!checking&&phase==='running'&&items[index]===question&&!transitioning){
+    const aliases={sex:6,thor:4,poor:4};
+    const value=Object.prototype.hasOwnProperty.call(aliases,normalized)?aliases[normalized]:parseVoiceNumber(finalText);
+    if(normalized==='skip')submit('skip',finalText,'voice');
+    else if(value===null){session.unrecognized.push({text:finalText,at:performance.now()-started});flashAnswerFeedback('unheard');micError(`Heard “${finalText}” — say one number.`)}
+    else{submit(value,finalText,'voice');micError(`Heard “${finalText}” → interpreted as ${value}`)}
+   }
+   // Cooldown precedes the next cue. Cancellation invalidates this continuation.
+   gate.promise.then(()=>{
+    if(!active())return;
+    const next=()=>{if(!active())return;if(transitioning){micRetryTimer=setTimeout(next,50);return}connectIOSMic(true)};
+    next();
+   });
+  };
+  try{micTrace('start-requested',epoch);r.start()}catch(_){fail('Could not start recognition. Tap Reconnect or use Tap or type.')}
+ }
+ if(micShutdown){
+  micError('Releasing the previous microphone connection…');
+  micShutdown.promise.then(released=>{if(!active())return;if(released)prepare();else fail('Microphone shutdown was not confirmed. Please use Tap or type or refresh.')});
+ }else prepare();
+}
 function connectMic(automatic=false){
+ if(isIOSDevice)return connectIOSMic(automatic===true);
  if(automatic!==true){micRestartCount=0}
  stopMic();
  const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
