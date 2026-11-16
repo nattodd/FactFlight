@@ -23,6 +23,7 @@
 <option value="natural">A · Natural end</option>
 <option value="stop">B · Stop after a result</option>
 <option value="cue">C · Spoken cue + natural end</option>
+<option value="flight">D · Hands-free flight</option>
 </select>
 <p id="description">Single-phrase recognition. The browser ends the session itself.</p>
 <p id="status" role="status" aria-live="polite">Ready to test. Microphone is off.</p>
@@ -30,7 +31,8 @@
 <button id="cancel" disabled>Cancel &amp; release microphone</button>
 <p id="counts" class="muted">No attempts yet.</p>
 <p>Tap Start attempt, wait for “Say ready,” then say <strong>“ready”</strong> once. Wait for the session to end before repeating. Aim for 10 attempts per mode.</p>
-<small>A received result is evidence of recognition, not a check that the word was correct. No five-second reset: after 20 seconds we show a notice but keep listening until you cancel or the browser ends.</small>
+<p><strong>Mode D:</strong> Tap Start, say “ready” at Listening, then answer five displayed sums. Tap Next flight for five more answers, without another “ready.” Wait for Listening before each answer; do not refresh between flights.</p>
+<small>A–C count result arrivals only. D checks ready and the five expected answers without saving spoken text. No five-second reset: after 20 seconds we show a notice but keep listening until you cancel or the browser ends.</small>
 </section>
 <section>
 <h2>Save the evidence</h2>
@@ -42,7 +44,7 @@
 <details><summary>How to compare fairly</summary>
 <p>Close other voice tests first. Keep the same browser and mode for a run. Download the log, then fully close and reopen the browser before comparing another mode; a reload may not reset a stuck browser audio service.</p>
 <p>Mode B calls stop after the first final result. Mode C speaks “Your turn” before opening recognition. A and C let recognition end naturally. Cancel always requests an abort; test recovery after cancellation separately.</p>
-<p>These tests use a tap for every attempt. Success here does not yet verify hands-free question transitions in the quiz. Do not clear website data or learner history.</p>
+<p>A–C use a tap for every attempt. D automatically plays the cue and opens a fresh recognizer after each accepted phrase ends naturally, with a 400 ms cooldown. A mismatch or error ends the flight; it does not loop. Cancel is available between questions too. Do not clear website data or learner history.</p>
 </details>
 <p><a href="index.html">Return to Fact Flight</a></p>
 </main></body></html>

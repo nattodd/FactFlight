@@ -23,6 +23,9 @@ async function setup(){
 }
 async function result(p,final=true){await p.evaluate(final=>{const r=[{transcript:'PRIVATE TEST PHRASE'}];r.isFinal=final;instances.at(-1).onresult({resultIndex:0,results:[r]})},final)}
 async function check(name,fn){await fn();checks++;console.log('PASS '+name)}
+async function speak(p,text){await p.evaluate(text=>{const r=[{transcript:text}];r.isFinal=true;instances.at(-1).onresult({resultIndex:0,results:[r]})},text)}
+async function cueEnd(p){await p.evaluate(()=>cues.at(-1).onend())}
+async function naturalEnd(p){await p.evaluate(()=>instances.at(-1).onend());await p.clock.runFor(400)}
 (async()=>{try{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+server.address().port;
  browser=await chromium.launch({headless:true,channel:'chrome'});
@@ -68,6 +71,31 @@ async function check(name,fn){await fn();checks++;console.log('PASS '+name)}
    await p.setViewportSize(viewport);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    await p.locator('#cancel').scrollIntoViewIfNeeded();const b=await p.locator('#cancel').boundingBox();assert(b.height>=44);
   }await p.setViewportSize({width:390,height:844});await p.screenshot({path:path.join(require('node:os').tmpdir(),'factflight-microphone-lab.png'),fullPage:true});await c.close();
+ });
+ await check('Hands-free flight uses one tap for ready plus five answers, next flight skips ready',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('flight');await p.locator('#start').click();
+  for(const word of ['ready','two','3','four.','five','six']){await cueEnd(p);await speak(p,word);await naturalEnd(p)}
+  assert.match(await p.locator('#status').textContent(),/Flight complete/);assert.equal(await p.locator('#start').textContent(),'Next flight');
+  await p.locator('#start').click();await cueEnd(p);assert.match(await p.locator('#status').textContent(),/Question 1 of 5/);
+  await speak(p,'2');await naturalEnd(p);
+  for(const word of ['3','4','5','6']){await cueEnd(p);await speak(p,word);await naturalEnd(p)}
+  assert.equal(await p.evaluate(()=>instances.length),11);
+  assert(await p.evaluate(()=>instances.every(r=>!r.aborted&&!r.stopped)));
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'));
+  assert.equal(data.events.filter(e=>e.event==='tap-start').length,2);assert.equal(data.events.filter(e=>e.event==='flight-completed').length,2);
+  assert.equal(data.attempts.filter(r=>r.accepted).length,11);await c.close();
+ });
+ await check('Cancellation during automatic cooldown prevents next cue and invalidates late callbacks',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('flight');await p.locator('#start').click();await cueEnd(p);await speak(p,'ready');
+  await p.evaluate(()=>{window.lateResult=instances[0].onresult;instances[0].onend()});await p.locator('#cancel').click();await p.clock.runFor(1000);
+  assert.equal(await p.evaluate(()=>cues.length),1);assert(await p.locator('#start').isEnabled());
+  await p.locator('#start').click();await p.evaluate(()=>lateResult({resultIndex:0,results:[]}));await cueEnd(p);assert.match(await p.locator('#status').textContent(),/Say ready/);await c.close();
+ });
+ await check('Wrong final answer and recognition error end flight without automatic retries',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('flight');await p.locator('#start').click();await cueEnd(p);await speak(p,'PRIVATE WRONG PHRASE');await naturalEnd(p);
+  assert.match(await p.locator('#status').textContent(),/stopped before completion/);assert.equal(await p.evaluate(()=>cues.length),1);
+  await p.locator('#start').click();await cueEnd(p);await speak(p,'ready');await p.evaluate(()=>instances.at(-1).onerror({error:'network'}));await naturalEnd(p);
+  assert.match(await p.locator('#status').textContent(),/stopped before completion/);assert.equal(await p.evaluate(()=>cues.length),2);await c.close();
  });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});
