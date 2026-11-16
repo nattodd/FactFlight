@@ -33,17 +33,19 @@ async function setup(mobile=true){
  const [c,p]=await page(mobile?ios:{});await p.clock.install();await p.clock.pauseAt(new Date());
  await p.evaluate(()=>{
  window.instances=[];window.cues=[];window.abortEnds=true;
+ window.audioTypes=[];window.audioType='auto';window.audioState='active';window.audioThrows=false;
+ Object.defineProperty(navigator,'audioSession',{configurable:true,value:{get type(){return audioType},set type(value){if(audioThrows)throw Error('unsupported');audioType=value;audioTypes.push(value)},get state(){return audioState},addEventListener(){}}});
  window.SpeechSynthesisUtterance=class{constructor(text){this.text=text}};
  Object.defineProperty(window,'speechSynthesis',{value:{speak(u){cues.push(u)},cancel(){}}});
  window.SpeechRecognition=class{
  constructor(){this.starts=0;instances.push(this);window.testRecognition=this}
  start(){this.starts++;this.onstart?.()}
- abort(){this.aborted=true;if(abortEnds)setTimeout(()=>this.onend?.(),50)}
+ abort(){if(this.ended)return;this.aborted=true;if(abortEnds)setTimeout(()=>this.onend?.(),50)}
  };
  });await choose(p,{input:'voice'});return [c,p];
 }
 async function cue(p){await p.evaluate(()=>cues.at(-1).onend());}
-async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,final,end})=>{const r=[{transcript:text}];r.isFinal=final;testRecognition.onresult({resultIndex:0,results:[r]});if(end)testRecognition.onend?.()},{text,final,end})}
+async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,final,end})=>{const r=[{transcript:text}];r.isFinal=final;testRecognition.onresult({resultIndex:0,results:[r]});if(end){testRecognition.ended=true;testRecognition.onend?.()}},{text,final,end})}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url='http://127.0.0.1:'+server.address().port;browser=await chromium.launch({headless:true,channel:'chrome'});
  await test('iOS cue, audiostart prompt, final-only readiness and natural end cooldown',async()=>{
@@ -58,13 +60,13 @@ async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,f
  await test('iOS five flights use fresh natural sessions, preserve scoring/history and retry',async()=>{
  const [c,p]=await setup();const ids=[];
  for(let f=0;f<5;f++){
- await cue(p);await speech(p,'ready');ids.push(await p.evaluate(()=>session.id));
+ assert.equal(await p.evaluate(()=>audioType),'auto');await cue(p);await speech(p,'ready');ids.push(await p.evaluate(()=>session.id));
  for(let q=0;q<5;q++){await p.clock.runFor(400);await cue(p);await speech(p,await p.evaluate(()=>String(items[index].answer)));}
  await p.clock.runFor(400);await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
- assert.equal(await p.evaluate(()=>phase),'done');assert(await p.evaluate(()=>session.items.every(first)));assert.equal(await p.evaluate(()=>rec),null);
+ assert.equal(await p.evaluate(()=>phase),'done');assert.equal(await p.evaluate(()=>audioType),'ambient');assert(await p.evaluate(()=>session.items.every(first)));assert.equal(await p.evaluate(()=>rec),null);
  if(f<4){await p.locator('#again').click();await p.clock.runFor(400)}
  }
- assert.equal(new Set(ids).size,5);assert.equal(await p.evaluate(()=>instances.length),30);assert(await p.evaluate(()=>instances.every((r,i)=>r.starts===1&&Boolean(r.aborted)===(i%6===5))));
+ assert.equal(new Set(ids).size,5);assert.equal(await p.evaluate(()=>instances.length),30);assert(await p.evaluate(()=>instances.every(r=>r.starts===1&&!r.aborted)));
  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);await p.reload();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length),5);await c.close();
  });
  await test('iOS substitutions are exact and independent of correct answer; freddy is readiness only',async()=>{
@@ -107,10 +109,10 @@ async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,f
  await test('Diagnostics exclude speech and learner data',async()=>{
  const [c,p]=await setup();await cue(p);await speech(p,'private spoken words');await p.locator('#micDiagnostics summary').click();const data=await download(p,'#downloadMicLog');const raw=JSON.stringify(data);assert(!raw.includes('private'));assert(!raw.includes('Test learner'));assert(!raw.includes('transcript'));await c.close();
  });
- await test('Completed iOS flights explicitly release final recognizer; background cannot restart it',async()=>{
+ await test('Completed iOS flights request non-recording audio category; background cannot restart them',async()=>{
  const [c,p]=await setup();await cue(p);await speech(p,'ready');
  for(let q=0;q<5;q++){await p.clock.runFor(400);await cue(p);await speech(p,await p.evaluate(()=>String(items[index].answer)));}
- await p.clock.runFor(400);assert.equal(await p.evaluate(()=>phase),'done');assert(await p.evaluate(()=>instances.at(-1).aborted));
+ await p.clock.runFor(400);assert.equal(await p.evaluate(()=>phase),'done');assert.equal(await p.evaluate(()=>audioType),'ambient');assert.equal(await p.evaluate(()=>instances.at(-1).aborted),undefined);
  const count=await p.evaluate(()=>instances.length);await p.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await p.clock.runFor(30000);assert.equal(await p.evaluate(()=>instances.length),count);
  await p.locator('#again').click();await p.clock.runFor(400);await cue(p);await speech(p,'ready');assert.equal(await p.evaluate(()=>phase),'running');await c.close();
  });
@@ -136,6 +138,16 @@ async function speech(p,text,{final=true,end=true}={}){await p.evaluate(({text,f
  const [c,p]=await setup(false);await speech(p,'ready',{end:false});await p.evaluate(()=>submit(9999,'9999','voice'));await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
  const history=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#seeProgress').click();await p.locator('#progressReview').click();await p.evaluate(()=>setMicrophoneRestriction(true));assert(await p.locator('[data-review-input=voice]').isDisabled());assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),history);
  await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');await p.locator('#end').click();await p.locator('#resultHome').click();await p.locator('[data-quick-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');await c.close();
+ });
+ await test('Audio category stays automatic between answers; late cleanup cannot park a new flight',async()=>{
+ const [c,p]=await setup();await cue(p);await speech(p,'ready');await p.clock.runFor(400);await cue(p);await speech(p,'9999');await p.clock.runFor(400);assert.equal(await p.evaluate(()=>audioType),'auto');
+ await cue(p);await p.evaluate(()=>window.dispatchEvent(new Event('pagehide')));assert.equal(await p.evaluate(()=>audioType),'ambient');await p.locator('#micReconnectTop').click();await p.clock.runFor(450);assert.equal(await p.evaluate(()=>audioType),'auto');await p.clock.runFor(1000);assert.equal(await p.evaluate(()=>audioType),'auto');await c.close();
+ });
+ await test('Missing or throwing Audio Session API preserves repeat readiness; desktop never writes it',async()=>{
+ for(const variant of ['missing','throws','desktop']){const [c,p]=await setup(variant!=='desktop');await p.locator('#cancelMic').click();await p.evaluate(v=>{audioTypes.length=0;if(v==='missing')Object.defineProperty(navigator,'audioSession',{value:undefined,configurable:true});if(v==='throws')audioThrows=true},variant);await p.clock.runFor(450);await p.locator('[data-start]').click();if(variant!=='desktop')await cue(p);await speech(p,'ready',{end:variant!=='desktop'});assert.equal(await p.evaluate(()=>phase),'running');await p.locator('#end').click();if(variant==='desktop')assert.deepEqual(await p.evaluate(()=>audioTypes),[]);await c.close();}
+ });
+ await test('Audio diagnostics report observed active state without claiming hardware release',async()=>{
+ const [c,p]=await setup();await cue(p);await p.locator('#cancelMic').click();await p.clock.runFor(450);assert(await p.evaluate(()=>micEvents.some(e=>e.event==='audio-session-release-request-ambient-active')));assert.equal(await p.evaluate(()=>audioState),'active');await c.close();
  });
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'mic-lifecycle-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;

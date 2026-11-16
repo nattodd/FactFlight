@@ -16,7 +16,7 @@ See the [draft v6.2 release notes](docs/v6.2-release-notes.md), [final automated
 
 ## Features
 
-The local v6.2 candidate adds Parent corner → Disable microphone, covering all learners and Guest in this browser, with Parent restricted voice choices and typed/touch fallback. It persists across reloads but is not a PIN lock or a device-wide browser permission. Other browsers and cleared website data are separate. Microphone cleanup after completion/backgrounding is locally updated and awaits physical iPhone verification.
+The local v6.2 candidate adds Parent corner → Disable microphone, covering all learners and Guest in this browser, with Parent restricted voice choices and typed/touch fallback. It persists across reloads but is not a PIN lock or a device-wide browser permission. Other browsers and cleared website data are separate. The owner accepted the parent restriction. The previous microphone cleanup failed on iPhone; a local audio-session category workaround awaits physical release/restart verification.
 
 The core math and family features below remain available in v6.1.0 alongside the improvements listed above.
 

@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-16",
+  "base": "406d301",
+  "candidate": "local uncommitted audio-session changes",
+  "browser": "isolated headless Windows Chrome 157.0.8103.51",
+  "scope": "Synthetic learner data; speech, synthesis and Audio Session mocked; physical release/restart unverified",
+  "checks": 291,
+  "suites": [
+    {
+      "suite": "answer-feedback",
+      "checks": 8,
+      "status": "PASS"
+    },
+    {
+      "suite": "brand-regression",
+      "checks": 18,
+      "status": "PASS"
+    },
+    {
+      "suite": "configurable-sessions",
+      "checks": 14,
+      "status": "PASS"
+    },
+    {
+      "suite": "focus-integration",
+      "checks": 11,
+      "status": "PASS"
+    },
+    {
+      "suite": "import-learner",
+      "checks": 16,
+      "status": "PASS"
+    },
+    {
+      "suite": "manage-learners",
+      "checks": 11,
+      "status": "PASS"
+    },
+    {
+      "suite": "math-integration",
+      "checks": 12,
+      "status": "PASS"
+    },
+    {
+      "suite": "menu-integration",
+      "checks": 13,
+      "status": "PASS"
+    },
+    {
+      "suite": "mic-lifecycle",
+      "checks": 19,
+      "status": "PASS"
+    },
+    {
+      "suite": "microphone-lab",
+      "checks": 20,
+      "status": "PASS"
+    },
+    {
+      "suite": "missed-review",
+      "checks": 18,
+      "status": "PASS"
+    },
+    {
+      "suite": "mobile-actions",
+      "checks": 8,
+      "status": "PASS"
+    },
+    {
+      "suite": "profile-integration",
+      "checks": 15,
+      "status": "PASS"
+    },
+    {
+      "suite": "progress-disclosure",
+      "checks": 7,
+      "status": "PASS"
+    },
+    {
+      "suite": "quick-preferences",
+      "checks": 10,
+      "status": "PASS"
+    },
+    {
+      "suite": "readability",
+      "checks": 9,
+      "status": "PASS"
+    },
+    {
+      "suite": "release-fixes",
+      "checks": 7,
+      "status": "PASS"
+    },
+    {
+      "suite": "rename-learner",
+      "checks": 9,
+      "status": "PASS"
+    },
+    {
+      "suite": "repeat-actions",
+      "checks": 18,
+      "status": "PASS"
+    },
+    {
+      "suite": "setup-preferences",
+      "checks": 10,
+      "status": "PASS"
+    },
+    {
+      "suite": "table-progress-integration",
+      "checks": 15,
+      "status": "PASS"
+    },
+    {
+      "suite": "table-selection",
+      "checks": 23,
+      "status": "PASS"
+    }
+  ],
+  "pureChecks": {
+    "generatorSequences": 2136,
+    "repeatSequences": 220,
+    "tableSubsets": 1023,
+    "reviewPools": "PASS",
+    "tableMetrics": "PASS"
+  },
+  "syntax": "35 script/test files and app inline script PASS",
+  "diffCheck": "PASS"
+}

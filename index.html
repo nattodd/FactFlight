@@ -275,16 +275,44 @@ function setMode(m){mode=m;$('testMode').classList.toggle('selected',m==='test')
 $('testMode').onclick=()=>setMode('test');$('practiceMode').onclick=()=>setMode('practice');$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('fact-flight-theme',t)}catch(e){}};
 $('practiceNav').onclick=()=>show('practiceView');$('historyNav').onclick=()=>{if(busy())return;renderHistory();show('historyView')};
 let micRetryTimer=null,micEverConnected=false,micState='not-connected';
-let micShutdown=null,micCleanup=null,micRestartCount=0,iosCue=null,endedIOSRecognizer=null;
+let micShutdown=null,micCleanup=null,micRestartCount=0,iosCue=null;
 const microphoneRestrictionKey='fact-flight-microphone-disabled-v1';
 let microphoneRestrictionMemory=false;
 function microphoneRestricted(){try{return microphoneRestrictionMemory||localStorage.getItem(microphoneRestrictionKey)==='true'}catch{return true}}
+let iosAudioSession=null,iosAudioOwned=false;
+function audioSessionSnapshot(event){
+ if(!iosAudioSession)return;
+ try{
+  const type=['auto','ambient','playback','play-and-record','transient','transient-solo'].includes(iosAudioSession.type)?iosAudioSession.type:'unknown';
+  const state=['active','inactive','interrupted'].includes(iosAudioSession.state)?iosAudioSession.state:'unknown';
+  micTrace(event+'-'+type+'-'+state);
+ }catch{micTrace('audio-session-read-failed')}
+}
+function prepareIOSAudioSession(){
+ if(!isIOSDevice)return;
+ try{
+  const audio=navigator.audioSession;
+  if(!audio){micTrace('audio-session-unavailable');return}
+  if(iosAudioSession!==audio){iosAudioSession=audio;audio.addEventListener?.('statechange',()=>audioSessionSnapshot('audio-session-state'))}
+  iosAudioOwned=true;
+  // Restore browser-managed cue/capture routing only on a deliberate voice flow.
+  audio.type='auto';audioSessionSnapshot('audio-session-prepare');
+ }catch{micTrace('audio-session-prepare-failed')}
+}
+function parkIOSAudioSession(){
+ if(!isIOSDevice||!iosAudioOwned||!iosAudioSession)return;
+ try{
+  // A native non-recording category request, NOT proof of microphone release.
+  iosAudioSession.type='ambient';audioSessionSnapshot('audio-session-release-request');
+ }catch{micTrace('audio-session-release-failed')}
+}
 function releaseMicrophone(){
  stopMic();
- // Natural end has already been confirmed: do not wait for a second end event.
- const ended=endedIOSRecognizer;endedIOSRecognizer=null;
- if(ended){micTrace('terminal-release');try{ended.abort()}catch{}}
  if(isIOSDevice)try{window.speechSynthesis?.cancel()}catch{}
+ parkIOSAudioSession();
+ // Reapply after active recognition shutdown, but never affect a newer start.
+ const epoch=recEpoch;
+ if(micShutdown)micShutdown.promise.then(()=>{if(epoch===recEpoch)parkIOSAudioSession()});
 }
 function applyMicrophoneRestriction(){
  const blocked=microphoneRestricted(),option=$('inputMode').querySelector('[value="voice"]');
@@ -344,7 +372,7 @@ function micTrace(event,connection=recEpoch,error){
 function renderMicTrace(){$('micDiagnosticLog').textContent=micEvents.map(e=>e.ms+'ms · '+e.connection+' · '+e.phase+' · '+e.event+(e.error?' · '+e.error:'')).join('\n')||'No microphone events yet.'}
 $('micDiagnostics').addEventListener('toggle',renderMicTrace);
 $('downloadMicLog').onclick=()=>{
- const data={format:1,implementation:'voice-lifecycle-diagnostics-2-ios-mode-h',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
+ const data={format:1,implementation:'voice-lifecycle-diagnostics-3-audio-session',ios:isIOSDevice,chromeIOS:isChromeIOS,events:micEvents.slice()};
  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
  const a=document.createElement('a');a.href=url;a.download='fact-flight-microphone-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
@@ -390,6 +418,7 @@ function connectIOSMic(automatic=false){
  micTrace(automatic?'automatic-connect':'manual-connect',epoch);
  function prepare(){
   if(!active())return;
+  prepareIOSAudioSession();
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){fail('Voice preparation is unavailable. Please use Tap or type.');return}
   setMicStatus('waiting');micError('Preparing microphone. Wait for Listening before speaking.');
   const cue=new SpeechSynthesisUtterance('Your turn');cue.lang='en-US';cue.rate=2;iosCue=cue;
@@ -407,7 +436,7 @@ function connectIOSMic(automatic=false){
  function launch(){
   if(!active())return;
   let r;try{r=new Speech()}catch(_){fail('Could not open microphone. Tap Reconnect or use Tap or type.');return}
-  endedIOSRecognizer=null;rec=r;r.lang='en-US';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+  rec=r;r.lang='en-US';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
   const checking=phase==='checking',question=checking?null:items[index];
   let finalText=null,failed=false,received=false,audioStarted=false;
   const valid=()=>active()&&rec===r;
@@ -415,6 +444,7 @@ function connectIOSMic(automatic=false){
   micCleanup=()=>clearTimeout(timer);
   r.onstart=()=>{if(valid()){micTrace('start',epoch);micEverConnected=true;if(!audioStarted&&!received&&!failed)micError('Opening microphone. Wait before speaking.')}};
   r.onaudiostart=()=>{if(valid()&&!failed&&!received){audioStarted=true;micTrace('audiostart',epoch);setMicStatus('connected');micError(checking?'Listening — say “ready”.':'Listening — say one answer at a time.')}};
+  r.onaudioend=()=>{if(valid()){micTrace('audioend',epoch);audioSessionSnapshot('audio-session-capture-end')}};
   r.onspeechstart=()=>{if(valid())micTrace('speechstart',epoch)};
   r.onresult=e=>{
    if(!valid()||failed||finalText!==null)return;
@@ -428,8 +458,8 @@ function connectIOSMic(automatic=false){
   r.onerror=e=>{if(valid()){failed=true;micTrace('error',epoch,e.error);setMicStatus('disconnected');micError('Microphone issue. Tap Reconnect or use Tap or type.')}};
   r.onend=()=>{
    if(!valid())return;
-   clearTimeout(timer);micCleanup=null;rec=null;endedIOSRecognizer=r;micTrace('end',epoch);
-   for(const name of ['onstart','onaudiostart','onspeechstart','onresult','onerror','onend'])r[name]=null;
+   clearTimeout(timer);micCleanup=null;rec=null;micTrace('end',epoch);
+   for(const name of ['onstart','onaudiostart','onaudioend','onspeechstart','onresult','onerror','onend'])r[name]=null;
    const gate={};gate.promise=new Promise(resolve=>gate.resolve=resolve);micShutdown=gate;
    setTimeout(()=>{if(micShutdown===gate)micShutdown=null;gate.resolve(true)},400);
    setMicStatus('waiting');
