@@ -69,7 +69,7 @@ Additional audit probes served the actual candidate at `/FactFlight/`:
 - Manage learners export parsed successfully; Progress export rejection and old-flight replay mismatch were reproduced as above.
 - Reload during an active flight produced a beforeunload dialog in Chrome. Accepting it discarded only the unfinished flight; the two earlier saved flights remained. No automatic in-progress recovery is claimed. Mobile OS termination cannot be guaranteed to prompt.
 
-Artifacts are local under `C:/Users/gt000/.codex/visualizations/2026/11/14/01a1db3c-84fa-70a2-8fa5-279fe95e1971/release-audit/`, including `core`, `family`, `audit-probes.cjs` and `audit-probes.json`. Tests need Playwright supplied via the existing temporary `NODE_PATH`; the repository does not yet provide a pinned test dependency/CI setup. Making the test runner reproducible is a maintenance follow-up, not an app-runtime dependency.
+Artifacts are local under `<USER_HOME>/.codex/visualizations/2026/11/14/01a1db3c-84fa-70a2-8fa5-279fe95e1971/release-audit/`, including `core`, `family`, `audit-probes.cjs` and `audit-probes.json`. Tests need Playwright supplied via the existing temporary `NODE_PATH`; the repository does not yet provide a pinned test dependency/CI setup. Making the test runner reproducible is a maintenance follow-up, not an app-runtime dependency.
 
 ### Owner-reported physical/manual acceptance
 

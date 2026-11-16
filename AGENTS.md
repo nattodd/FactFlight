@@ -24,6 +24,8 @@ These rules apply to all development work in this repository.
 ## 2. Product principles
 
 - Owner privacy boundary: never read, list, search, or otherwise access the owner's iCloud Drive, including its local synced folders. Request files from Downloads instead. A previously shared iCloud path does not grant continuing access.
+- Never publish personal home-directory paths, personal email addresses, credentials, real learner exports or private diagnostics in source, screenshots, documentation, test results or commit messages. Use repository-relative paths or `<USER_HOME>` / `<TEMP>` placeholders; preserve test outcomes when redacting logs. Review image content and metadata before publishing.
+- Keep the owner as author, but use their verified GitHub noreply address for future commits. Never change past authors, rewrite history, move existing tags or alter hosting without explicit approval.
 
 - Fact Flight is a free, privacy-conscious educational application for children ages 2–12.
 - No mandatory accounts, subscriptions, advertisements, or marketing.
@@ -51,6 +53,7 @@ These rules apply to all development work in this repository.
 - Make incremental, testable changes.
 - Explain risks and architectural tradeoffs.
 - Run appropriate tests before proposing deployment.
+- Install local privacy hooks with `node scripts/install-privacy-hooks.cjs`. Before staging/publishing run `node scripts/privacy-check.cjs --worktree`, `node tests/privacy-check.cjs`, and a full secret scan such as Gitleaks. Before committing, run `node scripts/privacy-check.cjs --identity` and `--staged`; check commit messages too. Do not bypass a failing check or paste detected values into reports. The scanner is a guardrail, not proof that all personal information has been found. Repository/source publication can expose documentation and historical Git metadata even when the app has no link to them.
 - Verify relevant functionality on desktop and mobile.
 - Minimum regression coverage for application changes and before release must include Windows Chrome, iPhone Safari, and iPhone Chrome. Check voice recognition (ready/start behavior, spoken answers, and microphone reconnection), keypad/touch and keyboard input, scoring and analytics, timed and untimed sessions, scrolling/focus, session history, and persistence after page reloads. Include the original School Test and non-voice fallback.
 - Include Android Chrome, tablets, and portrait/landscape orientation testing when available. Record unavailable devices and browsers as unverified, not passed.

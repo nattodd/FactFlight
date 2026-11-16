@@ -1,0 +1,2 @@
+#!/bin/sh
+node scripts/privacy-check.cjs --message "$1"

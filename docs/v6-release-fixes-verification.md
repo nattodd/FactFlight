@@ -16,7 +16,7 @@ R3: `application-version` is now `6.0.0-rc.1`, marking a candidate for testing, 
 
 The seven dedicated checks passed: historical replay after another activity and reload; immediate view/goal and Free replay; legacy fixed untimed and School behavior; actual Results/filtered-Progress downloads restored into synthetic storage preserving another learner and skipping duplicates; quota/deleted-profile unsaved recovery; replay of an imported voice flight with the ready gate; and candidate metadata/no page errors.
 
-The existing profile-export assertion now checks the restorable envelope rather than an archive array. All 146 existing application regression checks also passed, for **153 passing checks** in isolated Windows Chrome 157.0.8103.51. The phone replay setup screenshot was visually inspected; syntax checks and `git diff --check` passed. Artifacts are under `C:/Users/gt000/.codex/visualizations/2026/11/14/01a1db3c-84fa-70a2-8fa5-279fe95e1971/release-fixes/`. All checks use isolated synthetic data and mocked speech where applicable.
+The existing profile-export assertion now checks the restorable envelope rather than an archive array. All 146 existing application regression checks also passed, for **153 passing checks** in isolated Windows Chrome 157.0.8103.51. The phone replay setup screenshot was visually inspected; syntax checks and `git diff --check` passed. Artifacts are under `<USER_HOME>/.codex/visualizations/2026/11/14/01a1db3c-84fa-70a2-8fa5-279fe95e1971/release-fixes/`. All checks use isolated synthetic data and mocked speech where applicable.
 
 ## Remaining gate
 
