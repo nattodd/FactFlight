@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Selecting an activity in Progress now focuses and scrolls to its heading and facts report instead of retaining a scroll position near the exports at the bottom. Returning to All activities anchors its heading too; filtering, history and existing disclosure controls are unchanged.
 - The local iOS recovery candidate restores continuous recognition across ready and answers, with explicit abort on completion/cancellation/backgrounding. It removes per-answer synthesis, natural-end scoring, per-answer cooldowns and Audio Session category overrides from the quiz. Unexpected iOS endings require a deliberate retry; physical microphone release and repeat-flight acceptance remain blocked pending device testing.
 - Review retries recalculate eligibility from current learner results, removing facts after two later first-try successes while keeping the original review scope.
 - Exact iOS substitutions continue to accept “sex” as six, “thor”/“poor” as four, and “freddy” as ready during setup, independently of the expected answer. Earlier Mode H repeated-flight acceptance did not establish microphone release; that lifecycle is now confined to the unchanged diagnostic lab.

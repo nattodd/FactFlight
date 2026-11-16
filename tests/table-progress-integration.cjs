@@ -71,5 +71,17 @@ async function seed(p){await choose(p,{activity:'multiplication',view:'worksheet
  const [c,p]=await page();await seed(p);for(const [button,table] of [['#toggleFacts','#factsReport'],['#toggleFlights','#flightsReport']]){const b=await p.locator(button).boundingBox(),t=await p.locator(table).boundingBox();assert(b.y-(t.y+t.height)>=13);assert.equal(await p.locator(button).evaluate(e=>getComputedStyle(e).display),'block');await p.locator(button).click();assert.equal(await p.locator(button).getAttribute('aria-expanded'),'true');await p.locator(button).click();}
  await c.close();
  });
+ for(const width of [390,1440])await test(`Activity drill-down keeps heading and facts in view ${width}`,async()=>{
+ const [c,p]=await page({viewport:{width,height:844}});await seed(p);
+ await choose(p,{activity:'subtraction',view:'worksheet'});const fact=await p.evaluate(()=>items[0].text);await answer(p,9999);await answer(p);await p.locator('#end').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('fact-flight-family-v1')).sessions.length===6);await p.locator('#seeProgress').click();
+ const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#tableCardsToggle').click();await p.locator('#activityCardsToggle').click();
+ const activity=p.locator('[data-activity-progress=subtraction]');if(width===1440){await activity.focus();await p.keyboard.press('Enter')}else await activity.click();
+ const heading=p.getByRole('heading',{name:'Subtraction',exact:true});let box=await heading.boundingBox();assert(box.y>=0&&box.y<80,`Selected heading outside viewport: ${box.y}`);
+ assert(await heading.evaluate(e=>document.activeElement===e));const facts=p.getByRole('heading',{name:'Facts to focus on',exact:true});box=await facts.boundingBox();assert(box.y>=0&&box.y<844);assert((await p.locator('#factsReport').innerText()).includes(fact));assert.equal(await p.locator('#tableProgress').count(),0);
+ if(width===390)await p.screenshot({path:path.join(output,'subtraction-progress-phone.png')});
+ await p.locator('#allActivities').click();const all=p.getByRole('heading',{name:'Progress by activity',exact:true});box=await all.boundingBox();assert(box.y>=0&&box.y<80);assert(await all.evaluate(e=>document.activeElement===e));
+ await p.locator('[data-activity-progress=multiplication]').click();const mult=p.getByRole('heading',{name:'Multiplication',exact:true});box=await mult.boundingBox();assert(box.y>=0&&box.y<80);assert.equal(await p.locator('#tableProgress').count(),1);
+ assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);await c.close();
+ });
  await test('No page errors',()=>assert.deepEqual(errors,[]));fs.writeFileSync(path.join(output,'table-progress-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});
