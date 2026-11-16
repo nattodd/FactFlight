@@ -24,7 +24,7 @@ function validConfig(c){return !!c&&validSelection(c)&&(c.tableChoices===undefin
 function changeMode(mode){if(cfg.mode===mode)return;cfg.mode=mode;if(mode==='school')delete cfg.selection;cfg.schoolUntimed=false;cfg.count=mode==='quick'?5:mode==='test'||mode==='school'||mode==='free'?60:20;cfg.minutes=2;if(Number(cfg.target)>cfg.count)cfg.target=''}
 let screen='home',trail=[],quickRoute=false,cfg=defaultConfig();
 const drafts=new Map();
-function resetDrafts(){repeatSource=null;drafts.clear();cfg=defaultConfig();replayNote='';quickRoute=false}
+function resetDrafts(){configuredReview=null;reviewDraft=null;repeatSource=null;drafts.clear();cfg=defaultConfig();replayNote='';quickRoute=false}
 function chooseActivity(activity){if(screen==='practice'||screen==='ready')drafts.set(cfg.activity,{...cfg});const quick=FlightProfiles.quickChoice();cfg=drafts.get(activity)||FlightProfiles.practiceChoice(activity)||(quick?.activity===activity?{...defaultConfig(activity),...quick}:defaultConfig(activity));cfg={...cfg};if(quickRoute)changeMode('quick');replayNote=''}
 const selected=(a,b)=>a===b?' selected':'';
 function go(next,remember=true){if(busy()){requestSessionExit();return}show('menuView');if(remember)trail.push(screen);screen=next;render();window.scrollTo(0,0);const heading=$('menuView').querySelector('h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}}
@@ -66,7 +66,7 @@ function syncActions(){
  let reserved=0;
  const viewport=window.visualViewport;
  const available=viewport?.height||innerHeight;
- const editing=document.activeElement?.matches('input,textarea,select');
+ const editing=document.activeElement?.matches('textarea,select,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit])');
  for(const [view,area] of actionAreas){
   const {bar,back,marker}=area;
   if(!bar.isConnected){area.observer.disconnect();actionAreas.delete(view);view.classList.remove('has-bottom-actions');continue}
@@ -89,6 +89,7 @@ function syncActions(){
 }
 function setupActions(){
  const view=$('menuView');
+ if(screen==='review'){registerActions(view,view.querySelector('.footer-action'),view.querySelector('[data-review-back]'));return}
  if(!['math','mode','practice','ready'].includes(screen)){scheduleActions();return}
  let bar=view.querySelector('.footer-action');
  if(!bar){bar=document.createElement('div');bar.className='footer-action back-only';view.append(bar)}
@@ -110,8 +111,10 @@ document.addEventListener('focusout',scheduleActions);
 const actionVisibility=new MutationObserver(scheduleActions);
 for(const id of ['menuView','resultsView'])actionVisibility.observe($(id),{attributes:true,attributeFilter:['class']});
 
-function render(){const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();setupActions();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
+function render(){const focused=document.activeElement?.dataset;for(const id of ['homeNav','practiceNav','historyNav'])$(id).removeAttribute('aria-current');$(screen==='home'?'homeNav':'practiceNav').setAttribute('aria-current','page');$('menuView').innerHTML=({home,math,mode:modeMenu,practice,ready,review:reviewReady,parents,createProfile:FlightProfiles.create,statsPicker:FlightProfiles.picker,manageLearners:FlightProfiles.manage,importLearner:FlightProfiles.importStart,reviewImport:FlightProfiles.reviewScreen}[screen])();setupActions();if(focused){const key=Object.keys(focused).find(k=>['level','count','minutes','table','input','view','factTable','selection'].includes(k));if(key)$('menuView').querySelector(`[data-${key==='factTable'?'fact-table':key}="${focused[key]}"]`)?.focus({preventScroll:true})}}
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
+ if('reviewBack'in d){reviewDraft.back();return}if('reviewStart'in d){startReview();return}
+ if(d.reviewInput){reviewDraft.input=d.reviewInput;render();return}if(d.reviewView){reviewDraft.view=d.reviewView;render();return}
  if(d.nav){if(d.nav==='progress'){FlightProfiles.progress();return}if(d.nav==='home'){FlightMenu.home();return}go(d.nav);return}if('back'in d){back();return}
  if('quickStart'in d){const q=FlightProfiles.quickChoice();if(q){loadQuick(q);startFromMenu()}else{quickRoute=true;cfg.mode='quick';cfg.count=5;cfg.target='';go('math')}return}
  if('quick'in d){replayNote='';const q=FlightProfiles.quickChoice();if(q){loadQuick(q);go('math')}else{quickRoute=true;cfg.mode='quick';cfg.count=5;cfg.target='';go('math')}return}if('math'in d){quickRoute=false;go('math');return}
@@ -126,6 +129,7 @@ $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if
 });document.addEventListener('input',e=>{if(e.target.id==='target')cfg.target=e.target.value.replace(/[^0-9]/g,'')});
 function startFromMenu(){
  if(busy())return;
+ configuredReview=null;
  if(repeatSource&&!FlightProfiles.canRepeat(repeatSource)){repeatSource=null;FlightMenu.home();return}
  if(!FlightProfiles.hasSelection()){FlightMenu.home();return}
  const school=cfg.mode==='school',count=school||cfg.mode==='free'?60:cfg.count;
@@ -145,6 +149,7 @@ function startFromMenu(){
 }
 const profileBegin=begin;
 begin=function(){
+ if(configuredReview){if(!reviewDraft||!FlightProfiles.reviewAccess(reviewDraft.owner)){if(phase==='checking')cancelCheck();FlightMenu.home();return}profileBegin();if(phase==='running')FlightProfiles.rememberReview(reviewDraft);return}
  if(repeatSource&&!FlightProfiles.canRepeat(repeatSource)){
   repeatSource=null;if(phase==='checking')cancelCheck();FlightMenu.home();return;
  }
@@ -159,6 +164,7 @@ begin=function(){
 function replay(s,action='review'){
  if(busy())return;
  if(!FlightProfiles.canRepeat(s)){FlightMenu.home();return}
+ if(s.activity==='review'){openReview(s.review.facts,{source:s.review.source,filter:s.review.filter,owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad'});return}
  repeatSource=s;
  const remembered=flightChoices.get(s),school=!s.activity;
  if(remembered){cfg=structuredClone(remembered);replayNote='Review these settings before starting a fresh set.'}
@@ -188,6 +194,38 @@ function canAdvanceTables(s){
  const c=flightChoices.get(s);
  return !!c&&validConfig(c)&&c.selection?.type==='tables'&&c.selection.tables.every(n=>n<10);
 }
+let reviewDraft=null;
+function openReview(facts,options){
+ if(busy()||!FlightProfiles.reviewAccess(options.owner))return;
+ configuredReview=null;repeatSource=null;
+ const remembered=FlightProfiles.reviewChoice();
+ reviewDraft={...options,facts:structuredClone(facts),selected:facts.slice(0,5).map(f=>f.activity+':'+f.key),input:remembered?.input||options.input||'keypad',view:remembered?.view||(matchMedia('(max-width:680px)').matches?'focus':'worksheet'),back:options.back||(()=>FlightProfiles.progress())};
+ show('menuView');go('review',false);window.scrollTo(0,0);
+}
+function reviewReady(){
+ const d=reviewDraft,esc=escapeHTML;
+ return `<button class="quiet back" data-review-back>← Back</button><h1>Review missed facts</h1><p>${d.source==='results'?'Missed or skipped facts from that session.':'Missed or skipped facts from the latest five eligible flights. A fact leaves this review after first-try success in two later flights; leaving the window does not mean mastery.'}</p><p>${d.filter==='all'?'All activities':activities[d.filter].name} · Untimed · Choose up to five facts.</p>${d.facts.length?`<p>${d.facts.length<5?'A short review is enough. You can practice these facts again afterward.':'The most recent missed facts are selected first. You can change the selection.'}</p><div class="review-facts">${d.facts.map((f,i)=>`<label><input type="checkbox" data-review-fact="${i}" ${d.selected.includes(f.activity+':'+f.key)?'checked':''}> <span>${esc(activities[f.activity].name)} · ${esc(f.text)}<small>${f.level!==undefined?'Level '+(f.level+1):f.table?'School table '+f.table:'Tables '+f.selection.tables.join(', ')}</small></span></label>`).join('')}</div><p id="reviewSelectionStatus" role="status"></p><h2>How would you like to answer?</h2><div class="pills"><button data-review-input="keypad" aria-pressed="${d.input==='keypad'}">Tap or type</button><button data-review-input="voice" aria-pressed="${d.input==='voice'}">Say it out loud</button></div><h2>Choose your view</h2><div class="pills"><button data-review-view="focus" aria-pressed="${d.view==='focus'}">One at a time</button><button data-review-view="worksheet" aria-pressed="${d.view==='worksheet'}">The whole sheet</button></div>`:'<p>No missed facts to review in this scope. You can choose another activity or start ordinary practice.</p><button data-nav="math">Choose practice →</button>'}<div class="footer-action"><div class="action-summary">${d.selected.length} facts · Untimed review</div><p>${d.input==='voice'?'Allow the microphone, then say “ready.”':'Your keyboard or number pad is ready.'}</p><button class="primary" data-review-start ${d.selected.length?'':'disabled'}>Start review →</button></div>`;
+}
+$('menuView').addEventListener('change',e=>{
+ if(!e.target.matches('[data-review-fact]')||!reviewDraft)return;
+ const f=reviewDraft.facts[Number(e.target.dataset.reviewFact)],key=f.activity+':'+f.key;
+ if(e.target.checked&&reviewDraft.selected.length>=5){e.target.checked=false;$('reviewSelectionStatus').textContent='Choose up to five facts. Uncheck one to choose another.';return}
+ reviewDraft.selected=e.target.checked?[...reviewDraft.selected,key]:reviewDraft.selected.filter(k=>k!==key);
+ $('menuView').querySelector('[data-review-start]').disabled=!reviewDraft.selected.length;
+ $('menuView').querySelector('.action-summary').textContent=reviewDraft.selected.length+' facts · Untimed review';
+ $('reviewSelectionStatus').textContent=reviewDraft.selected.length+' selected';scheduleActions();
+});
+function startReview(){
+ if(busy()||!reviewDraft||!FlightProfiles.reviewAccess(reviewDraft.owner))return;
+ const d=reviewDraft,r={version:1,source:d.source,filter:d.filter,facts:d.facts.filter(f=>d.selected.includes(f.activity+':'+f.key))};
+ if(!FactFlightMath.validReview(r))return;
+ configuredReview=null;configuredSelection=null;configuredPracticeType=null;
+ $('activity').value='addition';configureActivity();$('level').value='0';$('questionCount').value='5';freePractice=false;setMode('practice');
+ configuredReview=r;$('inputMode').value=d.input==='voice'?'voice':'keyboard';$('sessionView').value=d.view;$('threshold').value='';updateSetup();
+ $('sheetTitle').textContent='Missed-fact review · '+(d.filter==='all'?'All activities':activities[d.filter].name);
+ $('sessionScope').textContent=r.facts.length+' facts · Untimed. Each fact keeps its original operation. Skipped facts return later.';
+ show('practiceView');$('start').click();
+}
 function resultActions(s){
  const again=$('again');if(!again)return;
  if(!FlightProfiles.canRepeat(s)){again.remove();return}
@@ -202,8 +240,9 @@ function resultActions(s){
  }
  const summary=document.createElement('div');summary.className='action-summary';summary.textContent=sessionLabel(s);group.prepend(summary);
  registerActions($('resultsView'),group);
+ if(!s.guest||s===session){const review=document.createElement('button');review.id='reviewMissed';review.textContent='Review missed facts';review.onclick=()=>{if(!FlightProfiles.canRepeat(s)||(s.guest&&s!==session))return;openReview(FactFlightMath.reviewCandidates([s],'all',false),{source:'results',filter:'all',owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad',back:()=>{renderResult(s);show('resultsView')}})};group.after(review)}
 }
-window.FlightMenu={replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>go(FlightProfiles.hasSelection()?'ready':'home',false),profiles:next=>go(next)};
+window.FlightMenu={openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
 $('homeNav').onclick=()=>FlightMenu.home();$('practiceNav').onclick=()=>FlightMenu.math();
 $('historyNav').onclick=()=>{if(busy()){requestSessionExit();return}FlightProfiles.progress()};
 FlightMenu.home();

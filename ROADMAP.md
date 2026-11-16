@@ -154,12 +154,12 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 ### v6.2 — Targeted review and mobile setup usability (PLANNED — next)
 
-**v6.2a local implementation — 2026-11-15:** Owner authorized local mobile bottom-action work, including Continue/Start/Back and Results repeat/advance controls, while preserving voice readiness. Implemented locally; required physical-device acceptance remains pending. See [verification and remaining checks](docs/v6.2-mobile-actions-verification.md). v6.2 remains unreleased/Coming Soon; release scope and the roadmap image are unchanged. The owner subsequently authorized committing/pushing this increment to the v6.2-development Netlify Branch Deploy for testing only; production remains unchanged.
+**v6.2a local implementation — 2026-11-15:** Owner authorized local mobile bottom-action work, including Continue/Start/Back and Results repeat/advance controls, while preserving voice readiness. Implemented and deployed to the v6.2-development Branch Deploy at 3fa74b1; owner accepted the mobile layout and confirmed voice working on physical iPhone Safari and Chrome. Unitemized microphone edge cases and full release-regression checks remain pending. See [verification and remaining checks](docs/v6.2-mobile-actions-verification.md). v6.2 remains unreleased/Coming Soon; release scope and the roadmap image are unchanged. The owner subsequently authorized committing/pushing this increment to the v6.2-development Netlify Branch Deploy for testing only; production remains unchanged.
 
 **Build, in order:**
 
 1. **v6.2a — Mobile setup:** Persistent Continue/Start area and compact summary, with the layout safeguards in section 2.
-2. **v6.2b — Missed-fact review:** Launch short targeted practice from Results and Progress using fresh generator pools.
+2. **v6.2b — Missed-fact review:** Launch short targeted practice from Results and Progress using fresh generator pools. Owner-approved local implementation includes All activities by default in Progress, an optional single-activity filter, and session-only review from Results. See [local verification](docs/v6.2-missed-review-verification.md). After local acceptance, the owner authorized committing/pushing this increment to v6.2-development for Netlify Branch Deploy testing only; no merge to main or production deployment is authorized.
 3. **v6.2c — Per-table progress:** Understandable first-try, attempts, timing, sample size and recent-performance summaries.
 
 **Value / risk:** Easier starts and useful review for existing families. Medium complexity and regression risk; preserve setup, scoring and ownership. Dependencies are agreed selection/metric rules and shared fact identity, not a new subject engine.
@@ -168,7 +168,7 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 #### Review and reporting defaults — proposed
 
-- Results reviews the completed flight; Progress considers the latest five eligible flights for the selected learner/activity.
+- Results reviews only the completed flight. Progress defaults to All activities, with an option to choose one activity, and considers the latest five eligible flights for that learner within the selected scope. Mixed reviews preserve each question's activity and original level/table context. These selection defaults were confirmed by the owner for local v6.2b implementation.
 - Include wrong answers even if corrected, plus explicit skips. Exclude untouched timed-out questions, unrecognized speech and undone mistakes absent from retained attempts. Slow-but-correct review is deferred.
 - Deduplicate fact identities within an activity; default to up to five unique facts. Explain tiny pools, allow short reviews/repetition, and offer ordinary practice for an empty pool.
 - In rolling review, retire a fact after first-try success in two distinct later flights following its latest mistake/skip. Leaving the five-flight window does not mean mastery. Keep selection explainable and parent-overridable.

@@ -20,21 +20,30 @@
   function depth(v,n=0){if(n>20)fail();if(v&&typeof v==='object')for(const [key,item] of Object.entries(v)){if(['__proto__','constructor','prototype'].includes(key))fail();depth(item,n+1)}}depth(data);
   for(const s of data.sessions){
    if(!s||!uuid(s.id)||s.learnerId!==data.profile.id||!str(s.learnerName)||s.guest||!date(s.date)||!['practice','test'].includes(s.mode)||!['voice','keyboard'].includes(s.input)||!['complete','manual','time'].includes(s.reason)||!num(s.elapsed)||(s.target!==null&&(!integer(s.target)||s.target<1))||!Array.isArray(s.items)||!Array.isArray(s.invalidated)||!Array.isArray(s.unrecognized))fail();
+   const review=s.activity==='review';
+   if(review&&(s.schemaVersion!==3||s.level!==undefined||s.table!==undefined||s.selection!==undefined||s.practiceType!=='review'||s.mode!=='practice'||s.timeLimitMs!==null||s.target!==null||!root.FactFlightMath?.validReview(s.review)||s.items.length!==s.review.facts.length))fail();
+   if(!review&&s.review!==undefined)fail();
    const selected=s.selection!==undefined;
    if(selected){
     const t=s.selection?.tables;
     if(s.activity!=='multiplication'||s.schemaVersion!==2||s.level!==undefined||s.selection?.type!=='tables'||!Array.isArray(t)||t.length<1||t.length>10||new Set(t).size!==t.length||!t.every(n=>integer(n)&&n>=1&&n<=10))fail();
    }
-   if(s.activity!==undefined){if(!activities.includes(s.activity)||(!selected&&(!integer(s.level)||s.level>4||s.schemaVersion!==1)))fail()}
+   if(s.activity!==undefined){if(!review&&(!activities.includes(s.activity)||(!selected&&(!integer(s.level)||s.level>4||s.schemaVersion!==1))))fail()}
    else if(!integer(s.table)||s.table<2||s.table>10)fail();
    // Optional fields on new flights; older exports remain readable without rewriting them.
-   if(s.practiceType!==undefined){
+   if(s.practiceType!==undefined&&!review){
     if(!s.activity||!['quick','free','timed','test'].includes(s.practiceType))fail();
     const timed=['timed','test'].includes(s.practiceType);
     if(timed?(s.mode!=='test'||![60000,120000,300000].includes(s.timeLimitMs)||s.elapsed>s.timeLimitMs):(s.mode!=='practice'||s.timeLimitMs!==null))fail();
-   }else if(s.timeLimitMs!==undefined)fail();
+   }else if(s.timeLimitMs!==undefined&&!review)fail();
+   const reviewKeys=new Set();
    for(const p of s.items){
     if(!p||!integer(p.answer)||!integer(p.skips)||!num(p.ms)||!['pending','correct','wrong','skipped'].includes(p.status)||!Array.isArray(p.attempts))fail();
+    if(review){
+     const f=root.FactFlightMath.reviewFact(s,p),key=p.activity+':'+p.key;
+     if(!f||reviewKeys.has(key)||!s.review.facts.some(expected=>canonical(expected)===canonical(f)))fail();
+     reviewKeys.add(key);
+    }else if(p.activity!==undefined)fail();
     if(selected){
      const operands=typeof p.text==='string'?p.text.match(/^(\d+) × (\d+)$/):null;
      if(!operands)fail();const a=Number(operands[1]),b=Number(operands[2]);

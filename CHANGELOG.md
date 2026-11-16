@@ -8,9 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+### Added
+- Missed-fact review from Results uses only that flight. Progress defaults to All activities, with a single-activity option, and considers the latest five eligible flights for the selected learner. Choose up to five unique missed or skipped facts for untimed practice, with voice or keypad/keyboard and Focus or Worksheet views.
+- Mixed reviews preserve each fact's activity and original level/table context in new results, replay, learner backups and CSV exports. Older records are not rewritten. Backups containing review sessions require a v6.2-compatible reader. Guest reviews remain temporary and limited to the current completed flight.
+- Review setup defaults to Worksheet on desktop and One at a time on phones. Each learner's last started review view and input choices are remembered separately for phone and desktop layouts, including retries and reloads. Guest choices stay in memory and clear on learner change or reload; cancelled voice startup does not replace the last started choices.
+
 ### Changed
 - Mobile practice setup keeps Back and Continue/Start in a bottom action area with a compact selection summary. Results keep Practice Again (or Review settings) and eligible Next Level/Table actions within reach. Existing voice-ready and repeat behavior is preserved.
-- The action area reserves content space, respects safe-area insets, and returns to normal page flow while editing inputs, on short viewports, when zoomed, or when enlarged text makes it too tall. Physical iPhone acceptance remains pending; this change is local and unreleased.
+- The action area reserves content space, respects safe-area insets, and returns to normal page flow while editing text inputs, on short viewports, when zoomed, or when enlarged text makes it too tall. The v6.2a layout and voice were owner-accepted on iPhone Safari and Chrome through the branch preview; v6.2b review remains local and unverified on physical devices. v6.2 is unreleased.
 
 ## [6.1.0] - 2026-11-15
 
