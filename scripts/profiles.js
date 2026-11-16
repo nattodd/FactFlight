@@ -83,8 +83,48 @@ renderResult=function(s){
  $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
  FlightMenu.resultActions(s);
 };
+function groupProgressSections(){
+ const headings=[...$('historyView').querySelectorAll(':scope > h2')].filter(h=>['Progress by activity','Facts to focus on','Flight log'].includes(h.textContent));
+ for(const heading of headings){
+  const section=document.createElement('section');section.className='progress-report-section';
+  const nodes=[];
+  for(let node=heading;node&&(node===heading||node.tagName!=='H2')&&!node.classList.contains('controls');node=node.nextElementSibling)nodes.push(node);
+  heading.before(section);section.append(...nodes);
+ }
+}
+function collapseProgressCards(container,id,label){
+ if(!container)return;
+ container.id=id;
+ const cards=[...container.children];
+ document.getElementById(id+'Toggle')?.remove();document.getElementById(id+'Count')?.remove();
+ const count=document.createElement('p');count.id=id+'Count';count.className='small';container.before(count);
+ let expanded=false;
+ const button=document.createElement('button');button.id=id+'Toggle';button.setAttribute('aria-controls',id);
+ function paint(){cards.forEach((card,i)=>card.classList.toggle('hidden',!expanded&&i>=3));count.textContent=`Showing ${expanded?cards.length:Math.min(3,cards.length)} of ${cards.length} ${label}`;button.setAttribute('aria-expanded',String(expanded));button.textContent=expanded?'Show fewer ▴':`Show all ${cards.length} ${label} ▾`}
+ button.onclick=()=>{expanded=!expanded;paint()};if(cards.length>3)container.after(button);paint();
+}
+function renderTableProgress(activity){
+ if(activity&&activity!=='multiplication')return;
+ const section=document.createElement('section');section.className='table-progress';section.id='tableProgress';
+ section.innerHTML=`<div class="eyebrow">Multiplication</div><h2>Times tables at a glance</h2><p>See what has been practised, one table at a time.</p><div class="table-progress-filters"><label for="tableWindow">History window<select id="tableWindow"><option value="recent">Recent 5 flights</option><option value="all">All flights</option></select></label><label for="tableChoice">Times table<select id="tableChoice"><option value="all">All tables</option></select></label></div><p id="tableScope" class="small"></p><div id="tableCards" aria-live="polite"></div><p class="table-timing"><strong>Active time is not recall speed.</strong> Includes microphone preparation, listening, input and retries. iPhone voice adds delay. Compare only similar input methods and practice settings.</p><details><summary>How these numbers work</summary><p>First try means correct on the first submission, with no skips. Encounters include answered or skipped questions; untouched questions are excluded. Wrong attempts count incorrect submissions, not incorrect facts. Distinct facts group reversed pairs.</p><p>A fact such as 4 × 7 counts once in both the 4 and 7 tables, but once in the overall encounter count. A square such as 4 × 4 counts once in its table. Table totals overlap: do not add them together.</p><p>Recent means the latest five flights containing attempted or skipped multiplication facts, including mixed reviews and School Test. All tables use the same window. Small samples (fewer than 10 encounters) are a starting point, not a mastery measure. Missing recorded times are excluded from the average.</p></details>`;
+ section.insertBefore(section.querySelector('.table-timing'),section.querySelector('#tableCards'));
+ $('historyView').querySelector('.metrics').after(section);
+ const choice=section.querySelector('#tableChoice'),windowChoice=section.querySelector('#tableWindow');
+ if(viewing==='guest')windowChoice.options[1].textContent='All temporary flights';
+ const all=FactFlightMath.tableProgress(history,'all');
+ for(const row of all.tables){const option=document.createElement('option');option.value=row.table;option.textContent=row.table+' times table';choice.append(option)}
+ function paint(){
+  const data=FactFlightMath.tableProgress(history,windowChoice.value);
+  section.querySelector('#tableScope').textContent=`${windowChoice.value==='recent'?'Recent':'All'} · ${data.flights} multiplication flight${data.flights===1?'':'s'} · ${data.total.encounters} encounters overall (counted once).`;
+  const rows=data.tables.filter(r=>choice.value==='all'?r.encounters:r.table===Number(choice.value));
+  section.querySelector('#tableCards').innerHTML=rows.length?rows.map(r=>`<article class="table-progress-card" data-progress-table="${r.table}"><div class="table-card-heading"><h3>${r.table} times table</h3><span class="small">${r.encounters<10?'Small sample':'Practice snapshot'}</span></div><p class="table-first"><strong>${r.encounters?Math.round(r.first/r.encounters*100)+'%':'—'}</strong> first try</p><p class="small">${r.first} correct first try / ${r.encounters} encounters</p><dl><div><dt>Wrong attempts</dt><dd>${r.wrong}</dd></div><div><dt>Skips</dt><dd>${r.skips}</dd></div><div><dt>Distinct facts</dt><dd>${r.facts}</dd></div><div><dt>Avg active time</dt><dd>${r.averageMs===null?'—':(r.averageMs/1000).toFixed(1)+'s'}</dd></div></dl><p class="small">${r.encounters?'Timing from '+r.timed+' recorded encounters.':'No practice in this window yet.'}</p></article>`).join(''):'<p class="notice">No multiplication practice in this window yet. Complete a flight to start your table progress.</p>';
+  if(rows.length)collapseProgressCards(section.querySelector('#tableCards'),'tableCards','tables');
+  else{section.querySelector('#tableCardsToggle')?.remove();section.querySelector('#tableCardsCount')?.remove()}
+ }
+ choice.onchange=paint;windowChoice.onchange=paint;paint();
+}
 const engineHistory=renderHistory;
-renderHistory=function(activity=null){engineHistory(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
+renderHistory=function(activity=null){engineHistory(activity);groupProgressSections();collapseProgressCards($('historyView').querySelector('.activity-progress'),'activityCards','activities');renderTableProgress(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
  if(viewing!== 'previous'&&viewing!=='guest'){
   const owner=viewing,section=document.createElement('section');section.className='missed-review-panel';
   section.innerHTML='<h2>Review missed facts</h2><label for="reviewActivity">Review scope</label><select id="reviewActivity"><option value="all">All activities</option>'+Object.entries(FactFlightMath.activities).map(([id,a])=>'<option value="'+id+'">'+a.name+'</option>').join('')+'</select><p>Use the latest five eligible flights in this scope. Choose up to five facts before starting.</p><button id="progressReview">Choose review facts →</button>';

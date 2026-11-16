@@ -124,6 +124,24 @@ function createReviewSource(review,random=Math.random){
  const source=createQuestionSource({},random,[...map].map(([key,f])=>({key,variants:[{text:f.text,answer:f.answer}]})));
  return {next(){const p=source.next(),f=map.get(p.key);return {...p,...structuredClone(f)}}};
 }
-const api={validTables,activities,questionPool,createQuestionSource,parseWholeNumber,validReviewFact,reviewFact,reviewCandidates,validReview,createReviewSource};
+// Read-only reporting: each attempted/skipped encounter counts once globally.
+function tableProgress(flights,window='recent'){
+ const eligible=flights.map(s=>({s,entries:(s.items||[]).flatMap(p=>{
+  if((s.activity==='review'?p.activity:s.activity||'multiplication')!=='multiplication'||(!p.attempts?.length&&!p.skips))return [];
+  const match=(p.text||`${p.a} × ${p.b}`).match(/^(\d+) × (\d+)$/);
+  if(!match)return [];
+  const a=Number(match[1]),b=Number(match[2]);
+  return [{p,a,b,key:[a,b].sort((x,y)=>x-y).join(':')}];
+ })})).filter(x=>x.entries.length).sort((a,b)=>Date.parse(b.s.date)-Date.parse(a.s.date));
+ const selected=window==='recent'?eligible.slice(0,5):eligible;
+ const blank=()=>({encounters:0,first:0,wrong:0,skips:0,facts:new Set(),timed:0,ms:0});
+ const total=blank(),tables=new Map(Array.from({length:10},(_,i)=>[i+1,blank()]));
+ for(const {entries} of eligible)for(const e of entries)for(const n of [e.a,e.b])if(!tables.has(n))tables.set(n,blank());
+ const add=(r,{p,key})=>{r.encounters++;r.first+=Number(p.status==='correct'&&!p.skips&&p.attempts.length===1&&p.attempts[0].correct);r.wrong+=p.attempts.filter(a=>!a.correct).length;r.skips+=p.skips||0;r.facts.add(key);if(Number.isFinite(p.ms)&&p.ms>=0){r.timed++;r.ms+=p.ms}};
+ for(const {entries} of selected)for(const e of entries){add(total,e);for(const n of new Set([e.a,e.b])){if(!tables.has(n))tables.set(n,blank());add(tables.get(n),e)}}
+ const finish=r=>({...r,facts:r.facts.size,averageMs:r.timed?r.ms/r.timed:null});
+ return {flights:selected.length,eligibleFlights:eligible.length,total:finish(total),tables:[...tables].sort((a,b)=>a[0]-b[0]).map(([table,r])=>({table,...finish(r)}))};
+}
+const api={tableProgress,validTables,activities,questionPool,createQuestionSource,parseWholeNumber,validReviewFact,reviewFact,reviewCandidates,validReview,createReviewSource};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FactFlightMath=api;
 })(globalThis);
