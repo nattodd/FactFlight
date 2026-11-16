@@ -215,5 +215,37 @@ async function continuousWord(p,text,index,final=true){await p.evaluate(({text,i
  const {c,p}=await setup();await p.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','true'));await p.reload();assert(await p.locator('#start').isDisabled());assert.match(await p.locator('#status').textContent(),/parent restricted/);
  await p.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','false'));await p.reload();await p.locator('#start').click();const other=await c.newPage();await other.goto(base+'/microphone-lab.html');await other.evaluate(()=>localStorage.setItem('fact-flight-microphone-disabled-v1','true'));await p.waitForFunction(()=>instances.at(-1).aborted);assert(await p.locator('#start').isDisabled());await c.close();
  });
+ async function reachDone(p,first=true){
+  for(const word of (first?['ready','2','3','4','5','6']:['2','3','4','5','6'])){await cueEnd(p);await speak(p,word);await naturalEnd(p)}
+ }
+ await check('Mode I adds one Done cue after natural end and cooldown; repeats never reopen capture automatically',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('doneFlight');await p.locator('#start').click();
+  for(let flight=0;flight<3;flight++){
+   await reachDone(p,flight===0);assert.equal(await p.evaluate(()=>cues.at(-1).text),'Done');assert.equal(await p.evaluate(()=>cues.at(-1).rate),2);
+   const count=await p.evaluate(()=>instances.length);assert(await p.locator('#start').isDisabled());assert(await p.locator('#mode').isDisabled());
+   await p.evaluate(()=>document.querySelector('#start').onclick());assert.equal(await p.evaluate(()=>instances.length),count);
+   await p.evaluate(()=>cues.at(-1).onstart());await cueEnd(p);await p.clock.runFor(30000);assert.equal(await p.evaluate(()=>instances.length),count);assert.equal(await p.locator('#start').textContent(),'Next flight');
+   if(flight<2)await p.locator('#start').click();
+  }
+  assert.equal(await p.evaluate(()=>instances.length),16);assert(await p.evaluate(()=>instances.every(r=>!r.stopped&&!r.aborted&&!r.continuous)));
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=JSON.parse(fs.readFileSync(await(await pending).path(),'utf8'));assert.equal(data.events.filter(e=>e.event==='done-cue-end').length,3);assert.equal(data.events.filter(e=>e.event==='flight-completed').length,3);assert(data.attempts.every(r=>r.mode==='doneFlight'));await c.close();
+ });
+ await check('Mode I keeps audiostart readiness and no Done on incomplete or failed flights',async()=>{
+  const {c,p}=await setup();await p.evaluate(()=>SpeechRecognition.prototype.start=function(){this.onstart?.()});await p.locator('#mode').selectOption('doneFlight');await p.locator('#start').click();await cueEnd(p);assert.match(await p.locator('#status').textContent(),/^Opening microphone/);await p.evaluate(()=>instances.at(-1).onaudiostart());assert.match(await p.locator('#status').textContent(),/^Listening/);await speak(p,'PRIVATE WRONG');await naturalEnd(p);assert(await p.evaluate(()=>cues.every(u=>u.text!=='Done')));
+  await p.locator('#start').click();await cueEnd(p);await p.evaluate(()=>instances.at(-1).onerror({error:'network'}));await naturalEnd(p);assert(await p.evaluate(()=>cues.every(u=>u.text!=='Done')));await c.close();
+ });
+ await check('Mode I cancel and background invalidate Done callbacks and allow a clean next attempt',async()=>{
+  for(const background of [false,true]){const {c,p}=await setup();await p.locator('#mode').selectOption('doneFlight');await p.locator('#start').click();await reachDone(p);await p.evaluate(()=>window.lateDone=cues.at(-1).onend);
+  if(background)await p.evaluate(()=>dispatchEvent(new Event('pagehide')));else await p.locator('#cancel').click();
+  await p.evaluate(()=>lateDone());await p.clock.runFor(11000);assert.equal(await p.evaluate(()=>instances.length),6);assert.equal(await p.locator('#start').textContent(),'Start attempt');assert(await p.locator('#start').isEnabled());await p.locator('#start').click();await cueEnd(p);assert.match(await p.locator('#status').textContent(),/Say ready/);await c.close();}
+ });
+ await check('Mode I Done timeout, error and synthesis throw recover without a new recognizer',async()=>{
+  for(const failure of ['timeout','error','throw']){const {c,p}=await setup();await p.locator('#mode').selectOption('doneFlight');await p.locator('#start').click();if(failure==='throw')await p.evaluate(()=>{const original=speechSynthesis.speak;speechSynthesis.speak=u=>{if(u.text==='Done')throw Error('failed');original(u)}});await reachDone(p);
+   if(failure==='timeout')await p.clock.runFor(10000);if(failure==='error')await p.evaluate(()=>cues.at(-1).onerror());assert(await p.locator('#start').isEnabled());assert.equal(await p.evaluate(()=>instances.length),6);assert.equal(await p.locator('#start').textContent(),'Start attempt');await c.close();}
+ });
+ await check('Mode I parent restriction cancels Done and diagnostics retain no speech or learner data',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('doneFlight');await p.locator('#start').click();await reachDone(p);await p.evaluate(()=>{window.lateDone=cues.at(-1).onend;localStorage.setItem('fact-flight-microphone-disabled-v1','true');dispatchEvent(new StorageEvent('storage',{key:'fact-flight-microphone-disabled-v1'}))});await p.evaluate(()=>lateDone());assert(await p.locator('#start').isDisabled());assert.equal(await p.evaluate(()=>instances.length),6);
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=fs.readFileSync(await(await pending).path(),'utf8');assert(!data.includes('transcript'));assert.equal(await p.evaluate(()=>localStorage.getItem('lab-history-sentinel')),'unchanged');assert.equal(await p.evaluate(()=>sessionStorage.length),0);await c.close();
+ });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});

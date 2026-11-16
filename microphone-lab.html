@@ -28,6 +28,7 @@
 <option value="shortFlight">F · Short cue before each answer</option>
 <option value="fastFlight">G · Faster cue + heard display</option>
 <option value="audioFlight">H · Wait for audio capture</option>
+<option value="doneFlight">I · Mode H + final Done cue</option>
 </select>
 <p id="description">Single-phrase recognition. The browser ends the session itself.</p>
 <p id="status" role="status" aria-live="polite">Ready to test. Microphone is off.</p>
@@ -37,7 +38,7 @@
 <p><strong>Heard (temporary)</strong></p>
 <p id="heardText" style="overflow-wrap:anywhere" aria-live="polite"></p>
 <button id="clearHeard">Clear heard text</button>
-<small>Shown only in Modes G and H. Clears for the next phrase, on cancellation, mode change or reload. A final mismatch stays visible until cleared. Never included in the downloaded log.</small>
+<small>Shown only in Modes G, H and I. Clears for the next phrase, on cancellation, mode change or reload. A final mismatch stays visible until cleared. Never included in the downloaded log.</small>
 </div>
 <p id="counts" class="muted">No attempts yet.</p>
 <p>Tap Start attempt, wait for “Say ready,” then say <strong>“ready”</strong> once. Wait for the session to end before repeating. Aim for 10 attempts per mode.</p>
@@ -56,6 +57,7 @@
 <p class="muted">The log stays in memory and clears on reload. Download it before leaving. Nothing is uploaded automatically.</p>
 </section>
 <details><summary>How to compare fairly</summary>
+<p>Mode I keeps Mode H’s ready/answer sequence and 400 ms cooldown, then plays “Done” at rate 2 after the last recognizer ends. Wait for the completion message; do not say anything else. Check the microphone indicator before and after backgrounding, then return and tap Next flight for five more answers. No new recognition starts after Done until you tap. Cancel or backgrounding during Done stops the cue. This experiment does not guarantee microphone release.</p>
 <p>Close other voice tests first. Keep the same browser and mode for a run. Download the log, then fully close and reopen the browser before comparing another mode; a reload may not reset a stuck browser audio service.</p>
 <p>Mode B calls stop after the first final result. Mode C speaks “Your turn” before opening recognition. A and C let recognition end naturally. Cancel always requests an abort; test recovery after cancellation separately.</p>
 <p>A–C use a tap for every attempt. D automatically plays the cue and opens a fresh recognizer after each accepted phrase ends naturally, with a 400 ms cooldown. A mismatch or error ends the flight; it does not loop. Cancel is available between questions too. Do not clear website data or learner history.</p>

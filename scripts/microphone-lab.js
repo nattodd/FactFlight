@@ -12,13 +12,16 @@
     continuous: 'One short “E” cue per flight, then continuous listening. Say ready once, then five answers. No cues or microphone restarts between questions.',
     shortFlight: 'Mode D sequence with “E” instead of “Your turn” before every phrase. Wait for Listening before ready and each answer.',
     fastFlight: 'Mode D sequence with “Your turn” spoken at rate 2. Same 400 ms cooldown. Heard text is displayed temporarily, never exported.',
+    doneFlight: 'Mode H plus a final Done cue after all five answers. No recognition starts after Done. Check the microphone indicator, then tap Next flight.',
     audioFlight: 'Mode G settings, with Listening shown only after the browser reports audio capture started. Wait for Listening before speaking.'
   };
   const origin = performance.now(), events = [], attempts = [];
   let current = null, cooling = false, cooldown, flight = null, flightCount = 0, nextFlight = false;
+  let completionCue = null;
+  const waitsForAudio = mode => ['audioFlight','doneFlight'].includes(mode);
   const prompts = ['Say ready.', '1 + 1 = ?', '1 + 2 = ?', '2 + 2 = ?', '2 + 3 = ?', '3 + 3 = ?'];
   const expected = [['ready'], ['2','two'], ['3','three'], ['4','four'], ['5','five'], ['6','six']];
-  const isFastFlight = mode => ['fastFlight','audioFlight'].includes(mode);
+  const isFastFlight = mode => ['fastFlight','audioFlight','doneFlight'].includes(mode);
   const isSingleFlight = mode => ['flight','shortFlight'].includes(mode) || isFastFlight(mode);
   const isFlight = mode => isSingleFlight(mode) || mode === 'continuous';
   function trace(event, run = current, extra = {}) {
@@ -35,7 +38,7 @@
     $('cancel').disabled = !current && !flight;
     $('counts').textContent = attempts.length ? Object.keys(descriptions).map(mode => {
       const runs = attempts.filter(r => r.mode === mode);
-      return `${({natural:'A',stop:'B',cue:'C',flight:'D',continuous:'E',shortFlight:'F',fastFlight:'G',audioFlight:'H'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
+      return `${({natural:'A',stop:'B',cue:'C',flight:'D',continuous:'E',shortFlight:'F',fastFlight:'G',audioFlight:'H',doneFlight:'I'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
     }).join(' · ') : 'No attempts yet.';
   }
   function clearTimers(run) { clearTimeout(run.observation); clearTimeout(run.shutdown); clearTimeout(run.cueTimer); }
@@ -56,6 +59,7 @@
           const next = newRun(run.mode, run.step + 1);
           trace('automatic-next', next); beginRun(next); return;
         }
+        if(run.mode==='doneFlight'){beginCompletionCue(run);return}
         trace('flight-completed', run); flight = null; nextFlight = true; cooling = false; controls();
         status('Flight complete: all five answers accepted. Tap Next flight for five more answers, without saying ready again.'); return;
       }
@@ -63,6 +67,30 @@
       cooling = false; controls();
       status(isFlight(run.mode) ? 'Flight stopped before completion. Download the log; tap Start attempt to retry from ready.' : `${run.results ? 'Speech results received.' : 'No speech results received.'} Session ended. Tap Start attempt to repeat.`);
     }, 400);
+  }
+  // Mode I only: terminal playback has no path to launch() or newRun().
+  function beginCompletionCue(run) {
+    if(restricted()||document.hidden){cancel('completion-unavailable');return}
+    const token={run,utterance:null,timer:null};completionCue=token;
+    function settle(reason,success=false){
+      if(completionCue!==token)return;
+      completionCue=null;clearTimeout(token.timer);
+      if(token.utterance)token.utterance.onstart=token.utterance.onend=token.utterance.onerror=null;
+      if(!success)try{window.speechSynthesis?.cancel()}catch{}
+      trace(reason,run);flight=null;nextFlight=success;cooling=false;controls();
+      status(success?'Flight complete. Done cue ended; no new microphone session started. Check the indicator, then tap Next flight.':'Completion cue interrupted or unavailable. Check the microphone indicator. Tap Start attempt to retry from ready.');
+    }
+    token.cancel=reason=>settle(reason);
+    controls();status('All five answers accepted. Playing Done; no more speech is needed.');
+    try{
+      if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){settle('done-cue-unavailable');return}
+      const u=new SpeechSynthesisUtterance('Done');token.utterance=u;u.lang='en-US';u.rate=2;
+      u.onstart=()=>{if(completionCue===token)trace('done-cue-start',run)};
+      u.onend=()=>{if(completionCue!==token)return;if(restricted()||document.hidden){settle('done-cue-blocked');return}trace('done-cue-end',run);settle('flight-completed',true)};
+      u.onerror=()=>settle('done-cue-error');
+      token.timer=setTimeout(()=>settle('done-cue-timeout'),10000);
+      trace('done-cue-requested',run,{rate:2});window.speechSynthesis.speak(u);
+    }catch{settle('done-cue-threw')}
   }
   function awaitEnd(run) {
     clearTimeout(run.shutdown);
@@ -74,10 +102,11 @@
   }
   function cancel(reason = 'cancel') {
     $('heardText').textContent = '';
+    if(completionCue){completionCue.cancel(reason);return}
     if (flight) {
       nextFlight = false;
       flight = null;
-      if (!current) { clearTimeout(cooldown); cooling = false; trace(reason); status('Flight cancelled between questions. Microphone is off.'); controls(); return; }
+      if (!current) { clearTimeout(cooldown); cooling = false; trace(reason); status($('mode').value==='doneFlight'?'Flight cancelled. No new recognition will start; check the microphone indicator.':'Flight cancelled between questions. Microphone is off.'); controls(); return; }
     }
     const run = current;
     if (!run) return;
@@ -107,7 +136,7 @@
     on('start', () => {
       trace('start', run);
       if (run.cancelled) return;
-      if (run.mode === 'audioFlight') {
+      if (waitsForAudio(run.mode)) {
         if (!run.audioStarted) status('Opening microphone. Wait before speaking…');
         return;
       }
@@ -115,7 +144,7 @@
     });
     on('audiostart', () => {
       trace('audiostart', run); run.audioStarted = true;
-      if (run.mode === 'audioFlight' && !run.cancelled && !run.failed && !run.results) {
+      if (waitsForAudio(run.mode) && !run.cancelled && !run.failed && !run.results) {
         status(`Listening · ${run.step ? 'Question '+run.step+' of 5 · ' : ''}${prompts[run.step]}`);
         trace('listening-shown', run);
       }
@@ -185,7 +214,7 @@
       if (current !== run || run.cancelled) return;
     if(restricted()){cancel('parent-restricted');status('Microphone parent restricted. Change it in Fact Flight Parent corner.');return;}
       trace('observation-20s', run, {receivedResults: run.results > 0});
-      if (run.mode === 'audioFlight' && !run.audioStarted) {
+      if (waitsForAudio(run.mode) && !run.audioStarted) {
         status('Browser has not reported audio capture after 20 seconds. Cancel to release the session.'); return;
       }
       status(run.mode === 'continuous' ? `Still waiting · ${prompts[run.step]} You can cancel if recognition is stuck.` : run.results ? 'Results arrived, but the session is still open. You can cancel.' : 'No results after 20 seconds. Still listening; Cancel to release the microphone.');
@@ -237,7 +266,7 @@
   $('clearHeard').onclick = () => { $('heardText').textContent = ''; };
   $('cancel').onclick = () => cancel();
   $('download').onclick = () => {
-    const payload = {format: 1, implementation: 'isolated-microphone-lab-6',
+    const payload = {format: 1, implementation: 'isolated-microphone-lab-7-done-cue',
       environment: {ios: /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), chromeIOS: /CriOS/.test(navigator.userAgent)},
       attempts: attempts.map(r => ({id: r.id, mode: r.mode, results: r.results, cancelled: !!r.cancelled,
         ...(r.flightId ? {flight:r.flightId,step:r.step,accepted:!!r.accepted} : {}),
