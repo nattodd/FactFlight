@@ -16,6 +16,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 - Voice readiness now displays interim transcripts and accepts an exact, stable interim “ready” after a short pause when no final result arrives. Cancellation, reconnection and late-result guards prevent stale recognition from starting another flight. The owner confirmed microphone reinitialization between tests in the local browser; physical iPhone Chrome confirmation of this follow-up remains pending.
 
 ### Added
+- Microphone lab Mode H preserves Mode G's cue, rate and cooldown while showing Listening only after the browser reports audio capture started. Mode G remains available for comparison; the quiz is unchanged and device verification is pending.
 - Microphone lab Mode G compares Mode D with synthesis rate 2, keeping the 400 ms cooldown. Cue-start timing separates startup from playback; a temporary Mode G-only heard display helps inspect mismatches without adding transcripts to exports or storage. Device validation is pending.
 - Microphone lab Mode F compares Mode D's natural single-phrase sequence using “E” before each phrase instead of “Your turn.” Mode D remains available unchanged; speed and reliability require device testing.
 - Microphone lab Mode E experiments with one short “E” synthesis cue per flight and continuous recognition between answers. It stops at each flight end and retains Mode D for comparison; device reliability is unverified.

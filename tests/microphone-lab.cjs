@@ -175,5 +175,41 @@ async function continuousWord(p,text,index,final=true){await p.evaluate(({text,i
   await cueEnd(p);await speak(p,'2');await p.locator('#cancel').click();assert.equal(await p.locator('#heardText').textContent(),'');await p.clock.runFor(400);
   await p.locator('#mode').selectOption('flight');assert(await p.locator('#heardPanel').isHidden());await c.close();
  });
+ await check('Mode H waits for audiostart on every phrase; Mode G still prompts at start',async()=>{
+  const {c,p}=await setup();await p.evaluate(()=>SpeechRecognition.prototype.start=function(){this.onstart?.()});
+  await p.locator('#mode').selectOption('audioFlight');await p.locator('#start').click();
+  for(const words of [['ready','2','3','4','5','6'],['2','3','4','5','6']]){
+   for(const word of words){
+    await cueEnd(p);assert.match(await p.locator('#status').textContent(),/^Opening microphone/);
+    await p.clock.runFor(100);assert.match(await p.locator('#status').textContent(),/^Opening microphone/);
+    await p.evaluate(()=>instances.at(-1).onaudiostart());assert.match(await p.locator('#status').textContent(),/^Listening/);
+    await speak(p,word);await naturalEnd(p);
+   }
+   assert.match(await p.locator('#status').textContent(),/Flight complete/);
+   if(words[0]==='ready')await p.locator('#start').click();
+  }
+  assert(await p.evaluate(()=>cues.length===11&&cues.every(u=>u.text==='Your turn'&&u.rate===2)));
+  assert(await p.evaluate(()=>instances.every(r=>!r.continuous&&!r.stopped&&!r.aborted)));
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'));
+  assert.equal(data.events.filter(e=>e.event==='listening-shown').length,11);
+  for(const a of data.attempts){const ev=data.events.filter(e=>e.attempt===a.id);assert(ev.findIndex(e=>e.event==='audiostart')<ev.findIndex(e=>e.event==='listening-shown'))}
+  await p.locator('#mode').selectOption('fastFlight');await p.locator('#start').click();await cueEnd(p);
+  assert.match(await p.locator('#status').textContent(),/^Listening/);await c.close();
+ });
+ await check('Mode H missing or late audio events cannot falsely prompt after cancellation/error',async()=>{
+  const {c,p}=await setup();await p.evaluate(()=>SpeechRecognition.prototype.start=function(){this.onstart?.()});
+  await p.locator('#mode').selectOption('audioFlight');await p.locator('#start').click();await cueEnd(p);await p.clock.runFor(20000);
+  assert.match(await p.locator('#status').textContent(),/has not reported audio capture/);
+  await p.evaluate(()=>{window.lateAudio=instances.at(-1).onaudiostart;autoEnd=false});await p.locator('#cancel').click();await p.evaluate(()=>lateAudio());
+  assert.doesNotMatch(await p.locator('#status').textContent(),/^Listening/);await naturalEnd(p);
+  await p.locator('#start').click();await cueEnd(p);await p.evaluate(()=>{instances.at(-1).onerror({error:'audio-capture'});instances.at(-1).onaudiostart()});
+  assert.doesNotMatch(await p.locator('#status').textContent(),/^Listening/);await c.close();
+ });
+ await check('Mode H temporary mismatch text stays out of exports and clears on cancel',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('audioFlight');await p.locator('#start').click();await cueEnd(p);
+  await speak(p,'PRIVATE H PHRASE');assert.equal(await p.locator('#heardText').textContent(),'Final: PRIVATE H PHRASE');
+  const pending=p.waitForEvent('download');await p.locator('#download').click();assert(!fs.readFileSync(await (await pending).path(),'utf8').includes('PRIVATE H PHRASE'));
+  await p.locator('#cancel').click();assert.equal(await p.locator('#heardText').textContent(),'');await c.close();
+ });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});
