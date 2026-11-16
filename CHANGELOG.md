@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- iPhone microphone setup offers Refresh & keep setup for a connected recognizer that stops hearing speech between flights. The pending learner setup returns after refresh without starting the microphone or timer automatically. Recovery blocks unsaved results and Guest sessions; physical-device validation of this workaround remains pending.
 - Review retries now refresh eligibility from the learner's current saved and unsaved flights, removing facts retired after two first-try successes. The Results shortcut is labeled Review remaining facts and stays within its original fact selection.
 - Voice readiness now displays interim transcripts and accepts an exact, stable interim “ready” after a short pause when no final result arrives. Cancellation, reconnection and late-result guards prevent stale recognition from starting another flight. The owner confirmed microphone reinitialization between tests in the local browser; physical iPhone Chrome confirmation of this follow-up remains pending.
 

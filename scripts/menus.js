@@ -242,9 +242,38 @@ function resultActions(s){
  registerActions($('resultsView'),group);
  if(!s.guest||s===session){const review=document.createElement('button');review.id='reviewMissed';review.textContent='Review missed facts';review.onclick=()=>{if(!FlightProfiles.canRepeat(s)||(s.guest&&s!==session))return;openReview(FactFlightMath.reviewCandidates([s],'all',false),{source:'results',filter:'all',owner:FlightProfiles.reviewOwner(),input:s.input==='voice'?'voice':'keypad',back:()=>{renderResult(s);show('resultsView')}})};group.after(review)}
 }
-window.FlightMenu={openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
+// One-shot, tab-local setup recovery; no history, transcripts or active flight are copied.
+const voiceRecoveryKey='fact-flight-voice-recovery-v1';
+function refreshVoice(){
+ if(phase!=='checking'||$('inputMode').value!=='voice')return;
+ const problem=FlightProfiles.voiceRefreshProblem();
+ if(problem){$('micMessage').textContent=problem;return}
+ const payload={version:1,at:Date.now(),owner:FlightProfiles.reviewOwner(),view:$('sessionView').value};
+ if(configuredReview&&reviewDraft){payload.review=structuredClone(configuredReview)}
+ else if(validConfig(cfg)){payload.config=structuredClone(cfg)}
+ else {$('micMessage').textContent='Please cancel and review your practice settings.';return}
+ try{sessionStorage.setItem(voiceRecoveryKey,JSON.stringify(payload))}
+ catch{$('micMessage').textContent='Could not keep your setup for a refresh. Cancel and choose Tap or type, or try the microphone again.';return}
+ stopMic();location.reload();
+}
+function restoreVoiceSetup(){
+ let payload;
+ try{const raw=sessionStorage.getItem(voiceRecoveryKey);sessionStorage.removeItem(voiceRecoveryKey);if(!raw||raw.length>20000)return;payload=JSON.parse(raw)}catch{return}
+ if(!payload||payload.version!==1||!Number.isFinite(payload.at)||Date.now()-payload.at<0||Date.now()-payload.at>600000||!['focus','worksheet'].includes(payload.view))return;
+ if(payload.review?!FactFlightMath.validReview(payload.review):!validConfig(payload.config))return;
+ if(!FlightProfiles.restoreVoiceOwner(payload.owner))return;
+ if(payload.review){
+  openReview(payload.review.facts,{source:payload.review.source,filter:payload.review.filter,owner:payload.owner,input:'voice'});
+  reviewDraft.input='voice';reviewDraft.view=payload.view;render();
+ }else{cfg={...payload.config,input:'voice',view:payload.view};trail=['home','practice'];go('ready',false)}
+ const notice=document.createElement('p');notice.className='notice';notice.setAttribute('role','status');notice.textContent='Your setup is restored. Tap Reconnect microphone, then say “ready.” The timer has not started.';
+ $('menuView').querySelector('h1').after(notice);
+ $('menuView').querySelector('[data-review-start], [data-start]').textContent='Reconnect microphone →';
+}
+window.FlightMenu={refreshVoice,openReview,replay,resultActions,validConfig,home:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=[];go('home',false)},math:()=>{if(busy()){requestSessionExit();return}resetDrafts();trail=['home'];go(FlightProfiles.hasSelection()?'math':'home',false)},ready:()=>{if(reviewDraft&&configuredReview){show('menuView');go('review',false)}else go(FlightProfiles.hasSelection()?'ready':'home',false)},profiles:next=>go(next)};
 $('homeNav').onclick=()=>FlightMenu.home();$('practiceNav').onclick=()=>FlightMenu.math();
 $('historyNav').onclick=()=>{if(busy()){requestSessionExit();return}FlightProfiles.progress()};
 FlightMenu.home();
+restoreVoiceSetup();
 
 })();

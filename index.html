@@ -177,7 +177,7 @@ dialog::backdrop{background:#0B0B0FAA}
   </div>
   <div class="keypad-hint">Tap Enter to submit · Undo and Skip are below the worksheet</div>
 </div>
-<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><p class="small">Uses your browser’s microphone. The timer has not started.</p><div id="iosMicDialogHelp" class="voice-help hidden" role="note"></div><button id="retryMic">Try microphone again</button> <button id="cancelMic" class="quiet">Cancel</button></dialog>
+<dialog id="exitDialog" aria-labelledby="exitTitle"><h2 id="exitTitle">Finish this flight?</h2><p>Your clock and microphone continue while you decide. Finish to review your results, then return Home.</p><div class="controls"><button id="continueFlight" autofocus>Keep practicing</button><button id="finishFlight" class="primary">Finish &amp; review</button></div></dialog><dialog id="micDialog"><div class="mic">🎙</div><div class="eyebrow">Microphone check</div><h2 style="margin-top:12px">Say “ready” to begin.</h2><p><span class="mic-status" id="dialogMicStatus" data-state="not-connected" role="status" aria-live="polite">Microphone: Not Connected</span></p><p id="micMessage" aria-live="polite">Allow microphone access when your browser asks.</p><p class="small">Uses your browser’s microphone. The timer has not started.</p><div id="iosMicDialogHelp" class="voice-help hidden" role="note"></div><div id="iosVoiceRecovery" class="hidden"><p class="small">Connected but not hearing you? Refresh and return to this setup, then tap Reconnect microphone. Saved learner results stay on this device.</p><button id="refreshVoice">Refresh &amp; keep setup</button></div><button id="retryMic">Try microphone again</button> <button id="cancelMic" class="quiet">Cancel</button></dialog>
 <script src="scripts/math-activities.js"></script>
 <script>
 'use strict';
@@ -291,6 +291,8 @@ function updateIOSVoiceGuidance(){
 }
 $('inputMode').addEventListener('change',updateIOSVoiceGuidance);
 updateIOSVoiceGuidance();
+$('iosVoiceRecovery').classList.toggle('hidden',!isIOSDevice);
+$('refreshVoice').onclick=()=>window.FlightMenu?.refreshVoice();
 function setMicStatus(state){
  micState=state;
  const names={'connected':'Connected','not-connected':'Not Connected','disconnected':'Disconnected'};

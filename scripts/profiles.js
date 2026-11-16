@@ -110,6 +110,18 @@ function reviewRetryFacts(s){
  const keys=new Set(eligible.map(f=>f.activity+':'+f.key));
  return s.review.facts.filter(f=>keys.has(f.activity+':'+f.key));
 }
+// A recovery refresh must never discard a pending/failed save or temporary Guest flight.
+function voiceRefreshProblem(){
+ if(!hasSelection(true)||storeError)return 'Learner storage is unavailable. Cancel microphone setup and export any unsaved results before refreshing.';
+ if(active==='guest')return 'Guest results are temporary. Cancel and choose Tap or type to keep them available; refreshing clears them.';
+ if(unsaved.size||pendingWrites.size)return 'Results are still saving or could not be saved. Cancel and check Progress or export your learner backup before refreshing.';
+ return '';
+}
+function restoreVoiceOwner(id){
+ if(typeof id!=='string'||id==='guest'||id==='previous'||busy())return false;
+ refresh();if(storeError||!family.profiles.some(p=>p.id===id))return false;
+ select(id);return active===id;
+}
 function reviewAccess(owner){return hasSelection(true)&&active===owner&&owner!=='previous'}
 function hasSelection(force=false){
  if(active&&active!=='guest'&&(!busy()||force)){refresh();if(!storeError&&!family.profiles.some(p=>p.id===active)){active=null;viewing=null;history=[];session=null}}
@@ -217,6 +229,6 @@ $('renameLearnerForm').onsubmit=async e=>{
 };
 $('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
-window.FlightProfiles={reviewRetryFacts,reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
+window.FlightProfiles={voiceRefreshProblem,restoreVoiceOwner,reviewRetryFacts,reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();

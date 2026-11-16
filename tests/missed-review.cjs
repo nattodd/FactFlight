@@ -152,6 +152,58 @@ async function seed(p){
   await p.waitForFunction(()=>phase==='done');await p.locator('#again').click();assert.equal(await p.evaluate(()=>phase),'checking');await say('hello there');assert((await p.locator('#micMessage').innerText()).includes('hello there'));
   await p.locator('#retryMic').click();await say('ready');assert.equal(await p.evaluate(()=>phase),'running');await say(String(await p.evaluate(()=>items[index].answer)));await require('./feedback-wait.cjs')(p);assert.equal(await p.evaluate(()=>items.filter(q=>q.status==='correct').length),1);await c.close();
  });
+ const ios={viewport:{width:390,height:844},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0_1 like Mac OS X) AppleWebKit/605.1.15 CriOS/140 Mobile/15E148 Safari/604.1'};
+ async function mockRecoveryVoice(p){
+  const install=()=>{window.SpeechRecognition=class{constructor(){window.testRecognition=this}start(){this.onstart?.()}abort(){}}};
+  await p.addInitScript(install);await p.evaluate(install);
+ }
+ await test('iPhone recovery restores selected review and learner without starting or changing history',async()=>{
+  const [c,p]=await page(ios);await seed(p);await mockRecoveryVoice(p);
+  const before=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));
+  await p.locator('#progressReview').click();await p.locator('[data-review-fact="4"]').uncheck();await p.locator('[data-review-input=voice]').click();await p.locator('[data-review-view=worksheet]').click();await p.locator('[data-review-start]').click();
+  assert(await p.locator('#refreshVoice').isVisible());
+  await p.locator('#refreshVoice').click();await p.locator('[data-review-start]').waitFor();
+  assert.equal(await p.evaluate(()=>phase),'idle');assert.equal(await p.evaluate(()=>!!window.testRecognition),false);
+  assert.equal(await p.locator('[data-review-fact]:checked').count(),4);assert.equal(await p.locator('[data-review-view=worksheet]').getAttribute('aria-pressed'),'true');
+  assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),before);
+  assert.equal(await p.evaluate(()=>sessionStorage.getItem('fact-flight-voice-recovery-v1')),null);
+  await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
+  await p.evaluate(()=>{const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]})});
+  assert.equal(await p.evaluate(()=>phase),'running');assert.equal(await p.evaluate(()=>session.items?.length||items.length),4);
+  await finish(p);await p.locator('#again').click();await p.locator('[data-review-start]').click();await p.locator('#refreshVoice').click();await p.locator('[data-review-start]').waitFor();
+  await p.locator('[data-review-start]').click();await p.locator('#cancelMic').click();assert.equal(await p.evaluate(()=>phase),'idle');
+  await p.reload();assert(await p.locator('[data-learner]').count());assert.equal(await p.locator('[data-review-start]').count(),0);await c.close();
+ });
+ for(const mode of ['quick','timed','school'])await test('iPhone recovery preserves ordinary '+mode+' settings and voice-ready gate',async()=>{
+  const [c,p]=await page(ios);await mockRecoveryVoice(p);await choose(p,{mode,activity:'multiplication',level:3,count:10,minutes:5,table:7,input:'voice',view:'focus'});
+  await p.locator('#refreshVoice').click();await p.locator('[data-start]').waitFor();assert.equal(await p.evaluate(()=>phase),'idle');
+  await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');
+  assert.equal(await p.locator('#inputMode').inputValue(),'voice');assert.equal(await p.locator('#sessionView').inputValue(),'focus');
+  if(mode==='school')assert.equal(await p.evaluate(()=>table),7);
+  else{assert.equal(await p.locator('#level').inputValue(),'3');assert.equal(await p.locator('#questionCount').inputValue(),'10')}
+  if(mode==='timed')assert.equal(await p.evaluate(()=>configuredTimeLimitMs),300000);
+  await p.locator('#cancelMic').click();await c.close();
+ });
+ await test('Recovery blocks Guest, unsaved results and unavailable session storage',async()=>{
+  const [c,p]=await page(ios);await mockRecoveryVoice(p);
+  await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();await choose(p,{input:'voice'});
+  await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Guest results are temporary'));assert.equal(await p.evaluate(()=>phase),'checking');await p.locator('#cancelMic').click();
+  await p.locator('#homeNav').click();await p.locator('[data-change-learner]').click();await p.locator('[data-learner]:not([data-learner=guest])').first().click();
+  await choose(p,{input:'voice'});await p.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(this===sessionStorage)throw Error('blocked');return originalSet.call(this,k,v)}});
+  await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Could not keep your setup'));assert.equal(await p.evaluate(()=>phase),'checking');
+  await p.evaluate(()=>{Storage.prototype.setItem=originalSet;const r=[{transcript:'ready'}];r.isFinal=true;testRecognition.onresult({resultIndex:0,results:[r]});Storage.prototype.setItem=function(k,v){if(k==='fact-flight-family-v1')throw Error('quota');return originalSet.call(this,k,v)}});
+  await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.includes('Could not save'));
+  await p.locator('#again').click();await p.locator('#refreshVoice').click();assert((await p.locator('#micMessage').innerText()).includes('Results are still saving'));assert.equal(await p.evaluate(()=>phase),'checking');await c.close();
+ });
+ await test('Recovery rejects expired, malformed and deleted-owner setup',async()=>{
+  const [c,p]=await page(ios);const owner=await p.evaluate(()=>FlightProfiles.reviewOwner());
+  const config={activity:'addition',mode:'quick',level:0,count:5,minutes:2,table:2,input:'voice',view:'focus',target:'',schoolUntimed:false};
+  for(const change of [{at:Date.now()-700000},{owner:'missing-learner'},{review:{version:1,facts:[]}},{config:{...config,activity:'invalid'}}]){
+   await p.evaluate(v=>sessionStorage.setItem('fact-flight-voice-recovery-v1',JSON.stringify(v)),{version:1,at:Date.now(),owner,view:'focus',config,...change});await p.reload();
+   assert.equal(await p.evaluate(()=>FlightProfiles.reviewOwner()),null);assert.equal(await p.locator('[data-start]').count(),0);assert.equal(await p.evaluate(()=>sessionStorage.getItem('fact-flight-voice-recovery-v1')),null);
+  }
+  await c.close();
+ });
  await test('No browser errors',()=>assert.deepEqual(errors,[]));
  fs.writeFileSync(path.join(output,'missed-review-results.json'),JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.status==='FAIL')?1:0;
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{await browser?.close();server.close()});
