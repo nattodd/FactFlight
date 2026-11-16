@@ -24,6 +24,7 @@
 <option value="stop">B · Stop after a result</option>
 <option value="cue">C · Spoken cue + natural end</option>
 <option value="flight">D · Hands-free flight</option>
+<option value="continuous">E · One short cue per flight</option>
 </select>
 <p id="description">Single-phrase recognition. The browser ends the session itself.</p>
 <p id="status" role="status" aria-live="polite">Ready to test. Microphone is off.</p>
@@ -32,6 +33,7 @@
 <p id="counts" class="muted">No attempts yet.</p>
 <p>Tap Start attempt, wait for “Say ready,” then say <strong>“ready”</strong> once. Wait for the session to end before repeating. Aim for 10 attempts per mode.</p>
 <p><strong>Mode D:</strong> Tap Start, say “ready” at Listening, then answer five displayed sums. Tap Next flight for five more answers, without another “ready.” Wait for Listening before each answer; do not refresh between flights.</p>
+<p><strong>Mode E:</strong> The same sequence, with a short “E” cue only at each flight’s start. Keep answering as the displayed question changes. The microphone stays open between answers and stops at the flight’s end. This tests whether the repeated cue delay can be removed; the short cue may or may not be audible.</p>
 <small>A–C count result arrivals only. D checks ready and the five expected answers without saving spoken text. No five-second reset: after 20 seconds we show a notice but keep listening until you cancel or the browser ends.</small>
 </section>
 <section>

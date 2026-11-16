@@ -7,12 +7,14 @@
     natural: 'Single-phrase recognition. The browser ends the session itself.',
     stop: 'Single-phrase recognition. Request stop after the first final result.',
     cue: 'The app says “Your turn,” then opens single-phrase recognition. Let the browser end it.',
-    flight: 'One tap: say ready, then answer five displayed sums. Wait for Listening before each answer. No taps between questions.'
+    flight: 'One tap: say ready, then answer five displayed sums. Wait for Listening before each answer. No taps between questions.',
+    continuous: 'One short “E” cue per flight, then continuous listening. Say ready once, then five answers. No cues or microphone restarts between questions.'
   };
   const origin = performance.now(), events = [], attempts = [];
   let current = null, cooling = false, cooldown, flight = null, flightCount = 0, nextFlight = false;
   const prompts = ['Say ready.', '1 + 1 = ?', '1 + 2 = ?', '2 + 2 = ?', '2 + 3 = ?', '3 + 3 = ?'];
   const expected = [['ready'], ['2','two'], ['3','three'], ['4','four'], ['5','five'], ['6','six']];
+  const isFlight = mode => ['flight','continuous'].includes(mode);
   function trace(event, run = current, extra = {}) {
     events.push({ms: Math.round(performance.now() - origin), attempt: run?.id || 0,
       mode: run?.mode || $('mode').value, ...(run?.flightId ? {flight:run.flightId,step:run.step} : {}), event, ...extra});
@@ -21,13 +23,13 @@
   }
   function status(message) { $('status').textContent = message; }
   function controls() {
-    $('start').textContent = $('mode').value === 'flight' && nextFlight ? 'Next flight' : 'Start attempt';
+    $('start').textContent = isFlight($('mode').value) && nextFlight ? 'Next flight' : 'Start attempt';
     $('start').disabled = !Speech || !window.isSecureContext || !!current || cooling;
     $('mode').disabled = !!current || cooling;
     $('cancel').disabled = !current && !flight;
     $('counts').textContent = attempts.length ? Object.keys(descriptions).map(mode => {
       const runs = attempts.filter(r => r.mode === mode);
-      return `${({natural:'A',stop:'B',cue:'C',flight:'D'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
+      return `${({natural:'A',stop:'B',cue:'C',flight:'D',continuous:'E'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
     }).join(' · ') : 'No attempts yet.';
   }
   function clearTimers(run) { clearTimeout(run.observation); clearTimeout(run.shutdown); clearTimeout(run.cueTimer); }
@@ -42,8 +44,8 @@
     status(`${run.results ? 'Speech results received.' : 'No speech results received.'} Releasing session…`);
     controls();
     cooldown = setTimeout(() => {
-      if (run.mode === 'flight' && flight && !run.cancelled && !run.failed && run.accepted) {
-        if (run.step < 5) {
+      if (isFlight(run.mode) && flight && !run.cancelled && !run.failed && run.accepted) {
+        if (run.mode === 'flight' && run.step < 5) {
           cooling = false;
           const next = newRun('flight', run.step + 1);
           trace('automatic-next', next); beginRun(next); return;
@@ -51,9 +53,9 @@
         trace('flight-completed', run); flight = null; nextFlight = true; cooling = false; controls();
         status('Flight complete: all five answers accepted. Tap Next flight for five more answers, without saying ready again.'); return;
       }
-      if (run.mode === 'flight') { flight = null; nextFlight = false; }
+      if (isFlight(run.mode)) { flight = null; nextFlight = false; }
       cooling = false; controls();
-      status(run.mode === 'flight' ? 'Flight stopped before completion. Download the log; tap Start attempt to retry from ready.' : `${run.results ? 'Speech results received.' : 'No speech results received.'} Session ended. Tap Start attempt to repeat.`);
+      status(isFlight(run.mode) ? 'Flight stopped before completion. Download the log; tap Start attempt to retry from ready.' : `${run.results ? 'Speech results received.' : 'No speech results received.'} Session ended. Tap Start attempt to repeat.`);
     }, 400);
   }
   function awaitEnd(run) {
@@ -87,7 +89,8 @@
     let rec;
     try { rec = new Speech(); } catch (_) { trace('constructor-threw', run); finish(run, 'constructor-failed'); return; }
     run.rec = rec; trace('created', run);
-    rec.lang = 'en-US'; rec.continuous = false; rec.interimResults = true;
+    rec.lang = 'en-US'; rec.continuous = run.mode === 'continuous'; rec.interimResults = true;
+    const processed = new Set();
     run.handlers = [];
     function on(name, callback) {
       run.handlers.push('on' + name);
@@ -96,7 +99,7 @@
     on('start', () => {
       trace('start', run);
       if (run.cancelled) return;
-      status(run.mode === 'flight' ? `Listening · ${run.step ? 'Question '+run.step+' of 5 · ' : ''}${prompts[run.step]}` : 'Say ready. Waiting for speech results…');
+      status(isFlight(run.mode) ? `Listening · ${run.step ? 'Question '+run.step+' of 5 · ' : ''}${prompts[run.step]}` : 'Say ready. Waiting for speech results…');
     });
     for (const name of ['audiostart','audioend','soundstart','soundend','speechstart','speechend'])
       on(name, () => trace(name, run));
@@ -104,6 +107,31 @@
       if (run.cancelled) { trace('result-after-cancel-ignored', run); return; }
       let final = false;
       for (let i = event.resultIndex; i < event.results.length; i++) final ||= event.results[i].isFinal;
+      if (run.mode === 'continuous') {
+        if (run.stopRequested || run.failed) return;
+        run.results++; trace('result', run, {final}); controls();
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (!event.results[i].isFinal || processed.has(i)) continue;
+          processed.add(i);
+          const value = String(event.results[i][0]?.transcript || '').toLowerCase().trim().replace(/[.!?,]+$/g, '').trim();
+          const accepted = expected[run.step].includes(value);
+          trace('answer-checked', run, {accepted});
+          if (accepted) run.acceptedCount++;
+          if (!accepted || run.step === 5) {
+            run.accepted = accepted; run.failed = !accepted; run.stopRequested = true;
+            clearTimeout(run.observation);
+            status(accepted ? 'All five answers accepted. Releasing microphone…' : 'Expected answer not recognized. Ending this test flight…');
+            trace('stop-requested', run); awaitEnd(run);
+            try { rec.stop(); } catch (_) { trace('stop-threw', run); }
+            return;
+          }
+          run.step++;
+          trace('continuous-next', run);
+          status(`Listening · Question ${run.step} of 5 · ${prompts[run.step]}`);
+          observe();
+        }
+        return;
+      }
       if (run.mode === 'flight') {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (!event.results[i].isFinal || run.accepted) continue;
@@ -128,26 +156,30 @@
       awaitEnd(run);
     });
     on('end', () => { trace('end', run); finish(run, run.cancelled ? 'cancelled' : 'browser-end'); });
+    function observe() {
+    clearTimeout(run.observation);
     run.observation = setTimeout(() => {
       if (current !== run || run.cancelled) return;
       trace('observation-20s', run, {receivedResults: run.results > 0});
-      status(run.results ? 'Results arrived, but the session is still open. You can cancel.' : 'No results after 20 seconds. Still listening; Cancel to release the microphone.');
+      status(run.mode === 'continuous' ? `Still waiting · ${prompts[run.step]} You can cancel if recognition is stuck.` : run.results ? 'Results arrived, but the session is still open. You can cancel.' : 'No results after 20 seconds. Still listening; Cancel to release the microphone.');
     }, 20000);
+    }
+    observe();
     try { trace('start-requested', run); rec.start(); }
     catch (_) { trace('start-threw', run); cancel('start-failed'); }
   }
   function newRun(mode, step = 0) {
-    const run = {id: attempts.length + 1, mode, results: 0, handlers: [], ...(mode === 'flight' ? {flightId:flight.id,step} : {})};
+    const run = {id: attempts.length + 1, mode, results: 0, handlers: [], acceptedCount:0, ...(isFlight(mode) ? {flightId:flight.id,step} : {})};
     attempts.push(run); current = run; controls(); return run;
   }
   function beginRun(run) {
     status('Opening recognition. Wait for “Say ready.”');
-    if (!['cue','flight'].includes(run.mode)) { launch(run); return; }
+    if (!['cue','flight','continuous'].includes(run.mode)) { launch(run); return; }
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       trace('synthesis-unavailable', run); finish(run, 'synthesis-unavailable'); return;
     }
-    status(run.mode === 'flight' ? `Preparing · ${prompts[run.step]} Wait for Listening before speaking.` : 'Listen to the app cue. Then say ready when prompted.');
-    const utterance = new SpeechSynthesisUtterance('Your turn');
+    status(isFlight(run.mode) ? `Preparing · ${prompts[run.step]} Wait for Listening before speaking.` : 'Listen to the app cue. Then say ready when prompted.');
+    const utterance = new SpeechSynthesisUtterance(run.mode === 'continuous' ? 'E' : 'Your turn');
     utterance.lang = 'en-US'; run.utterance = utterance;
     utterance.onend = () => {
       if (current !== run || run.cancelled) return;
@@ -161,17 +193,18 @@
   }
   $('start').onclick = () => {
     if (current || cooling || !Speech || !window.isSecureContext) return;
-    if ($('mode').value === 'flight') flight = {id:++flightCount};
-    const run = newRun($('mode').value, $('mode').value === 'flight' && nextFlight ? 1 : 0);
+    if (isFlight($('mode').value)) flight = {id:++flightCount};
+    const run = newRun($('mode').value, isFlight($('mode').value) && nextFlight ? 1 : 0);
     trace('tap-start', run); beginRun(run);
   };
   $('mode').onchange = () => { nextFlight = false; controls(); $('description').textContent = descriptions[$('mode').value]; trace('mode-selected'); };
   $('cancel').onclick = () => cancel();
   $('download').onclick = () => {
-    const payload = {format: 1, implementation: 'isolated-microphone-lab-2',
+    const payload = {format: 1, implementation: 'isolated-microphone-lab-3',
       environment: {ios: /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), chromeIOS: /CriOS/.test(navigator.userAgent)},
       attempts: attempts.map(r => ({id: r.id, mode: r.mode, results: r.results, cancelled: !!r.cancelled,
-        ...(r.flightId ? {flight:r.flightId,step:r.step,accepted:!!r.accepted} : {})})), events};
+        ...(r.flightId ? {flight:r.flightId,step:r.step,accepted:!!r.accepted} : {}),
+        ...(r.mode === 'continuous' ? {acceptedCount:r.acceptedCount} : {})})), events};
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}));
     const a = document.createElement('a'); a.href = url; a.download = 'fact-flight-microphone-lab.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);

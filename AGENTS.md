@@ -21,6 +21,8 @@ These rules apply to all development work in this repository.
 
 ## 2. Product principles
 
+- Owner privacy boundary: never read, list, search, or otherwise access the owner's iCloud Drive, including its local synced folders. Request files from Downloads instead. A previously shared iCloud path does not grant continuing access.
+
 - Fact Flight is a free, privacy-conscious educational application for children ages 2–12.
 - No mandatory accounts, subscriptions, advertisements, or marketing.
 - Keep interactions simple, accessible, and mobile-first.
