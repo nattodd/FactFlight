@@ -127,5 +127,27 @@ async function continuousWord(p,text,index,final=true){await p.evaluate(({text,i
   await p.locator('#start').click();await cueEnd(p);await p.evaluate(()=>window.lateContinuous=instances.at(-1).onresult);await p.locator('#cancel').click();
   await p.evaluate(()=>lateContinuous({resultIndex:0,results:[]}));await p.clock.runFor(1000);assert.equal(await p.evaluate(()=>instances.length),3);assert(await p.locator('#start').isEnabled());await c.close();
  });
+ await check('Mode F preserves D sequencing and cooldown, with E before all eleven phrases',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('shortFlight');await p.locator('#start').click();
+  for(const word of ['ready','2','3','4','5','6']){
+   await cueEnd(p);assert.equal(await p.evaluate(()=>instances.at(-1).continuous),false);await speak(p,word);
+   const before=await p.evaluate(()=>cues.length);await p.evaluate(()=>instances.at(-1).onend());await p.clock.runFor(399);
+   assert.equal(await p.evaluate(()=>cues.length),before);await p.clock.runFor(1);
+  }
+  assert.match(await p.locator('#status').textContent(),/Flight complete/);await p.locator('#start').click();
+  for(const word of ['2','3','4','5','6']){await cueEnd(p);await speak(p,word);await naturalEnd(p)}
+  assert.match(await p.locator('#status').textContent(),/Flight complete/);
+  assert(await p.evaluate(()=>cues.length===11&&cues.every(u=>u.text==='E')));
+  assert(await p.evaluate(()=>instances.length===11&&instances.every(r=>!r.stopped&&!r.aborted)));
+  const pending=p.waitForEvent('download');await p.locator('#download').click();const data=JSON.parse(fs.readFileSync(await (await pending).path(),'utf8'));
+  assert(data.attempts.every(r=>r.mode==='shortFlight'&&r.accepted));assert.equal(data.events.filter(e=>e.event==='flight-completed').length,2);
+  await p.locator('#mode').selectOption('flight');await p.locator('#start').click();assert.equal(await p.evaluate(()=>cues.at(-1).text),'Your turn');await c.close();
+ });
+ await check('Mode F cancellation blocks automatic next, and mismatch stops the flight',async()=>{
+  const {c,p}=await setup();await p.locator('#mode').selectOption('shortFlight');await p.locator('#start').click();await cueEnd(p);await speak(p,'ready');
+  await p.evaluate(()=>instances[0].onend());await p.locator('#cancel').click();await p.clock.runFor(1000);assert.equal(await p.evaluate(()=>cues.length),1);
+  await p.locator('#start').click();await cueEnd(p);await speak(p,'PRIVATE WRONG PHRASE');await naturalEnd(p);
+  assert.match(await p.locator('#status').textContent(),/stopped before completion/);assert.equal(await p.evaluate(()=>cues.length),2);await c.close();
+ });
  console.log(`${checks} checks passed; real device speech remains unverified.`);
 }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});

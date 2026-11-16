@@ -8,13 +8,15 @@
     stop: 'Single-phrase recognition. Request stop after the first final result.',
     cue: 'The app says “Your turn,” then opens single-phrase recognition. Let the browser end it.',
     flight: 'One tap: say ready, then answer five displayed sums. Wait for Listening before each answer. No taps between questions.',
-    continuous: 'One short “E” cue per flight, then continuous listening. Say ready once, then five answers. No cues or microphone restarts between questions.'
+    continuous: 'One short “E” cue per flight, then continuous listening. Say ready once, then five answers. No cues or microphone restarts between questions.',
+    shortFlight: 'Mode D sequence with “E” instead of “Your turn” before every phrase. Wait for Listening before ready and each answer.'
   };
   const origin = performance.now(), events = [], attempts = [];
   let current = null, cooling = false, cooldown, flight = null, flightCount = 0, nextFlight = false;
   const prompts = ['Say ready.', '1 + 1 = ?', '1 + 2 = ?', '2 + 2 = ?', '2 + 3 = ?', '3 + 3 = ?'];
   const expected = [['ready'], ['2','two'], ['3','three'], ['4','four'], ['5','five'], ['6','six']];
-  const isFlight = mode => ['flight','continuous'].includes(mode);
+  const isSingleFlight = mode => ['flight','shortFlight'].includes(mode);
+  const isFlight = mode => isSingleFlight(mode) || mode === 'continuous';
   function trace(event, run = current, extra = {}) {
     events.push({ms: Math.round(performance.now() - origin), attempt: run?.id || 0,
       mode: run?.mode || $('mode').value, ...(run?.flightId ? {flight:run.flightId,step:run.step} : {}), event, ...extra});
@@ -29,7 +31,7 @@
     $('cancel').disabled = !current && !flight;
     $('counts').textContent = attempts.length ? Object.keys(descriptions).map(mode => {
       const runs = attempts.filter(r => r.mode === mode);
-      return `${({natural:'A',stop:'B',cue:'C',flight:'D',continuous:'E'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
+      return `${({natural:'A',stop:'B',cue:'C',flight:'D',continuous:'E',shortFlight:'F'})[mode]}: ${runs.filter(r => r.results > 0).length}/${runs.length} sessions received results`;
     }).join(' · ') : 'No attempts yet.';
   }
   function clearTimers(run) { clearTimeout(run.observation); clearTimeout(run.shutdown); clearTimeout(run.cueTimer); }
@@ -45,9 +47,9 @@
     controls();
     cooldown = setTimeout(() => {
       if (isFlight(run.mode) && flight && !run.cancelled && !run.failed && run.accepted) {
-        if (run.mode === 'flight' && run.step < 5) {
+        if (isSingleFlight(run.mode) && run.step < 5) {
           cooling = false;
-          const next = newRun('flight', run.step + 1);
+          const next = newRun(run.mode, run.step + 1);
           trace('automatic-next', next); beginRun(next); return;
         }
         trace('flight-completed', run); flight = null; nextFlight = true; cooling = false; controls();
@@ -132,7 +134,7 @@
         }
         return;
       }
-      if (run.mode === 'flight') {
+      if (isSingleFlight(run.mode)) {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (!event.results[i].isFinal || run.accepted) continue;
           // Compare transiently; never retain or export the spoken text.
@@ -142,7 +144,7 @@
         }
       }
       run.results++; trace('result', run, {final}); controls();
-      status(run.mode === 'flight' && final ? `${run.accepted ? 'Accepted.' : 'Expected answer not recognized.'} Waiting for the browser to end the session…` : 'Speech result received. Waiting for the browser to end the session…');
+      status(isSingleFlight(run.mode) && final ? `${run.accepted ? 'Accepted.' : 'Expected answer not recognized.'} Waiting for the browser to end the session…` : 'Speech result received. Waiting for the browser to end the session…');
       if (run.mode === 'stop' && final && !run.stopRequested) {
         run.stopRequested = true; trace('stop-requested', run); awaitEnd(run);
         try { rec.stop(); } catch (_) { trace('stop-threw', run); }
@@ -174,12 +176,12 @@
   }
   function beginRun(run) {
     status('Opening recognition. Wait for “Say ready.”');
-    if (!['cue','flight','continuous'].includes(run.mode)) { launch(run); return; }
+    if (run.mode !== 'cue' && !isFlight(run.mode)) { launch(run); return; }
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       trace('synthesis-unavailable', run); finish(run, 'synthesis-unavailable'); return;
     }
     status(isFlight(run.mode) ? `Preparing · ${prompts[run.step]} Wait for Listening before speaking.` : 'Listen to the app cue. Then say ready when prompted.');
-    const utterance = new SpeechSynthesisUtterance(run.mode === 'continuous' ? 'E' : 'Your turn');
+    const utterance = new SpeechSynthesisUtterance(['continuous','shortFlight'].includes(run.mode) ? 'E' : 'Your turn');
     utterance.lang = 'en-US'; run.utterance = utterance;
     utterance.onend = () => {
       if (current !== run || run.cancelled) return;
@@ -200,7 +202,7 @@
   $('mode').onchange = () => { nextFlight = false; controls(); $('description').textContent = descriptions[$('mode').value]; trace('mode-selected'); };
   $('cancel').onclick = () => cancel();
   $('download').onclick = () => {
-    const payload = {format: 1, implementation: 'isolated-microphone-lab-3',
+    const payload = {format: 1, implementation: 'isolated-microphone-lab-4',
       environment: {ios: /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), chromeIOS: /CriOS/.test(navigator.userAgent)},
       attempts: attempts.map(r => ({id: r.id, mode: r.mode, results: r.results, cancelled: !!r.cancelled,
         ...(r.flightId ? {flight:r.flightId,step:r.step,accepted:!!r.accepted} : {}),
