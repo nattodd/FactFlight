@@ -50,7 +50,7 @@ function decorateFocus(){
   const d=b.dataset;let candidate,ready=false,blocked=false,partial='';
   if(d.activity){const a=focus.activity(d.activity);ready=a.ready;blocked=focus.enabled()&&a.allSelectableReady;partial=a.readyCount?`${a.readyCount} / ${a.total} practice choices mastered`:'';}
   else {candidate={...cfg};if('level'in d){candidate.level=Number(d.level);delete candidate.selection}else if('table'in d){candidate.mode='school';candidate.table=Number(d.table);delete candidate.selection}else{candidate.selection=FactFlightMath.makeSelection(cfg.activity,[Number(d.factTable)],chosenRange(cfg));}ready=focus.mastered(candidate).length>0;blocked=ready&&focus.enabled()&&!focusAllowed(candidate);}
-  if(ready){const badge=document.createElement('span');badge.className='menu-trophy'+(d.activity?' activity-status':'');badge.textContent=d.activity?'🏆 Facts mastered':'🏆 Mastered';b.append(badge)}
+  if(ready){const badge=document.createElement('span');badge.className='menu-trophy'+(d.activity?' activity-status':'');badge.textContent=d.activity?'🏆 Facts mastered':'🏆 Mastered';if('factTable'in d)badge.innerHTML='<span class="trophy-symbol" aria-hidden="true">🏆</span>Mastered';b.append(badge)}
   else if(partial){const count=document.createElement('span');count.className='sub activity-status';count.textContent=partial;b.append(count)}
   if(!blocked)continue;
   b.classList.add('focus-restricted');

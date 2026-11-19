@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Chosen table/divisor tiles use three columns on narrow screens, equal-height rows and a contained trophy/label stack so mastered labels do not spill across borders.
 - Activity tiles bottom-align mastery trophies and partial-progress labels, with wrapping and natural height for longer text.
 - Local Math footer consistency: the Math label appears above the left-aligned Back button using the shared menu action-bar layout.
 - Local mobile action-bar alignment: Back sits on the left of the Math bar, and Continue/Start no longer inherit the narrow-screen top margin that offset them from Back.
