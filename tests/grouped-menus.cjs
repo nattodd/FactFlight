@@ -4,16 +4,23 @@ const root=path.resolve(__dirname,'..'),registry=require('../scripts/activity-re
 assert.deepEqual(registry.activityOrder.slice().sort(),Object.keys(math.activities).sort());assert.equal(registry.activityOrder.length,8);
 const server=http.createServer((req,res)=>{const rel=req.url==='/'?'index.html':req.url.slice(1);if(!/^(index\.html|scripts\/[\w-]+\.js|styles\/[\w-]+\.css|assets\/brand\/[\w-]+\.svg)$/.test(rel)){res.writeHead(404);return res.end()}res.setHeader('Content-Type',rel.endsWith('.js')?'application/javascript':rel.endsWith('.css')?'text/css':rel.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,rel)))});
 let browser,url;const errors=[];
+async function checkFutureTiles(p){assert(await p.locator('.coming-soon').evaluateAll(es=>es.every(e=>{const s=getComputedStyle(e),b=e.querySelector('.badge');return s.borderTopStyle==='solid'&&Math.abs(e.getBoundingClientRect().bottom-b.getBoundingClientRect().bottom-parseFloat(s.paddingBottom)-parseFloat(s.borderBottomWidth))<1})));}
+
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({channel:'chrome',headless:true});
  for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1440,height:1000}]){
   const c=await browser.newContext({viewport}),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator('[data-learner="guest"]').click();const before=await p.evaluate(()=>JSON.stringify({...localStorage}));
   assert.equal(await p.locator('.tiles .tile:disabled').count(),3);
-  if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`subjects-${viewport.width}.png`),fullPage:true});
+  for(const theme of ['dark','light']){
+   await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);await checkFutureTiles(p);
+   assert.equal(await p.locator('.coming-soon .icon svg').count(),2);
+   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`subjects-${theme}-${viewport.width}.png`),fullPage:true});
+  }
   await p.locator('[data-math]').click();
   assert.equal(await p.locator('.tiles .tile:disabled').count(),2);
   for(const theme of ['light','dark']){
    await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+   await checkFutureTiles(p);
    assert(await p.locator('.operations-icon').evaluate(e=>{const r=e.getBoundingClientRect();return [...e.children].every(c=>{const b=c.getBoundingClientRect();return b.left>=r.left&&b.right<=r.right&&b.top>=r.top&&b.bottom<=r.bottom})}));
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`math-${theme}-${viewport.width}.png`),fullPage:true});

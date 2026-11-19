@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Local Coming Soon refinement: bottom-aligned badges, consistent theme-aware tile/icon borders, and vector book, shapes and clock icons replace platform-dependent symbols. Applies to subject and Math menus; practice behavior is unchanged.
 - Local preview visual corrections: Operations & Facts uses a contained four-symbol icon; future subjects and Math groups return to disabled Coming Soon tiles. Progress uses brand sky blue, bordered result metrics and a chart icon. School Test, reporting calculations and learner records are unchanged.
 - Local regression fix: cross-tab readiness/focus refreshes now update practice menus only, preserving import review errors and in-progress management forms when another tab saves learner data.
 - Redacted personal home-directory prefixes from 13 verification documents/result files without changing historical test outcomes. This is a documentation privacy correction; existing Git history and published copies are not erased by a later cleanup commit.
