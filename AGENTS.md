@@ -6,7 +6,13 @@ These rules apply to all development work in this repository.
 
 - Repository: `nattodd/FactFlight`.
 - Production branch: `main`.
-- Active development branch: `v6.2-development`, created from verified main / v6.1.0 `f760615`.
+- Active development branch: `v6.3-development`, created locally at `a3101b0` after verifying its tree matches local main `46f2f9c` and its ancestry includes v6.2.0 tag `13d09dd`.
+- v6.3 planning authorization (2026-11-18): owner accepted `docs/v6.3-rules-specification.md` defaults and authorized the local branch plus planning docs/roadmap image for expanded practice quality, Progress, readiness and parent focus alongside division families, tables through 12 and grouped menus. No application changes, commits, pushes, merges, deployments or hosting changes are authorized. The private Learner Stats Review Mock Dashboard is the required Progress visual reference; recreate with synthetic fixtures and never copy its private HTML/data/screenshots into the repository.
+- v6.3 foundation authorization (2026-11-18): owner approved local shared content definitions, reporting/readiness calculations and synthetic tests only. The owner also approved counting readiness completion credits across the outer 12/8-flight window while accuracy/coverage retain their 60/40-encounter caps. This supersedes the planning-only restriction for this increment; no commits, pushes, deployments or storage schema changes are authorized.
+- v6.3 generator authorization (2026-11-18): owner approved implementing the reviewed L2/L3 allocation locally with learner-specific in-memory carryover, preserving School Test, rerunning the synthetic audit and updating graphs. No storage schema changes, commits, pushes or deployments are authorized. Earlier planning-only restrictions are superseded only for this increment.
+- v6.3 family-extension authorization (2026-11-18): owner confirmed a fresh production learner JSON backup and approved local division families, multiplication tables 1–12 and explicit through-10/12 ranges. v6.3 must read existing backups without rewriting their records; backups containing new scopes require v6.3. This authorizes the additive session/selection and reader changes for this increment, superseding the earlier no-schema-change restriction only here. Preserve School Test; no commits, pushes, deployments or publishing.
+- v6.3 navigation refinement (2026-11-18): owner requested all eight activity tiles directly under Operations & Facts and Quick Practice, removing the extra category click. Preserve School Test and existing compatibility; local changes only, no commits, pushes or deployments. This supersedes the earlier four-category screen layout.
+- v6.3 grouped-menu authorization (2026-11-18): owner approved local grouped practice navigation from the existing roadmap. Preserve School Test and the established learner-backup compatibility boundary; no commits, pushes or deployments. The Progress dashboard remains a separate increment.
 - Current release baseline: `v6.2.0` on main/GitHub Pages, owner-approved on 2026-11-16 after preview `a9fe516` and release-check acceptance. Exact release commit is identified by annotated tag `v6.2.0` and the GitHub release. Previous baseline `v6.1.0` at `f760615` does not support importing new mixed-review records. Rollback requires separate owner approval and a data-preserving plan.
 - Branch transition authorization (2026-11-15): owner approved creating local `v6.2-development` from verified main, carrying over v6.1 release-completion notes and pending documentation/image, and updating current branch references. The owner subsequently approved a local commit of the reviewed documentation and roadmap image only. Application changes, pushes, deployments and Netlify configuration changes remain unauthorized; v6.2 Branch Deploy is not yet enabled by this work.
 - Always verify the active branch before modifying code.
@@ -20,6 +26,12 @@ These rules apply to all development work in this repository.
 - Release authorization (2026-11-15): owner explicitly approved finalizing v6.1.0 release docs, committing/pushing preparation, merging/pushing main for GitHub Pages, verifying production, and publishing the v6.1.0 annotated tag/GitHub release. Keep Netlify production/v6-development unchanged. Rollback requires separate owner approval. This does not authorize subsequent feature releases.
 
 - Release authorization (2026-11-16): owner approved final v6.2 release-status/image updates, promotion to main/GitHub Pages, and the v6.2.0 annotated tag/GitHub release after verifying preview a9fe516. Keep Netlify production v6-development unchanged. This authorizes this release only, not future development publication.
+
+- Local Progress authorization (2026-11-18): owner approved implementing the Learner Stats Review dashboard with synthetic fixtures on `v6.3-development`, preserving School Test and backup compatibility. No commits, pushes, deployments or publication. This increment does not authorize storage-schema changes or enable parent focus restrictions.
+
+- Local focus authorization (2026-11-19): owner approved mastery menu trophies and the per-learner Parent corner focus toggle, preserving School Test and learner backup compatibility. The agreed one-flight allowance and no-PIN preference semantics apply. Keep preferences separate from answer records; no commits, pushes, deployments or publication. This supersedes earlier planning-only limits for this increment.
+
+- v6.3 Branch Deploy authorization (2026-11-19): owner approved privacy/secret scans, committing and pushing the reviewed v6.3-development candidate, and its Netlify Branch Deploy for Windows/iPhone testing. The owner added v6.3-development to factflight-preview Branch deploys; the supplied settings screenshot confirms production remains v6-development and the existing v6.1/v6.2 branch deploys remain enabled. This supersedes earlier local-only restrictions for this candidate only. Do not merge into main, publish a production release, change production branches or create release tags. Physical-device acceptance remains pending.
 
 ## 2. Product principles
 
@@ -68,7 +80,7 @@ These rules apply to all development work in this repository.
 - Use factual, user-facing descriptions. Never represent planned features as completed; keep planned work in `ROADMAP.md` until implemented and verified.
 - Never alter historical release notes without a documented correction.
 - Update `ROADMAP.md` when milestones are verified.
-- Before releases, compare the active development branch (`v6.2-development`) against `main` and reconcile the changelog with actual changes.
+- Before releases, compare the active development branch (`v6.3-development`) against `main` and reconcile the changelog with actual changes.
 - Never publish to production without the repository owner's explicit approval.
 - Only after explicit production approval, move verified changelog entries into a dated release section and publish the corresponding release.
 

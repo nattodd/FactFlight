@@ -16,12 +16,14 @@ function check(settings,pool,seed,full=false){
  const list=Array.from({length:full?size*2+7:Math.min(size*4+7,407)},()=>source.next());
  const byKey=new Map(pool.map(g=>[g.key,g])),frequencies=new Map();
  for(let i=0;i<list.length;i++){
-  const q=list[i],gap=Math.min(3,size-1);
+  const changed=process.env.FF_TEST_APP_MATH&&require('../scripts/content-definitions.js').practiceAllocation(settings.activity,settings.level)&&settings.mode!=='school';
+  const q=list[i],gap=changed?0:Math.min(3,size-1);
   assert(!list.slice(Math.max(0,i-gap),i).some(p=>p.key===q.key),'repeat too close');
   assert(byKey.get(q.key)?.variants.some(v=>v.text===q.text&&v.answer===q.answer),'outside selected pool');
   frequencies.set(q.key,(frequencies.get(q.key)||0)+1);
   assert(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<=2500);
  }
+ if(process.env.FF_TEST_APP_MATH&&require('../scripts/content-definitions.js').practiceAllocation(settings.activity,settings.level)&&settings.mode!=='school'){sequences++;return;}
  for(let i=0;i+size<=list.length;i+=size)assert.equal(new Set(list.slice(i,i+size).map(p=>p.key)).size,size,'repeat before pool exhausted');
  const counts=pool.map(g=>frequencies.get(g.key)||0);
  assert(Math.max(...counts)-Math.min(...counts)<=1,'uneven frequency');
@@ -67,4 +69,4 @@ assert.throws(()=>createQuestionSource({mode:'quick'},rng(1),[]));
 const settings={activity:'squares',level:0,mode:'free'},source=createQuestionSource(settings,rng(11));
 const stream=Array.from({length:5},()=>Array.from({length:10},()=>source.next())).flat();
 for(let i=3;i<stream.length;i++)assert(!stream.slice(i-3,i).some(p=>p.key===stream[i].key));
-console.log(`PASS: ${sequences} seeded sequences; all 40 activity/level pools, nine School tables, tiny pools 1–4, coverage, balanced counts, three-intervening-fact spacing, varied order and stream boundaries.`);
+console.log(`PASS: ${sequences} seeded sequences; all 40 activity/level pools, nine School tables, tiny pools 1–4, validity throughout; balanced counts/three-family spacing for unchanged scopes; new allocation/spacing tested in practice-generator.cjs.`);

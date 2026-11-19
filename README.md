@@ -18,6 +18,12 @@ See the [v6.2 release notes](docs/v6.2-release-notes.md), [final automated regre
 
 ## Features
 
+The local v6.3 candidate has completed [full automated regression](docs/v6.3-local-regression.md). Physical acceptance remains pending; use the [Windows Chrome / iPhone Safari / iPhone Chrome checklist](docs/v6.3-device-checklist.md) and its synthetic test learners. The owner authorized its [Netlify Branch Deploy](https://v6-3-development--factflight-preview.netlify.app/) for device testing. Confirm the deploy matches the development branch head before testing; v6.3 is not a production release.
+
+Local v6.3 also includes mastery menu trophies and optional per-learner **Focus on unmastered practice**, off by default. Parents can allow one review flight; missed-fact review stays available. These preferences are separate from learner backups. See [local focus verification](docs/v6.3-focus-verification.md); physical-device acceptance is pending and nothing is released.
+
+Local v6.3 development now includes the reviewed Progress dashboard structure, with separate readiness and results, synthetic fixtures, and preserved learner backup formats. It is not released; see [local dashboard verification and pending review](docs/v6.3-progress-verification.md).
+
 Version 6.2.0 adds Parent corner → Disable microphone, covering all learners and Guest in this browser, with Parent restricted voice choices and typed/touch fallback. It persists across reloads but is not a PIN lock or a device-wide browser permission. Other browsers and cleared website data are separate. The owner accepted the parent restriction. The earlier microphone cleanup and audio-session workaround failed iPhone release testing. Version 6.2.0 restores continuous iOS recognition without per-answer cues or audio-session overrides; the owner reports that the amber indicator clears, but retry worked only about one in six attempts. The owner subsequently accepted microphone checks and keypad fallback; this does not establish that iOS retry reliability has improved. See the [local recovery verification and iPhone checklist](docs/v6.2-continuous-voice-verification.md).
 
 The core math and family features below remain available in v6.1.0 alongside the improvements listed above.
@@ -114,9 +120,17 @@ The owner has authorized this candidate for the existing v6.2 Branch Deploy; ver
 
 ## Planned Enhancements
 
+**v6.3 planning is expanded:** intentional question mix, a quick and friendly Progress dashboard, explainable readiness trophies and optional parent focus controls join division families, multiplication tables through 12 and grouped menus. The owner accepted the [rules and synthetic acceptance examples](docs/v6.3-rules-specification.md). The Progress interface must follow the privately reviewed Learner Stats Review Mock Dashboard, recreated with synthetic fixtures. These features are not released. The question-mix, chosen-family, grouped-menu, Progress dashboard, menu-trophy and parent-focus increments are implemented locally. Full local regression has passed; physical-device acceptance remains pending. Local development branch: `v6.3-development`; the first shared calculation foundation is now owner-authorized, implemented and [locally tested](docs/v6.3-foundation-verification.md), with content definitions now supporting the local generator; shared reporting/readiness now power Progress, menu trophies and optional focus restrictions. The family extension below adds explicitly versioned new records while preserving existing history.
+
+The local v6.3 family increment adds multiplication tables and division divisors 1–12, with explicit other-factor/answer ranges through 10 or 12. Repeat, Next Table(s)/Divisor(s), preferences and backup readers support these scopes. Existing backups remain readable without record rewrites; backups containing new scopes require v6.3. School Test is unchanged. See [family increment verification](docs/v6.3-families-verification.md). This is not released.
+
+Local navigation follows Math → Operations & Facts → all eight activity tiles directly, with no intervening category click. Quick Practice opens those eight activities directly; saved Quick and result-repeat shortcuts remain direct. Future areas are compact Coming Soon notes. See [grouped-menu verification](docs/v6.3-grouped-menus-verification.md). School Test and backup formats are unchanged by this navigation increment.
+
+The local draft [educator and parent guide: What Children Practice](docs/what-children-practice.md) explains all eight activities and Levels 1–5, with reproducible released/local measured mix graphs and repetition tradeoffs. It contains synthetic audit data only. The approved mix is implemented locally with temporary carryover; it is not published. See the [generator verification record](docs/v6.3-generator-verification.md).
+
 [View the detailed release roadmap](ROADMAP.md#5-release-roadmap). The graphic shows v6.2 Available Now, including the existing v6.1 core features, and v6.3 onward Coming Soon. Planned sequence does not promise release dates.
 
-![Fact Flight roadmap: v6.2.0 available now with mobile bottom actions, missed-fact review, per-table progress, parent microphone controls and safer saving. v6.1 core features remain included. v6.3–v6.7 are Coming Soon; family backups and offline practice have no assigned release.](docs/images/fact-flight-roadmap-v6.2.0.png)
+![Fact Flight roadmap: v6.2.0 available now with mobile bottom actions, missed-fact review, per-table progress, parent microphone controls and safer saving. v6.1 core features remain included. v6.3 adds planned practice quality, clearer Progress, readiness and parent focus alongside division families, tables through 12 and grouped menus. v6.3–v6.7 are Coming Soon; family backups and offline practice have no assigned release.](docs/images/fact-flight-roadmap-v6.3-planning.png)
 
 - Full-family backups and deliberate assignment of Previous progress
 - Offline caching and update notices

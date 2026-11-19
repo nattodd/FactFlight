@@ -16,6 +16,7 @@ function check(settings,pool,seed){
  checks++;
 }
 for(const activity of Object.keys(math.activities))for(let level=0;level<5;level++)for(let seed=1;seed<=5;seed++){
+ if([1,2].includes(level))continue; // Changed scope carryover is tested in practice-generator.cjs.
  const settings={activity,level};check(settings,math.questionPool(settings),seed);
 }
 for(let size=1;size<=4;size++)for(let seed=1;seed<=5;seed++)check({activity:'squares',level:0},math.questionPool({activity:'squares',level:0}).slice(0,size),seed);

@@ -4,7 +4,7 @@
 // Actual public navigation and profile persistence are exercised by menu-integration.cjs
 // and profile-integration.cjs; legacy save assertions here are not profile-storage evidence.
 module.exports = function engineFixture(buffer) {
- return buffer.toString('utf8').replace('<script src="scripts/profile-store.js"></script><script src="scripts/profiles.js"></script>', '').replace('<script src="scripts/menus.js"></script>', `<style>
+ return buffer.toString('utf8').replace(/<script src="scripts\/(?:profile-store|profiles|practice-focus)\.js"><\/script>/g, '').replace('<script src="scripts/menus.js"></script>', `<style>
  .legacy-settings{display:block!important}.focus-session .legacy-settings{display:none!important}
  #practiceView{grid-template-columns:285px minmax(0,1fr)}.focus-session #practiceView{display:block}
  @media(max-width:900px){#practiceView{grid-template-columns:220px minmax(0,1fr)}}

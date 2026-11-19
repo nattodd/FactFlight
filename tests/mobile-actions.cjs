@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const root=path.resolve(__dirname,'..'),output=process.env.FF_TEST_OUTPUT||require('node:os').tmpdir();fs.mkdirSync(output,{recursive:true});
-const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
+const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/scripts/practice-focus.js':'scripts/practice-focus.js','/scripts/practice-reports.js':'scripts/practice-reports.js','/scripts/practice-readiness.js':'scripts/practice-readiness.js','/scripts/progress-dashboard.js':'scripts/progress-dashboard.js','/styles/progress.css':'styles/progress.css','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/scripts/activity-registry.js':'scripts/activity-registry.js','/scripts/family-practice.js':'scripts/family-practice.js','/scripts/content-definitions.js':'scripts/content-definitions.js','/scripts/practice-generator.js':'scripts/practice-generator.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
 const results=[],errors=[];let browser,url;
 async function test(name,fn){if(process.env.FF_TEST_FILTER&&!name.includes(process.env.FF_TEST_FILTER))return;try{await fn();results.push({name,status:'PASS'})}catch(e){results.push({name,status:'FAIL',error:e.stack})}console.log(JSON.stringify(results.at(-1)))}
 async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator("[data-create-profile]").click();await p.locator("#nickname").fill("Test learner");await p.locator("#profileForm button").click();await p.locator("[data-quick]").waitFor();return [c,p]}
@@ -12,7 +12,7 @@ async function choose(p,{activity='addition',mode='quick',view='focus',input='ke
  await p.locator('#homeNav').click();
  if(mode==='school'){await p.locator('[data-math]').click();await p.locator('[data-school]').click();await p.locator(`[data-table="${table}"]`).click()}
  else {
-  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await p.locator(`[data-activity="${activity}"]`).click();
+  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await require('./menu-route.cjs')(p,activity);
   if(mode!=='quick')await p.locator(`[data-mode="${mode}"]`).click();
   await p.locator(`[data-level="${level}"]`).click();if(mode!=='free')await p.locator(`[data-count="${count}"]`).click();
  }
@@ -40,10 +40,10 @@ async function dock(p,selector){
   const [c,p]=await page({viewport:{width,height},hasTouch:true,isMobile:true});
   await p.locator('[data-quick]').click();await dock(p,'#menuView .bottom-actions');
   assert.equal(await p.locator('[data-back]').count(),1);
-  await p.locator('[data-activity=multiplication]').click();await dock(p,'#menuView .bottom-actions');
+  await require('./menu-route.cjs')(p,'multiplication');await dock(p,'#menuView .bottom-actions');
   await p.locator('[data-selection=tables]').click();await p.locator('[data-fact-table="2"]').click();
   assert(await p.locator('[data-next]').isDisabled());
-  assert((await p.locator('#menuView .action-summary').innerText()).includes('Choose at least one table'));
+  assert((await p.locator('#menuView .action-summary').innerText()).includes('Choose at least one family'));
   await p.locator('[data-fact-table="3"]').click();await p.locator('[data-fact-table="9"]').click();
   await p.locator('[data-next]').click();await dock(p,'#menuView .bottom-actions');
   await p.locator('[data-back]').click();assert(await p.locator('[data-next]').isVisible());
@@ -58,12 +58,12 @@ async function dock(p,selector){
   assert.equal(await p.locator('#again').count(),1);assert.equal(await p.locator('#nextTables').count(),1);
   await p.screenshot({path:path.join(output,'actions-results-'+width+'.png')});
   await p.locator('#nextTables').click();assert.deepEqual(await p.evaluate(()=>session.selection.tables),[4,10]);
-  await finish(p);await dock(p,'#resultsView .bottom-actions');assert.equal(await p.locator('#nextTables').count(),0);
+  await finish(p);await dock(p,'#resultsView .bottom-actions');assert.equal(await p.locator('#nextTables').count(),1);await p.locator('#nextTables').click();assert.deepEqual(await p.evaluate(()=>session.selection.families||session.selection.tables),[5,11]);await finish(p);await p.locator('#nextTables').click();assert.deepEqual(await p.evaluate(()=>session.selection.families||session.selection.tables),[6,12]);await finish(p);assert.equal(await p.locator('#nextTables').count(),0);
   await p.locator('#again').click();assert.equal(await p.evaluate(()=>phase),'running');await c.close();
  });
  await test('Keyboard editing, landscape fallback, desktop Back',async()=>{
   const [c,p]=await page({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
-  await p.locator('[data-quick]').click();await p.locator('[data-activity=addition]').click();await p.locator('[data-next]').click();
+  await p.locator('[data-quick]').click();await require('./menu-route.cjs')(p,'addition');await p.locator('[data-next]').click();
   await p.locator('#menuView summary').click();await p.locator('#target').fill('3');
   await p.waitForFunction(()=>!document.querySelector('#menuView .bottom-actions').classList.contains('is-docked'));
   await p.setViewportSize({width:844,height:390});await p.locator('#target').blur();
@@ -77,7 +77,7 @@ async function dock(p,selector){
  });
  await test('Large text and long table summary',async()=>{
   const [c,p]=await page({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
-  await p.locator('[data-quick]').click();await p.locator('[data-activity=multiplication]').click();await p.locator('[data-selection=tables]').click();
+  await p.locator('[data-quick]').click();await require('./menu-route.cjs')(p,'multiplication');await p.locator('[data-selection=tables]').click();
   for(const n of [1,3,4,5,6,7,8,9,10])await p.locator('[data-fact-table="'+n+'"]').click();
   await p.addStyleTag({content:'.bottom-actions *{font-size:24px!important}'});
   await dock(p,'#menuView .bottom-actions');await p.locator('[data-next]').click();await dock(p,'#menuView .bottom-actions');
@@ -104,7 +104,7 @@ async function dock(p,selector){
 
  await test('Dock adapts to resizing, focus navigation and dark theme without duplicated controls',async()=>{
   const [c,p]=await page({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
-  await p.locator('[data-math]').click();await p.locator('[data-activity=division]').click();
+  await p.locator('[data-math]').click();await require('./menu-route.cjs')(p,'division');
   await dock(p,'#menuView .bottom-actions');
   await p.locator('[data-mode=timed]').click();await dock(p,'#menuView .bottom-actions');
   await p.locator('[data-minutes="5"]').click();

@@ -1,0 +1,41 @@
+.progress-dashboard {--pd-border:#ded8ca;--pd-blue:#eaf5fa;--pd-yellow:#fff5d8}
+.progress-dashboard .pd-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0}
+.progress-dashboard .pd-card{background:var(--pd-blue);border:1px solid var(--pd-border);border-radius:16px;padding:22px;min-width:0}
+.progress-dashboard .pd-card b,.progress-dashboard .pd-card strong{display:block;font-weight:800}
+.progress-dashboard .pd-card b{font-size:clamp(15px,2vw,24px)}
+.progress-dashboard .pd-card strong{font-size:clamp(20px,3vw,32px);margin-top:12px;overflow-wrap:anywhere}
+.progress-dashboard details{border:1px solid var(--pd-border);border-radius:16px;margin:12px 0;background:var(--card);overflow:hidden}
+.progress-dashboard summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;padding:18px;min-height:60px;font-weight:800}
+.progress-dashboard summary::-webkit-details-marker{display:none}
+.progress-dashboard summary::after{content:'+';margin-left:auto;font-size:24px;flex-shrink:0}
+.progress-dashboard details[open]>summary::after{content:'−'}
+.progress-dashboard summary:focus-visible{outline:3px solid #087fba;outline-offset:-4px}
+.progress-dashboard summary small{display:block;font-weight:400;font-size:14px;margin-top:5px}
+.progress-dashboard .pd-primary>summary{min-height:104px;background:var(--pd-blue);font-size:24px}
+.progress-dashboard #pdMastery>summary{background:var(--pd-yellow)}
+.progress-dashboard .pd-icon{font-size:30px}
+.progress-dashboard .pd-body{padding:0 18px 18px}
+.progress-dashboard .pd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.progress-dashboard .pd-grid>details{margin:0;min-width:0}
+.progress-dashboard .pd-grid>details[open]{grid-column:1 / -1}
+.progress-dashboard .pd-grid>details>summary{height:118px;box-sizing:border-box}
+.progress-dashboard .pd-status{font-size:14px;font-weight:700;display:block;margin-top:6px}
+.progress-dashboard .pd-status.ready{color:#24642c}.progress-dashboard .pd-status.working-on{color:#825500}.progress-dashboard .pd-status.needs-work{color:#a33c3c}
+.progress-dashboard .pd-status.not-tried{color:#555;background:repeating-linear-gradient(135deg,#e5e5e5 0 6px,#fff 6px 9px);border-radius:4px;padding:3px 6px}
+.progress-dashboard progress{width:100%;height:12px;accent-color:#44854c;display:block;margin:8px 0}
+.progress-dashboard .pd-filters{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}
+.progress-dashboard .pd-filters label{flex:1 1 140px;min-width:0;font-weight:700}
+.progress-dashboard .pd-filters select{display:block;width:100%;margin-top:6px}
+.progress-dashboard .pd-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:14px}
+.progress-dashboard .pd-metrics div{background:var(--active);border-radius:8px;padding:9px}
+.progress-dashboard .pd-metrics dt{font-weight:700}.progress-dashboard .pd-metrics dd{margin:4px 0 0}
+.progress-dashboard .pd-collapse{margin-top:14px;min-height:44px}
+.progress-dashboard table{font-size:14px}.progress-dashboard .tablewrap{max-width:100%;overflow:auto}
+.progress-dashboard .pd-note{font-size:14px;line-height:1.5}
+.progress-dashboard .pd-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+@media(max-width:600px){.progress-dashboard .pd-cards{gap:6px}.progress-dashboard .pd-card{padding:13px 8px;min-height:112px}.progress-dashboard .pd-grid{grid-template-columns:1fr}.progress-dashboard .pd-body{padding:0 10px 12px}.progress-dashboard summary{padding:14px}.progress-dashboard .pd-primary>summary{font-size:21px}.progress-dashboard .pd-card b{min-height:40px}.progress-dashboard .pd-card strong{margin-top:6px}}
+
+[data-theme="dark"] .progress-dashboard{--pd-border:var(--line);--pd-blue:#233c42;--pd-yellow:#3c3020}
+[data-theme="dark"] .progress-dashboard .pd-status.ready{color:#b9f2be}[data-theme="dark"] .progress-dashboard .pd-status.working-on{color:#fcd873}[data-theme="dark"] .progress-dashboard .pd-status.needs-work{color:#ffb4bc}
+
+.progress-dashboard{font-family:var(--font-ui)}.progress-dashboard summary{color:var(--ink)}

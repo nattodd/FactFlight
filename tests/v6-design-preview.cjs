@@ -40,12 +40,12 @@ const test=async(name,fn)=>{try{await fn();results.push({name,status:'PASS'})}ca
  await test('All activity levels produce valid illustrative answers',async()=>{
   assert(await p.evaluate(()=>{for(const a of Object.keys(activities))for(let l=0;l<5;l++){config={...config,activity:a,level:l,mode:'quick'};const source=createQuestionSource(config);for(let i=0;i<60;i++){const q=source.next();if(!Number.isInteger(q.answer)||q.answer<0||q.answer>2500)return false;}}return true}));
   for(const activity of ['addition','subtraction','division','bonds','doubles','halves','squares','multiplication']){
-   await p.locator(`[data-activity="${activity}"]`).click();await p.locator('#level').selectOption('4');assert.equal(await p.locator('#level').inputValue(),'4');await p.locator('#app [data-go=home]').click();
+   await require('./menu-route.cjs')(p,activity);await p.locator('#level').selectOption('4');assert.equal(await p.locator('#level').inputValue(),'4');await p.locator('#app [data-go=home]').click();
   }
  });
  await test('Practice again randomizes identical settings across all eight activities',async()=>{
   for(const activity of ['multiplication','addition','subtraction','division','bonds','doubles','halves','squares']){
-   await p.locator(`[data-activity="${activity}"]`).click();
+   await require('./menu-route.cjs')(p,activity);
    await p.locator('#level').selectOption('2');await p.locator('#count').selectOption('20');
    await p.locator('[data-action=start]').click();
    const first=await p.evaluate(()=>({config:flight.config,keys:flight.items.map(q=>q.key),text:flight.items.map(q=>q.text)}));
@@ -61,8 +61,8 @@ const test=async(name,fn)=>{try{await fn();results.push({name,status:'PASS'})}ca
   }
  });
  await test('Challenge timeout with fake clock; free practice adds a batch',async()=>{
-  await p.clock.install();await p.locator('[data-activity=addition]').click();await p.locator('#mode').selectOption('challenge');await p.locator('#seconds').selectOption('60');await p.locator('[data-action=start]').click();await p.clock.fastForward(61000);assert.equal(await p.evaluate(()=>lastResult.reason),'Time’s up');
-  await p.locator('#app [data-go=home]').click();await p.locator('[data-activity=addition]').click();await p.locator('#mode').selectOption('free');await p.locator('[data-action=start]').click();for(let i=0;i<10;i++)await answer();assert.equal(await p.evaluate(()=>flight.items.length),20);await p.locator('[data-action=leave]').click();await p.locator('[data-action=finish]').click();
+  await p.clock.install();await require('./menu-route.cjs')(p,'addition');await p.locator('#mode').selectOption('challenge');await p.locator('#seconds').selectOption('60');await p.locator('[data-action=start]').click();await p.clock.fastForward(61000);assert.equal(await p.evaluate(()=>lastResult.reason),'Time’s up');
+  await p.locator('#app [data-go=home]').click();await require('./menu-route.cjs')(p,'addition');await p.locator('#mode').selectOption('free');await p.locator('[data-action=start]').click();for(let i=0;i<10;i++)await answer();assert.equal(await p.evaluate(()=>flight.items.length),20);await p.locator('[data-action=leave]').click();await p.locator('[data-action=finish]').click();
  });
  await test('Sample export/import review and memory reset',async()=>{
   await p.locator('nav [data-go=settings]').click();const wait=p.waitForEvent('download');await p.locator('[data-action=export]').click();const d=await wait;const sample=JSON.parse(fs.readFileSync(await d.path(),'utf8'));assert(sample.notAnAppBackup);
@@ -80,14 +80,14 @@ const test=async(name,fn)=>{try{await fn();results.push({name,status:'PASS'})}ca
   for(const [w,h] of [[320,568],[844,390]]){
    const c=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,isMobile:true});const q=await c.newPage();q.on('pageerror',e=>errors.push(e.message));await q.goto(url);
    for(const activity of ['addition','subtraction','multiplication','division','bonds','doubles','halves','squares']){
-    await q.locator(`[data-activity="${activity}"]`).click();await q.locator('#level').selectOption('4');await q.locator('[data-action=start]').click();
+    await require('./menu-route.cjs')(q,activity);await q.locator('#level').selectOption('4');await q.locator('[data-action=start]').click();
     assert(await q.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${activity}: overflow`);
     const finish=await q.locator('[data-action=leave]').boundingBox();assert(finish.y+finish.height<=h,`${activity}: finish hidden`);
     await q.locator('[data-action=leave]').click();await q.locator('[data-action=finish]').click();await q.locator('#app [data-go=home]').click();
    }
    await c.close();
   }
-  await p.locator('[data-activity=squares]').click();await p.locator('#level').selectOption('4');await p.locator('#mode').selectOption('challenge');await p.locator('#count').selectOption('30');await p.locator('#seconds').selectOption('0');await p.locator('[data-action=start]').click();
+  await require('./menu-route.cjs')(p,'squares');await p.locator('#level').selectOption('4');await p.locator('#mode').selectOption('challenge');await p.locator('#count').selectOption('30');await p.locator('#seconds').selectOption('0');await p.locator('[data-action=start]').click();
   assert(await p.evaluate(()=>flight.items.some(q=>q.answer===2500)));
   for(let i=0;i<30;i++)await answer();assert.equal(await p.evaluate(()=>lastResult.items.filter(q=>q.status==='correct').length),30);
   await p.locator('#app [data-go=home]').click();

@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const root=path.resolve(__dirname,'..'),output=process.env.FF_TEST_OUTPUT||require('node:os').tmpdir();fs.mkdirSync(output,{recursive:true});
-const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
+const server=http.createServer((req,res)=>{const files={'/scripts/profile-store.js':'scripts/profile-store.js','/scripts/profiles.js':'scripts/profiles.js','/scripts/practice-focus.js':'scripts/practice-focus.js','/scripts/practice-reports.js':'scripts/practice-reports.js','/scripts/practice-readiness.js':'scripts/practice-readiness.js','/scripts/progress-dashboard.js':'scripts/progress-dashboard.js','/styles/progress.css':'styles/progress.css','/':'index.html','/scripts/menus.js':'scripts/menus.js','/styles/menus.css':'styles/menus.css','/scripts/math-activities.js':'scripts/math-activities.js','/scripts/activity-registry.js':'scripts/activity-registry.js','/scripts/family-practice.js':'scripts/family-practice.js','/scripts/content-definitions.js':'scripts/content-definitions.js','/scripts/practice-generator.js':'scripts/practice-generator.js','/styles/brand.css':'styles/brand.css','/assets/brand/horizontal.svg':'assets/brand/horizontal.svg'};const f=files[req.url];if(!f){res.writeHead(404);return res.end()}res.setHeader('Content-Type',f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(path.join(root,f)))});
 const results=[],errors=[];let browser,url;
 async function test(name,fn){if(process.env.FF_TEST_FILTER&&!name.includes(process.env.FF_TEST_FILTER))return;try{await fn();results.push({name,status:'PASS'})}catch(e){results.push({name,status:'FAIL',error:e.stack})}console.log(JSON.stringify(results.at(-1)))}
 async function page(options={}){const c=await browser.newContext(options),p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator("[data-create-profile]").click();await p.locator("#nickname").fill("Test learner");await p.locator("#profileForm button").click();await p.locator("[data-quick]").waitFor();return [c,p]}
@@ -12,7 +12,7 @@ async function choose(p,{activity='addition',mode='quick',view='focus',input='ke
  await p.locator('#homeNav').click();
  if(mode==='school'){await p.locator('[data-math]').click();await p.locator('[data-school]').click();await p.locator(`[data-table="${table}"]`).click()}
  else {
-  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await p.locator(`[data-activity="${activity}"]`).click();
+  await p.locator(mode==='quick'?'[data-quick]':'[data-math]').click();await require('./menu-route.cjs')(p,activity);
   if(mode!=='quick')await p.locator(`[data-mode="${mode}"]`).click();
   await p.locator(`[data-level="${level}"]`).click();if(mode!=='free')await p.locator(`[data-count="${count}"]`).click();
  }
@@ -144,7 +144,7 @@ async function ended(p){await p.evaluate(()=>{testRecognition.ended=true;testRec
  const [c,p]=await setup(false);await p.locator('#cancelMic').click();await p.locator('#homeNav').click();await p.locator('[data-nav=parents]').click();await p.locator('#disableMicrophone').check();
  assert.equal(await p.evaluate(()=>localStorage.getItem(microphoneRestrictionKey)),'true');
  const before=await p.evaluate(()=>instances.length);await p.evaluate(()=>{connectMic()});assert.equal(await p.evaluate(()=>instances.length),before);
- await p.locator('#homeNav').click();await p.locator('[data-quick]').click();await p.locator('[data-activity=addition]').click();await p.locator('[data-next]').click();assert(await p.locator('[data-input=voice]').isDisabled());assert((await p.locator('[data-input=voice]').innerText()).includes('Parent restricted'));
+ await p.locator('#homeNav').click();await p.locator('[data-quick]').click();await require('./menu-route.cjs')(p,'addition');await p.locator('[data-next]').click();assert(await p.locator('[data-input=voice]').isDisabled());assert((await p.locator('[data-input=voice]').innerText()).includes('Parent restricted'));
  await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');await p.locator('#end').click();await p.reload();assert(await p.evaluate(()=>microphoneRestricted()));
  await p.locator('[data-learner=guest]').click();await p.locator('[data-nav=parents]').click();assert(await p.locator('#disableMicrophone').isChecked());await p.locator('#disableMicrophone').uncheck();assert.equal(await p.evaluate(()=>microphoneRestricted()),false);await c.close();
  });
@@ -158,7 +158,7 @@ async function ended(p){await p.evaluate(()=>{testRecognition.ended=true;testRec
  });
  await test('Parent restriction covers missed review and remembered Quick start without touching history',async()=>{
  const [c,p]=await setup(false);await speech(p,'ready',{end:false});await p.evaluate(()=>submit(9999,'9999','voice'));await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus')?.textContent.startsWith('Saved'));
- const history=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#seeProgress').click();await p.locator('#progressReview').click();await p.evaluate(()=>setMicrophoneRestriction(true));assert(await p.locator('[data-review-input=voice]').isDisabled());assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),history);
+ const history=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#seeProgress').click();await p.locator('#pdReviewFacts').evaluate(e=>e.open=true);await p.locator('#progressReview').click();await p.evaluate(()=>setMicrophoneRestriction(true));assert(await p.locator('[data-review-input=voice]').isDisabled());assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),history);
  await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');await p.locator('#end').click();await p.locator('#resultHome').click();await p.locator('[data-quick-start]').click();assert.equal(await p.evaluate(()=>session.input),'keyboard');await c.close();
  });
  await test('Cancelled voice cannot affect another learner or Guest',async()=>{
