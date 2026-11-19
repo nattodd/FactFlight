@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Dark-mode Progress metric cards match the warm Mastery/Results panels; the Results chart icon uses a transparent background so its bars remain visible in both themes.
 - School Test table selection uses equal-sized choices with reserved mastery-badge space and three columns on phones; the test itself is unchanged.
 - Mastery activity summaries distinguish facts mastery from timed School Test achievements; numbered levels and collapsed family-range sections show their own mastered counts.
 - Completed flights show a quiet first-mastery card for newly qualified levels or chosen families, with a link to readiness details. Prior achievements are derived from retained learner history to suppress repeats and regained-mastery notices; School Tests use a separate timed-achievement message. No backup fields are added.

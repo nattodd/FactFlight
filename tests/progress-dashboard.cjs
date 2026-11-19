@@ -18,6 +18,10 @@ let browser;const errors=[];
   for(const theme of ['light','dark']){
    await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
    const styles=await p.locator('#pdMastery>summary,#pdResults>summary').evaluateAll(es=>es.map(e=>{const s=getComputedStyle(e);return [s.backgroundColor,s.color,s.fontSize,s.padding,s.minHeight]}));assert.deepEqual(styles[0],styles[1]);
+   assert.equal(await p.locator('.pd-results-icon rect').evaluate(e=>getComputedStyle(e).fill),'none');
+   assert.equal(await p.locator('.pd-results-icon path').evaluate(e=>getComputedStyle(e).stroke),styles[0][1]);
+   if(theme==='dark')assert.equal(await p.locator('.pd-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),styles[0][0]);
+
    if(process.env.FF_TEST_OUTPUT)await p.locator('.progress-dashboard').screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`progress-warm-${theme}-${width}.png`)});
   }
   await p.evaluate(()=>document.documentElement.dataset.theme='light');

@@ -34,7 +34,7 @@
 .progress-dashboard .pd-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 @media(max-width:600px){.progress-dashboard .pd-cards{gap:6px}.progress-dashboard .pd-card{padding:13px 8px;min-height:112px}.progress-dashboard .pd-grid{grid-template-columns:1fr}.progress-dashboard .pd-body{padding:0 10px 12px}.progress-dashboard summary{padding:14px}.progress-dashboard .pd-primary>summary{font-size:21px}.progress-dashboard .pd-card b{min-height:40px}.progress-dashboard .pd-card strong{margin-top:6px}}
 
-[data-theme="dark"] .progress-dashboard{--pd-border:var(--line);--pd-yellow:#3c3020;--pd-cream:#302b22}
+[data-theme="dark"] .progress-dashboard{--pd-border:var(--line);--pd-yellow:#3c3020;--pd-cream:var(--pd-yellow)}
 [data-theme="dark"] .progress-dashboard .pd-status.ready{color:#b9f2be}[data-theme="dark"] .progress-dashboard .pd-status.working-on{color:#fcd873}[data-theme="dark"] .progress-dashboard .pd-status.needs-work{color:#ffb4bc}
 
 .progress-dashboard{font-family:var(--font-ui)}.progress-dashboard summary{color:var(--ink)}
