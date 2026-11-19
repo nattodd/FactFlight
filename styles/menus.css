@@ -157,11 +157,11 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 #menuView .focus-notice button{margin:4px}
 /* Family choices reserve room for readiness without squeezing its label. */
 #menuView .table-choices{grid-auto-rows:1fr;align-items:start}
-#menuView .table-choices [data-fact-table]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:96px;padding:10px 6px}
+#menuView .table-choices :is([data-fact-table],[data-table]){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:96px;padding:10px 6px}
 #menuView .table-choices .menu-trophy{white-space:nowrap;line-height:1.35}
 #menuView .table-choices .menu-trophy .trophy-symbol{display:block}
 #menuView .table-choices .focus-choice{max-width:none}
-#menuView .table-choices .focus-choice>[data-fact-table]{flex:1}
+#menuView .table-choices .focus-choice>:is([data-fact-table],[data-table]){flex:1}
 #menuView .table-choices .focus-allow{overflow-wrap:anywhere}
 @media(max-width:600px){#menuView .table-choices{grid-template-columns:repeat(3,minmax(0,1fr))}}
 

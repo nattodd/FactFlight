@@ -25,6 +25,11 @@ let browser;const errors=[];
   await p.locator('#pdMastery>summary').focus();await p.keyboard.press('Enter');await p.locator('#pdMastery-squares').waitFor();
   assert((await p.locator('#pdReady-squares-2>summary').textContent()).includes('Mastered'));assert(!(await p.locator('#pdReady-addition-2>summary').textContent()).includes('Mastered'));
   assert((await p.locator('#pdMastery-subtraction>summary').textContent()).includes('Needs work'));
+  const multiplicationSummary=await p.locator('#pdMastery-multiplication>summary').innerText();
+  assert(multiplicationSummary.includes('Facts mastery:'));assert(multiplicationSummary.includes('Timed School Tests: 0 / 9'));
+  for(const activity of ['multiplication','division'])for(const range of [10,12])assert((await p.locator(`#pdFamilies-${activity}-${range}>summary`).textContent()).includes('/ 12 mastered'));
+  assert(await p.locator('#pdMastery-multiplication>summary').evaluate(e=>{const r=e.getBoundingClientRect();return [...e.querySelectorAll('small')].every(x=>x.getBoundingClientRect().bottom<=r.bottom)}));
+
   const dimensions=await p.locator('#pdMasteryContent>.pd-grid>details>summary').evaluateAll(es=>es.map(e=>[e.getBoundingClientRect().width,e.getBoundingClientRect().height]));assert(dimensions.every(x=>x[0]===dimensions[0][0]&&x[1]===dimensions[0][1]));
   await p.locator('#pdMastery-addition>summary').click();
   assert(await p.locator('#pdMastery-addition').evaluate(e=>Math.abs(e.getBoundingClientRect().width-e.parentElement.getBoundingClientRect().width)<1));

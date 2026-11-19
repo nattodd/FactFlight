@@ -27,11 +27,11 @@ async function activityLayout(p,label){
  }
  await p.setViewportSize(viewport);
 }
-async function familyLayout(p,label){
+async function familyLayout(p,label,selector='[data-fact-table]'){
  const viewport=p.viewportSize();
  for(const width of [320,390,1440])for(const theme of ['light','dark']){
   await p.setViewportSize({width,height:900});await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
-  const result=await p.locator('[data-fact-table]').evaluateAll(tiles=>{
+  const result=await p.locator(selector).evaluateAll(tiles=>{
    const heights=[],errors=[];
    for(const tile of tiles){const box=tile.getBoundingClientRect();heights.push(box.height);
     const range=document.createRange();range.selectNodeContents(tile);
@@ -86,7 +86,7 @@ async function finish(p){await p.locator('#end').click();await p.waitForFunction
   await p.locator('.focus-choice').filter({has:p.locator('[data-fact-table="7"]')}).locator('[data-focus-choice]').click();await p.locator('[data-family-range="12"]').click();assert.equal(await p.locator('[data-fact-table="7"]').getAttribute('aria-disabled'),null);await p.locator('[data-family-range="10"]').click();
   assert(await p.locator('[data-focus-remove]').isVisible());assert.equal(await p.locator('[data-fact-table="7"]').getAttribute('aria-pressed'),'true');await p.locator('[data-focus-remove]').click();assert.equal(await p.locator('[data-fact-table="7"]').getAttribute('aria-pressed'),'false');assert.equal(await p.locator('[data-fact-table="8"]').getAttribute('aria-pressed'),'true');
   await choose(p,'division');await p.locator('[data-selection=tables]').click();await p.locator('[data-family-range="12"]').click();assert((await p.locator('[data-fact-table="4"]').textContent()).includes('🏆'));assert.equal(await p.locator('[data-fact-table="4"]').getAttribute('aria-disabled'),'true');
-  await home(p);await p.locator('[data-math]').click();await p.locator('[data-school]').click();assert.equal(await p.locator('[data-table="7"]').getAttribute('aria-disabled'),'true');await p.locator('.focus-choice').filter({has:p.locator('[data-table="7"]')}).locator('[data-focus-choice]').click();await p.locator('[data-next]').click();await p.locator('[data-input=keypad]').click();await p.locator('[data-start]').click();assert.deepEqual(await p.evaluate(()=>[session.table,items.length,flightTimeLimitMs]),[7,60,120000]);await finish(p);
+  await home(p);await p.locator('[data-math]').click();await p.locator('[data-school]').click();await familyLayout(p,'school-mixed-restricted','[data-table]');await p.evaluate(()=>FactFlightFocus.set(false));await home(p);await p.locator('[data-math]').click();await p.locator('[data-school]').click();await familyLayout(p,'school-mixed','[data-table]');await p.evaluate(()=>FactFlightFocus.set(true));await home(p);await p.locator('[data-math]').click();await p.locator('[data-school]').click();assert.equal(await p.locator('[data-table="7"]').getAttribute('aria-disabled'),'true');await p.locator('.focus-choice').filter({has:p.locator('[data-table="7"]')}).locator('[data-focus-choice]').click();await p.locator('[data-next]').click();await p.locator('[data-input=keypad]').click();await p.locator('[data-start]').click();assert.deepEqual(await p.evaluate(()=>[session.table,items.length,flightTimeLimitMs]),[7,60,120000]);await finish(p);
   await p.locator('#seeProgress').click();await p.locator('#pdReviewFacts>summary').click();await p.locator('#reviewActivity').selectOption('squares');await p.locator('#progressReview').click();assert((await p.locator('#menuView').textContent()).includes('Missed-fact review remains available'));await p.locator('[data-review-start]').click();assert.equal(await p.evaluate(()=>session.activity),'review');await finish(p);
   await p.reload();await p.locator(`[data-learner="${id}"]`).click();await parent(p);assert(await p.locator('#focusUnmastered').isChecked());
   await home(p);await p.locator('[data-change-learner]').click();await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill('Other demo');await p.locator('#profileForm button').click();await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));
