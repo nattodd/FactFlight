@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Local Math footer consistency: the Math label appears above the left-aligned Back button using the shared menu action-bar layout.
 - Local mobile action-bar alignment: Back sits on the left of the Math bar, and Continue/Start no longer inherit the narrow-screen top margin that offset them from Back.
 - Local menu consistency: all selectable tile symbols use the brand-yellow background and dark foreground in both themes. Coming Soon and parent-restricted choices retain unavailable styling.
 - Local owner refinement: Math group tiles again use the shared activity-tile sizing and typography. School Test stays below the tiles with normal scrolling; menu framing and deeper tile sizes are preserved. This supersedes the earlier compact Math-tile treatment.
