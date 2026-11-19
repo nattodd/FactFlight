@@ -70,6 +70,22 @@ function activity(flights,id,{ranges=[10],familiesThrough=10}={}){
  const timed=id==='multiplication'?summarize(Array.from({length:9},(_,i)=>evaluate(flights,{kind:'school',activity:id,table:i+2}))):null;
  return {activity:id,levels,families,timed,ready:levels.ready&&families.every(x=>x.ready),version:VERSION};
 }
-const api={VERSION,evaluate,activity};
+// Replay existing evidence to distinguish first readiness from regained readiness.
+// No achievement ledger or backup schema is introduced.
+function firstAchievements(sessions,current){
+ if(!current||current.guest||!current.learnerId||current.reason!=='complete')return [];
+ const flights=reports.normalize(sessions.filter(s=>s.id!==current.id).concat(current),{learnerId:current.learnerId});
+ const fresh=flights.find(f=>f.id===String(current.id));
+ if(!fresh?.completed||!content.validScope(fresh.scope))return [];
+ const scopes=fresh.scope.kind==='families'?fresh.scope.families.map(n=>({...fresh.scope,families:[n]})):[fresh.scope];
+ return scopes.filter(scope=>{
+  const relevant=flights.filter(f=>matches(f.scope,scope));
+  if(!evaluate(relevant,scope).ready)return false;
+  const prior=relevant.filter(f=>f.id!==fresh.id).sort(reports.newest).reverse(),prefix=[];
+  for(const flight of prior){prefix.push(flight);if(evaluate(prefix,scope).ready)return false;}
+  return true;
+ }).map(scope=>structuredClone(scope));
+}
+const api={VERSION,evaluate,activity,firstAchievements};
 if(common)module.exports=api;else root.FactFlightReadiness=api;
 })(globalThis);

@@ -15,6 +15,13 @@ let browser;const errors=[];
   assert.deepEqual(await p.locator('.pd-card strong').allTextContents(),['10','60','1m 48s']);
   const boxes=await p.locator('.pd-card').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top));assert.equal(new Set(boxes).size,1);
   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`progress-dashboard-${width}.png`),fullPage:true});
+  for(const theme of ['light','dark']){
+   await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+   const styles=await p.locator('#pdMastery>summary,#pdResults>summary').evaluateAll(es=>es.map(e=>{const s=getComputedStyle(e);return [s.backgroundColor,s.color,s.fontSize,s.padding,s.minHeight]}));assert.deepEqual(styles[0],styles[1]);
+   if(process.env.FF_TEST_OUTPUT)await p.locator('.progress-dashboard').screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`progress-warm-${theme}-${width}.png`)});
+  }
+  await p.evaluate(()=>document.documentElement.dataset.theme='light');
+
   await p.locator('#pdMastery>summary').focus();await p.keyboard.press('Enter');await p.locator('#pdMastery-squares').waitFor();
   assert((await p.locator('#pdReady-squares-2>summary').textContent()).includes('Mastered'));assert(!(await p.locator('#pdReady-addition-2>summary').textContent()).includes('Mastered'));
   assert((await p.locator('#pdMastery-subtraction>summary').textContent()).includes('Needs work'));
@@ -28,7 +35,7 @@ let browser;const errors=[];
   if(width>600)assert(await p.locator('#pdMastery-addition').evaluate(e=>e.getBoundingClientRect().width<e.parentElement.getBoundingClientRect().width*.6));
   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`progress-mastery-${width}.png`),fullPage:true});await p.locator('#pdMastery-squares>summary').click();await p.locator('#pdReady-squares-2>summary').click();assert((await p.locator('#pdReady-squares-2').textContent()).includes('29'));await p.locator('[data-collapse="pdReady-squares-2"]').click();assert.equal(await p.locator('#pdReady-squares-2>summary').evaluate(e=>document.activeElement===e),true);
   await p.locator('[data-collapse="pdMastery"]').click();await p.locator('#pdResults>summary').click();
-  assert.equal(await p.locator('.pd-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(125, 211, 233)');
+  assert.equal(await p.locator('.pd-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 249, 230)');
   assert(await p.locator('.pd-metrics>div').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderTopWidth==='1px')));
   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`progress-results-light-${width}.png`),fullPage:true});
   await p.locator('#pdResults-multiplication>summary').click();assert(await p.locator('#pdResults-multiplication').evaluate(e=>Math.abs(e.getBoundingClientRect().width-e.parentElement.getBoundingClientRect().width)<1));await p.locator('#pdTables>summary').click();assert.equal(await p.locator('#pdTables>.pd-body>details').count(),13);await p.locator('#pdHigher>summary').click();assert((await p.locator('#pdHigher').textContent()).includes('16 times table'));assert(!(await p.locator('#pdHigher').textContent()).includes('Mastered'));

@@ -73,11 +73,15 @@ function create(){return `<button class="quiet back" data-profile-cancel>← Bac
 function identity(){return `<div class="learner-identity"><div><strong>${esc(name(active))}'s practice</strong><p>${active==='guest'?'Guest · results are not saved':'Your own learning space'}</p></div><button data-change-learner>Change learner</button></div>`}
 function picker(){refresh();return `<section class="learner-entry"><div class="eyebrow">Results & Stats</div><h1>Whose progress shall we see?</h1><p>Each learner has their own story.</p>${storeError?`<p class="notice" role="alert">${esc(storeError)}</p>`:''}<div class="learners">${family.profiles.map(p=>tile(p,true)).join('')}${active==='guest'?'<button class="learner outline" data-profile-stats="guest"><span class="avatar">☆</span><strong>Guest</strong><span>Temporary results</span></button>':''}<button class="learner outline" data-profile-stats="previous"><span class="avatar" aria-hidden="true">↶</span><strong>Previous progress</strong><span>Before profiles</span></button></div><p class="family-footer">Results remain separate for each learner.</p></section>`}
 function progress(id=active){if(busy()){requestSessionExit();return}if(!id){FlightMenu.profiles('statsPicker');return}viewing=id;history=records(id);renderHistory();show('historyView');window.scrollTo(0,0)}
+const freshAchievements=new Map();
 const engineBegin=begin;
 begin=function(){if(!hasSelection(true)){if(phase==='checking')cancelCheck();FlightMenu.home();return}history=records(active);viewing=active;storageOK=true;engineBegin();session.id=crypto.randomUUID();session.learnerId=active==='guest'?null:active;session.learnerName=name(active);if(active==='guest')session.guest=true;};
 // Engine finish retains its synchronous lifecycle. Durable writes run under a cross-tab lock.
 saveSession=function(record){
  if(record.guest)return;
+ // Capture only a fresh engine completion, before it enters saved history.
+ // A reporting problem must never prevent saving the flight.
+ try{freshAchievements.set(record.id,FactFlightReadiness.firstAchievements(records(record.learnerId),record))}catch{freshAchievements.delete(record.id)}
  const copy=structuredClone(record);unsaved.set(copy.id,copy);saveStates.set(copy.id,'Saving to '+name(copy.learnerId)+'…');
  const writing=Promise.resolve().then(()=>{if(!store)throw Error('Browser storage is unavailable.');return store.save(copy)}).then(()=>{unsaved.delete(copy.id);refresh();saveStates.set(copy.id,'Saved to '+name(copy.learnerId)+' on this browser.')}).catch(e=>{saveStates.set(copy.id,'Could not save: '+e.message+' Export this flight before closing.');}).finally(()=>{if($('resultsView').dataset.sessionId===copy.id){const status=$('profileSaveStatus');if(status)status.textContent=saveStates.get(copy.id)}if(session?.id===copy.id)$('saveStatus').textContent=saveStates.get(copy.id);pendingWrites.delete(copy.id)});
  pendingWrites.set(copy.id,writing);
@@ -93,6 +97,23 @@ renderResult=function(s){
  if((s.learnerId||'previous')!==active&&!s.guest)$('again').remove();
  $('seeProgress').textContent=s.guest?'Guest results':'See learner progress';$('seeProgress').onclick=()=>progress(s.guest?'guest':s.learnerId||'previous');
  $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
+ const earned=freshAchievements.get(s.id);freshAchievements.delete(s.id);
+ if(earned?.length){
+  const card=document.createElement('section');card.className='mastery-notification';card.setAttribute('role','status');
+  const names={addition:'Addition',subtraction:'Subtraction',multiplication:'Multiplication',division:'Division',bonds:'Number bonds',doubles:'Doubles',halves:'Halves',squares:'Squares'};
+  const title=earned.every(x=>x.kind==='school')?'New timed achievement':'New mastery achieved';
+  const labels=earned.map(x=>x.kind==='level'?`${names[x.activity]} · Level ${x.level+1}`:x.kind==='school'?`School Test · Table ${x.table}`:`${names[x.activity]} · ${x.activity==='division'?'Divide by':'Table'} ${x.families[0]} · ${x.activity==='division'?'answers':'other factor'} 1–${x.range}`);
+  card.innerHTML=`<div class="mastery-notification-heading"><span aria-hidden="true">🏆</span><h2>${title}</h2></div><ul>${labels.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p>${earned.every(x=>x.kind==='school')?'Your recent tests meet the timed achievement goal.':'Your recent practice meets the readiness goal for '+(earned.length===1?'this choice.':'these choices.')} Well done.</p><button type="button" class="mastery-details">See mastery details →</button>`;
+  $('resultsView').querySelector('h1').after(card);
+  card.querySelector('button').onclick=()=>{
+   progress(s.learnerId);const mastery=$('pdMastery'),scope=earned[0];
+   mastery.addEventListener('toggle',()=>{
+    const id=scope.kind==='level'?`pdReady-${scope.activity}-${scope.level}`:scope.kind==='school'?`pdTimed-${scope.table-2}`:`pdReady-${scope.activity}-${scope.range}-${scope.families[0]-1}`;
+    const target=$(id)||mastery;for(let node=target;node&&node!==$('historyView');node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
+    const summary=target.querySelector('summary');summary.focus({preventScroll:true});summary.scrollIntoView({block:'start'});
+   },{once:true});mastery.open=true;
+  };
+ }
  FlightMenu.resultActions(s);
 };
 renderHistory=function(){

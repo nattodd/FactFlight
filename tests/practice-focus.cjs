@@ -44,6 +44,23 @@ async function familyLayout(p,label){
  }
  await p.setViewportSize(viewport);
 }
+async function parentSettingLayout(p){
+ const viewport=p.viewportSize();
+ for(const width of [320,390,1440])for(const theme of ['light','dark']){
+  await p.setViewportSize({width,height:900});await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+  const layout=await p.locator('.focus-setting').evaluate(label=>{
+   const box=label.getBoundingClientRect(),input=label.querySelector('input').getBoundingClientRect(),text=label.querySelector('strong').getBoundingClientRect();
+   return {gap:text.left-input.right,inputWidth:input.width,height:box.height,fits:text.right<=box.right&&input.left>=box.left};
+  });
+  assert.equal(layout.inputWidth,24);assert(layout.gap>=10&&layout.gap<=14);assert(layout.height>=44&&layout.fits);
+  await p.locator('.focus-setting strong').click();assert(await p.locator('#focusUnmastered').isChecked());
+  if(process.env.FF_TEST_OUTPUT&&width===390)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`parent-setting-${theme}-on.png`),fullPage:true});
+  await p.locator('#focusUnmastered').focus();await p.keyboard.press('Space');assert(!(await p.locator('#focusUnmastered').isChecked()));
+  if(process.env.FF_TEST_OUTPUT&&width===390)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`parent-setting-${theme}-off.png`),fullPage:true});
+ }
+ await p.locator('.focus-setting-details summary').click();assert(await p.locator('.focus-setting-details p').first().isVisible());await p.locator('.focus-setting-details summary').click();
+ await p.setViewportSize(viewport);
+}
 async function finish(p){await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus').textContent.startsWith('Saved'))}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({channel:'chrome',headless:true});
@@ -52,14 +69,14 @@ async function finish(p){await p.locator('#end').click();await p.waitForFunction
   await p.addInitScript(()=>{window.SpeechRecognition=window.webkitSpeechRecognition=class {constructor(){window.focusRecognition=this}start(){this.onstart?.()}stop(){}abort(){}}});
   await p.goto(url);await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill('Focus demo');await p.locator('#profileForm button').click();await p.locator('[data-quick]').waitFor();const id=await seed(p);
   await home(p);await p.locator('[data-quick]').click();await activityLayout(p,'partial');
-  await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));const original=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#focusUnmastered').check();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),original);if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`focus-parent-${width}.png`),fullPage:true});
+  await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));await parentSettingLayout(p);const original=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#focusUnmastered').check();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),original);if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`focus-parent-${width}.png`),fullPage:true});
   await choose(p);assert((await p.locator('[data-level="2"]').textContent()).includes('🏆'));assert.equal(await p.locator('[data-level="2"]').getAttribute('aria-disabled'),'true');assert.equal(await p.locator('[data-level="1"]').getAttribute('aria-disabled'),null);
   await p.locator('[data-level="2"]').dispatchEvent('click');assert.equal(await p.locator('[data-level="0"]').getAttribute('aria-pressed'),'true');
   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`focus-menu-${width}.png`),fullPage:true});
   await p.locator('.focus-choice').filter({has:p.locator('[data-level="2"]')}).locator('[data-focus-choice]').click();await p.locator('[data-next]').click();await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>phase),'running');
   await p.evaluate(()=>{FactFlightFocus.set(false);FactFlightFocus.set(true)});assert.equal(await p.evaluate(()=>phase),'running');await finish(p);
   await p.locator('#again').click();assert(await p.locator('[data-focus-current]').isVisible());assert.notEqual(await p.evaluate(()=>phase),'running');
-  await home(p);await p.locator('[data-quick-start]').click();assert(await p.locator('[data-focus-current]').isVisible());assert.equal(await p.locator('#menuView .review strong').textContent(),'Squares · Level 3');
+  await home(p);assert.equal(await p.locator('[data-quick-start] .menu-trophy').count(),0);assert((await p.locator('.quick-scope').textContent()).includes('Level 3'));assert((await p.locator('.quick-scope .menu-trophy').textContent()).includes('Mastered'));assert.equal(await p.locator('[data-quick-start]').textContent(),'Review choices →');await p.locator('[data-quick-start]').click();assert(await p.locator('[data-focus-current]').isVisible());assert.equal(await p.locator('#menuView .review strong').textContent(),'Squares · Level 3');
   // An alternate engine start must also check the actual selected scope.
   await p.evaluate(()=>{document.getElementById('activity').value='squares';configureActivity();document.getElementById('level').value='2';configuredSelection=null;document.getElementById('inputMode').value='keyboard';document.getElementById('start').click()});assert.notEqual(await p.evaluate(()=>phase),'running');
   await parent(p);await p.locator('#focusUnmastered').uncheck();await choose(p);assert.equal(await p.locator('[data-level="2"]').getAttribute('aria-disabled'),null);await p.locator('[data-level="2"]').click();await p.locator('[data-next]').click();await p.locator('[data-input=voice]').click();await p.locator('[data-start]').click();assert.equal(await p.evaluate(()=>phase),'checking');

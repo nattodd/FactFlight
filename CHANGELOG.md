@@ -9,6 +9,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Completed flights show a quiet first-mastery card for newly qualified levels or chosen families, with a link to readiness details. Prior achievements are derived from retained learner history to suppress repeats and regained-mastery notices; School Tests use a separate timed-achievement message. No backup fields are added.
+- Quick Practice shows mastery beside the remembered level or family selection, keeping the start button clear; mixed selections identify when only some choices are mastered.
+- Progress summary cards use warm cream with clear borders; Results matches the soft-yellow Mastery heading, with readable warm dark-theme equivalents.
+- Parent practice focus uses a tappable checkbox card with an adjacent label, concise help and expandable setting details in both themes.
 - Chosen table/divisor tiles use three columns on narrow screens, equal-height rows and a contained trophy/label stack so mastered labels do not spill across borders.
 - Activity tiles bottom-align mastery trophies and partial-progress labels, with wrapping and natural height for longer text.
 - Local Math footer consistency: the Math label appears above the left-aligned Back button using the shared menu action-bar layout.

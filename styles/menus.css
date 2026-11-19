@@ -181,3 +181,16 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 
 /* Yellow symbol backgrounds consistently identify available menu tiles. */
 #menuView .tile:not(:disabled):not([aria-disabled="true"]):not(.focus-restricted) .icon{background:var(--brand-yellow);color:var(--brand-ink)}
+
+/* Keep the native checkbox close to its label with a generous touch target. */
+#menuView .focus-setting{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--control-line);border-radius:16px;background:var(--card);cursor:pointer}
+#menuView .focus-setting:has(input:checked){background:var(--soft);border-color:var(--accent)}
+#menuView .focus-setting:focus-within{outline:3px solid var(--focus-ring);outline-offset:3px}
+#menuView .focus-setting input{width:24px;height:24px;min-width:24px;min-height:24px;flex:0 0 24px;margin:2px 0 0;padding:0;accent-color:var(--brand-yellow)}
+#menuView .focus-setting>span{min-width:0;line-height:1.4}
+#menuView .focus-setting strong{display:block;font-size:16px}
+#menuView .focus-setting-help{display:block;margin-top:6px;font-size:14px;font-weight:400;color:var(--muted)}
+#menuView .focus-setting-details{margin-top:16px}
+#menuView .focus-setting-details summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}
+
+#menuView .quick-scope .quick-readiness{display:inline-block;margin-left:6px;white-space:nowrap}
