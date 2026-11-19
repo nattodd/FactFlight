@@ -74,9 +74,10 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
   min-width:0;min-height:48px;width:auto;margin:0;padding:10px 14px;
   font-size:16px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;
  }
- #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px}
+ #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px;align-self:stretch}
+ #menuView .bottom-actions button:hover:not(:disabled){transform:none}
  #menuView .bottom-actions .back{grid-column:1;grid-row:3}
- #menuView .bottom-actions .primary{grid-column:2;grid-row:3}
+ #menuView .bottom-actions .primary{grid-column:2;grid-row:3;margin:0;align-self:stretch}
  #resultsView .bottom-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  #resultsView .bottom-actions #again{grid-column:1/-1}
  #resultsView .bottom-actions #nextLevel,#resultsView .bottom-actions #nextTables{grid-column:1/-1}
@@ -168,9 +169,9 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 
 /* Math uses shared tile sizing; retain the compact Back bar. */
 @media(max-width:900px){
- #menuView[data-screen="math"] .bottom-actions.back-only{grid-template-columns:minmax(0,1fr) auto;align-items:center}
- #menuView[data-screen="math"] .bottom-actions.back-only .action-summary{grid-column:1;grid-row:1}
- #menuView[data-screen="math"] .bottom-actions.back-only .back{grid-column:2;grid-row:1}
+ #menuView[data-screen="math"] .bottom-actions.back-only{grid-template-columns:auto minmax(0,1fr);align-items:center}
+ #menuView[data-screen="math"] .bottom-actions.back-only .action-summary{grid-column:2;grid-row:1}
+ #menuView[data-screen="math"] .bottom-actions.back-only .back{grid-column:1;grid-row:1}
 }
 
 @media(max-width:900px){#menuView[data-screen]{min-height:100svh}}

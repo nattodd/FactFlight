@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Local mobile action-bar alignment: Back sits on the left of the Math bar, and Continue/Start no longer inherit the narrow-screen top margin that offset them from Back.
 - Local menu consistency: all selectable tile symbols use the brand-yellow background and dark foreground in both themes. Coming Soon and parent-restricted choices retain unavailable styling.
 - Local owner refinement: Math group tiles again use the shared activity-tile sizing and typography. School Test stays below the tiles with normal scrolling; menu framing and deeper tile sizes are preserved. This supersedes the earlier compact Math-tile treatment.
 - Local compact Math icon correction: Numbers & Counting uses a contained vector 123 icon so font rendering cannot extend the digits beyond the icon border.
