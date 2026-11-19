@@ -144,6 +144,8 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 #menuView .future-math{margin:24px 0;padding:16px 20px;border:1px solid var(--line);border-radius:16px}#menuView .future-math h2{font-size:18px;margin:0 0 8px}#menuView .future-math p{margin:6px 0}
 
 /* Focus preferences never hide the mastered choice or its explanation. */
+#menuView .tile[data-activity]>strong{max-width:100%;overflow-wrap:anywhere}
+#menuView .tile>.activity-status{margin-top:auto;max-width:100%;overflow-wrap:anywhere;flex-shrink:0}
 #menuView .menu-trophy{display:block;color:var(--green);font-size:13px;font-weight:750}
 #menuView .focus-restricted{background:repeating-linear-gradient(135deg,#f3f3f3 0 8px,#dedede 8px 12px);color:var(--ink);opacity:1}
 #menuView [aria-disabled="true"]{cursor:not-allowed}

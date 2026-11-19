@@ -7,6 +7,26 @@ async function seed(p,all=false){const id=await p.evaluate(()=>FlightProfiles.re
 async function home(p){await p.locator('#homeNav').click()}
 async function parent(p){await home(p);await p.locator('[data-nav=parents]').click()}
 async function choose(p,a='squares'){await home(p);await p.locator('[data-quick]').click();await p.locator(`[data-activity=${a}]`).click()}
+async function activityLayout(p,label){
+ const viewport=p.viewportSize();
+ for(const width of [320,390,1440])for(const theme of ['light','dark']){
+  await p.setViewportSize({width,height:900});
+  await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+  const failures=await p.locator('[data-activity]').evaluateAll(tiles=>tiles.flatMap(tile=>{
+   const status=tile.querySelector('.activity-status');if(!status)return [];
+   const box=tile.getBoundingClientRect(),r=status.getBoundingClientRect(),css=getComputedStyle(tile),previous=status.previousElementSibling.getBoundingClientRect();
+   const errors=[];
+   if(Math.abs(box.bottom-r.bottom-parseFloat(css.paddingBottom)-parseFloat(css.borderBottomWidth))>2)errors.push('status not at bottom');
+   if(r.top<previous.bottom+parseFloat(css.rowGap)-2)errors.push('status overlaps description');
+   for(const child of tile.children){const range=document.createRange();range.selectNodeContents(child);for(const rect of range.getClientRects())if(rect.left<box.left||rect.right>box.right+1||rect.bottom>box.bottom)errors.push('content outside tile');}
+   return errors.map(e=>tile.dataset.activity+': '+e);
+  }));
+  assert.deepEqual(failures,[],`${label} ${width} ${theme}`);
+  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  if(process.env.FF_TEST_OUTPUT&&width===390)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`activity-status-${label}-${theme}.png`),fullPage:true});
+ }
+ await p.setViewportSize(viewport);
+}
 async function finish(p){await p.locator('#end').click();await p.waitForFunction(()=>document.querySelector('#profileSaveStatus').textContent.startsWith('Saved'))}
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({channel:'chrome',headless:true});
@@ -14,6 +34,7 @@ async function finish(p){await p.locator('#end').click();await p.waitForFunction
   const ctx=await browser.newContext({viewport:{width,height:900}}),p=await ctx.newPage();p.setDefaultTimeout(7000);p.on('pageerror',e=>errors.push(e.message));
   await p.addInitScript(()=>{window.SpeechRecognition=window.webkitSpeechRecognition=class {constructor(){window.focusRecognition=this}start(){this.onstart?.()}stop(){}abort(){}}});
   await p.goto(url);await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill('Focus demo');await p.locator('#profileForm button').click();await p.locator('[data-quick]').waitFor();const id=await seed(p);
+  await home(p);await p.locator('[data-quick]').click();await activityLayout(p,'partial');
   await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));const original=await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1'));await p.locator('#focusUnmastered').check();assert.equal(await p.evaluate(()=>localStorage.getItem('fact-flight-family-v1')),original);if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`focus-parent-${width}.png`),fullPage:true});
   await choose(p);assert((await p.locator('[data-level="2"]').textContent()).includes('🏆'));assert.equal(await p.locator('[data-level="2"]').getAttribute('aria-disabled'),'true');assert.equal(await p.locator('[data-level="1"]').getAttribute('aria-disabled'),null);
   await p.locator('[data-level="2"]').dispatchEvent('click');assert.equal(await p.locator('[data-level="0"]').getAttribute('aria-pressed'),'true');
@@ -36,7 +57,7 @@ async function finish(p){await p.locator('#end').click();await p.waitForFunction
   await p.reload();await p.locator(`[data-learner="${id}"]`).click();await parent(p);assert(await p.locator('#focusUnmastered').isChecked());
   await home(p);await p.locator('[data-change-learner]').click();await p.locator('[data-create-profile]').click();await p.locator('#nickname').fill('Other demo');await p.locator('#profileForm button').click();await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));
   await home(p);await p.locator('[data-change-learner]').click();await p.locator('[data-learner=guest]').click();await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));const beforeGuest=await p.evaluate(()=>JSON.stringify({...localStorage}));await p.locator('#focusUnmastered').check();assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage})),beforeGuest);await p.reload();await p.locator('[data-learner=guest]').click();await parent(p);assert(!(await p.locator('#focusUnmastered').isChecked()));
-  await home(p);await p.locator('[data-change-learner]').click();await p.locator(`[data-learner="${id}"]`).click();await seed(p,true);await home(p);await p.locator('[data-quick]').click();assert.equal(await p.locator('[data-activity][aria-disabled=true]').count(),8);assert.equal(await p.locator('[data-focus-choice]').count(),8);await p.locator('.focus-choice').filter({has:p.locator('[data-activity=addition]')}).locator('[data-focus-choice]').click();assert.equal(await p.locator('[data-level][aria-disabled=true]').count(),5);assert(await p.locator('[data-nav=parents]').isVisible());
+  await home(p);await p.locator('[data-change-learner]').click();await p.locator(`[data-learner="${id}"]`).click();await seed(p,true);await home(p);await p.locator('[data-quick]').click();assert.equal(await p.locator('[data-activity][aria-disabled=true]').count(),8);assert.equal(await p.locator('[data-focus-choice]').count(),8);await activityLayout(p,'all-restricted');await p.evaluate(()=>FactFlightFocus.set(false));await home(p);await p.locator('[data-quick]').click();assert.equal(await p.locator('[data-activity] .menu-trophy').count(),8);await activityLayout(p,'all-mastered');await p.evaluate(()=>FactFlightFocus.set(true));await home(p);await p.locator('[data-quick]').click();await p.locator('.focus-choice').filter({has:p.locator('[data-activity=addition]')}).locator('[data-focus-choice]').click();assert.equal(await p.locator('[data-level][aria-disabled=true]').count(),5);assert(await p.locator('[data-nav=parents]').isVisible());
   await p.locator('.focus-choice').filter({has:p.locator('[data-level="0"]')}).locator('[data-focus-choice]').click();await p.locator('[data-next]').click();await p.locator('[data-input=keypad]').click();await p.locator('[data-start]').click();await finish(p);await p.locator('#nextLevel').click();assert.notEqual(await p.evaluate(()=>phase),'running');assert((await p.locator('.focus-notice').textContent()).includes('Level 2'));
   await home(p);await p.locator('[data-quick]').click();await p.locator('.focus-choice').filter({has:p.locator('[data-activity=multiplication]')}).locator('[data-focus-choice]').click();await p.locator('[data-selection=tables]').click();await p.locator('[data-focus-current]').click();await p.locator('[data-next]').click();await p.locator('[data-input=keypad]').click();await p.locator('[data-start]').click();await finish(p);await p.locator('#nextTables').click();assert.notEqual(await p.evaluate(()=>phase),'running');assert(await p.locator('[data-focus-current]').isVisible());
   await parent(p);await p.locator('#focusUnmastered').uncheck();await p.evaluate(()=>{window.focusOriginalWrite=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith('fact-flight-focus-v1:'))throw new DOMException('Full','QuotaExceededError');return focusOriginalWrite.call(this,k,v)}});await p.locator('#focusUnmastered').check();assert((await p.locator('#focusSaveStatus').textContent()).includes('could not be saved'));assert(await p.evaluate(()=>FactFlightFocus.enabled()));await p.evaluate(()=>{Storage.prototype.setItem=focusOriginalWrite});
