@@ -18,15 +18,21 @@ async function checkFutureTiles(p){assert(await p.locator('.coming-soon').evalua
   }
   await p.locator('[data-math]').click();
   assert.equal(await p.locator('.tiles .tile:disabled').count(),2);
+  if(viewport.width<=900){
+   assert(await p.locator('#menuView .hero').evaluate(e=>Math.abs(e.getBoundingClientRect().top-12)<2));
+   if(viewport.width===390)assert(await p.locator('[data-school]').evaluate(e=>e.getBoundingClientRect().bottom<=document.querySelector('#menuView .bottom-actions').getBoundingClientRect().top-8),'School shortcut must be above the dock on a portrait phone');
+  }
   for(const theme of ['light','dark']){
    await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
    await checkFutureTiles(p);
    assert(await p.locator('.operations-icon').evaluate(e=>{const r=e.getBoundingClientRect();return [...e.children].every(c=>{const b=c.getBoundingClientRect();return b.left>=r.left&&b.right<=r.right&&b.top>=r.top&&b.bottom<=r.bottom})}));
    assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`math-${theme}-${viewport.width}.png`),fullPage:true});
+   if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`math-${theme}-${viewport.width}.png`),fullPage:false});
   }
   await p.evaluate(()=>document.documentElement.dataset.theme='light');
   assert.equal(await p.locator('[data-operations]').count(),1);assert.equal(await p.locator('[data-school]').count(),1);assert.equal(await p.locator('[data-activity]').count(),0);await p.locator('[data-operations]').click();
+  if(viewport.width<=900)assert(await p.locator('#menuView .hero').evaluate(e=>Math.abs(e.getBoundingClientRect().top-12)<2));
+  if(viewport.width<=500)assert.equal(await p.locator('[data-activity]').first().evaluate(e=>getComputedStyle(e).minHeight),'190px');
   assert.equal(await p.locator('[data-activity]').count(),8);assert.equal(await p.locator('[data-math-group]').count(),0);
   assert.deepEqual(await p.locator('[data-activity]').evaluateAll(es=>es.map(e=>e.dataset.activity)),registry.activityOrder);
   for(const activity of registry.activityOrder){

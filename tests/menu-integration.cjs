@@ -23,7 +23,7 @@ async function answer(p,value){const field=p.locator(await p.evaluate(()=>active
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${server.address().port}`;browser=await chromium.launch({headless:true,channel:'chrome'});
  await test('Home tiles and Quick completion for all eight activities in both views',async()=>{
-  const [c,p]=await page();assert(await p.locator('#menuView').isVisible());assert.equal(await p.locator('#menuView button:disabled').count(),0);assert((await p.locator('[aria-label="Future subjects"]').innerText()).includes('Coming Soon'));assert.equal(await p.locator('select:visible').count(),0);
+  const [c,p]=await page();assert(await p.locator('#menuView').isVisible());assert.equal(await p.locator('#menuView button:disabled').count(),3);assert.deepEqual(await p.locator('.coming-soon strong').allTextContents(),['Letters & Sounds','Colors & Shapes','Reading']);assert.deepEqual(await p.locator('.coming-soon .badge').allTextContents(),['Coming Soon','Coming Soon','Coming Soon']);assert.equal(await p.locator('select:visible').count(),0);
   for(const view of ['focus','worksheet'])for(const activity of ['addition','subtraction','multiplication','division','bonds','doubles','halves','squares']){
    await choose(p,{activity,view,level:4});assert.equal(await p.evaluate(()=>items.length),5);
    for(let i=0;i<5;i++)await answer(p);
