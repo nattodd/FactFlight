@@ -18,9 +18,11 @@ async function checkFutureTiles(p){assert(await p.locator('.coming-soon').evalua
   }
   await p.locator('[data-math]').click();
   assert.equal(await p.locator('.tiles .tile:disabled').count(),2);
+  const tileStyle=await p.locator('[data-operations]').evaluate(e=>{const s=getComputedStyle(e);return [s.padding,s.gap,s.minHeight,getComputedStyle(e.querySelector('strong')).fontSize,getComputedStyle(e.querySelector('.sub')).fontSize]});
+  assert.equal(await p.locator('.coming-soon .icon svg').count(),2);
+  assert(await p.locator('.coming-soon .icon svg').evaluateAll(es=>es.every(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left+1&&r.right<=p.right-1&&r.top>=p.top+1&&r.bottom<=p.bottom-1})));
   if(viewport.width<=900){
    assert(await p.locator('#menuView .hero').evaluate(e=>Math.abs(e.getBoundingClientRect().top-12)<2));
-   if(viewport.width===390)assert(await p.locator('[data-school]').evaluate(e=>e.getBoundingClientRect().bottom<=document.querySelector('#menuView .bottom-actions').getBoundingClientRect().top-8),'School shortcut must be above the dock on a portrait phone');
   }
   for(const theme of ['light','dark']){
    await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);
@@ -30,8 +32,11 @@ async function checkFutureTiles(p){assert(await p.locator('.coming-soon').evalua
    if(process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,`math-${theme}-${viewport.width}.png`),fullPage:false});
   }
   await p.evaluate(()=>document.documentElement.dataset.theme='light');
+  await p.locator('[data-school]').evaluate(e=>e.scrollIntoView({block:'center'}));
+  assert(await p.locator('[data-school]').evaluate(e=>{const r=e.getBoundingClientRect(),bar=document.querySelector('#menuView .bottom-actions.is-docked');return r.top>=0&&r.bottom<=(bar?bar.getBoundingClientRect().top:innerHeight)}));
   assert.equal(await p.locator('[data-operations]').count(),1);assert.equal(await p.locator('[data-school]').count(),1);assert.equal(await p.locator('[data-activity]').count(),0);await p.locator('[data-operations]').click();
   if(viewport.width<=900)assert(await p.locator('#menuView .hero').evaluate(e=>Math.abs(e.getBoundingClientRect().top-12)<2));
+  assert.deepEqual(await p.locator('[data-activity]').first().evaluate(e=>{const s=getComputedStyle(e);return [s.padding,s.gap,s.minHeight,getComputedStyle(e.querySelector('strong')).fontSize,getComputedStyle(e.querySelector('.sub')).fontSize]}),tileStyle);
   if(viewport.width<=500)assert.equal(await p.locator('[data-activity]').first().evaluate(e=>getComputedStyle(e).minHeight),'190px');
   assert.equal(await p.locator('[data-activity]').count(),8);assert.equal(await p.locator('[data-math-group]').count(),0);
   assert.deepEqual(await p.locator('[data-activity]').evaluateAll(es=>es.map(e=>e.dataset.activity)),registry.activityOrder);

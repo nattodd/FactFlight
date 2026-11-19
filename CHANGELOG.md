@@ -9,6 +9,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 ## [Unreleased]
 
 ### Fixed
+- Local menu consistency: all selectable tile symbols use the brand-yellow background and dark foreground in both themes. Coming Soon and parent-restricted choices retain unavailable styling.
+- Local owner refinement: Math group tiles again use the shared activity-tile sizing and typography. School Test stays below the tiles with normal scrolling; menu framing and deeper tile sizes are preserved. This supersedes the earlier compact Math-tile treatment.
+- Local compact Math icon correction: Numbers & Counting uses a contained vector 123 icon so font rendering cannot extend the digits beyond the icon border.
+- Local follow-up: mobile framing budgets for content above the heading so shorter menus align consistently; post-flight results use the same framing. Focus questions size to available width rather than character count, keeping the trailing equals/question mark together.
 - Local mobile navigation correction: entering menu steps scrolls the relevant heading into view above the choices; Back restores the triggering choice into view. Only the Math group overview uses more compact tiles and a compact Back bar to expose the original School Test shortcut. Deeper tile dimensions remain unchanged.
 - Final regression updates the Home-menu assertion to verify the restored three disabled Coming Soon tiles; no runtime behavior changed.
 - Local Coming Soon refinement: bottom-aligned badges, consistent theme-aware tile/icon borders, and vector book, shapes and clock icons replace platform-dependent symbols. Applies to subject and Math menus; practice behavior is unchanged.

@@ -166,23 +166,14 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 #menuView .tile.coming-soon .badge{margin-top:auto;border-color:var(--control-line);color:var(--ink)}
 #menuView .tile.available>.sub:last-child{margin-top:auto}
 
-/* Only the Math group overview is compacted; deeper choice tiles keep their dimensions. */
+/* Math uses shared tile sizing; retain the compact Back bar. */
 @media(max-width:900px){
- #menuView[data-screen="math"] .hero{margin:0 0 16px}
- #menuView[data-screen="math"] .hero h1{font-size:30px;margin:6px 0 8px}
- #menuView[data-screen="math"] .hero p{margin:6px 0;font-size:15px}
- #menuView[data-screen="math"] .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- #menuView[data-screen="math"] .tile{padding:12px;gap:7px;min-height:148px}
- #menuView[data-screen="math"] .tile strong{font-size:16px;line-height:1.25}
- #menuView[data-screen="math"] .tile .sub{font-size:14px;line-height:1.35}
- #menuView[data-screen="math"] .tile .icon{width:34px;height:34px;font-size:20px}
- #menuView[data-screen="math"] .tile .icon svg{width:26px;height:26px}
- #menuView[data-screen="math"] .school{padding:12px;margin-top:12px;gap:8px}
- #menuView[data-screen="math"] .school h3{font-size:17px}
- #menuView[data-screen="math"] .school p{font-size:13px;line-height:1.35}
  #menuView[data-screen="math"] .bottom-actions.back-only{grid-template-columns:minmax(0,1fr) auto;align-items:center}
  #menuView[data-screen="math"] .bottom-actions.back-only .action-summary{grid-column:1;grid-row:1}
  #menuView[data-screen="math"] .bottom-actions.back-only .back{grid-column:2;grid-row:1}
 }
 
 @media(max-width:900px){#menuView[data-screen]{min-height:100svh}}
+
+/* Yellow symbol backgrounds consistently identify available menu tiles. */
+#menuView .tile:not(:disabled):not([aria-disabled="true"]):not(.focus-restricted) .icon{background:var(--brand-yellow);color:var(--brand-ink)}
