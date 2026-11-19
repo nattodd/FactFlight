@@ -47,7 +47,7 @@ Target two to four major subject choices per screen, never 15–20 activity tile
 
 Progress must match the reviewed **Mock Dashboard** in **Learner Stats Review**: three side-by-side summary tiles, collapsed Mastery then Results, equal compact activity cards, status icons/text, progress bars and bottom Collapse controls. This is distinct from grouped practice navigation. See [the visual acceptance contract](docs/v6.3-rules-specification.md#8-progress-page-and-report-definitions); private learner content stays outside the repository.
 
-Back returns to the previous context; Home returns to learner Home. Use consistent hierarchy, focus restoration, transitions, large touch targets and text/icon labels. Preserve Results repeat shortcuts and last-started settings so repeat users bypass the hierarchy. Consider a small recent-practice area later, not a favorites-management system. Keep Coming Soon compact and explicit; avoid empty future-subject tiles.
+Back returns to the previous context; Home returns to learner Home. Use consistent hierarchy, focus restoration, transitions, large touch targets and text/icon labels. Preserve Results repeat shortcuts and last-started settings so repeat users bypass the hierarchy. Consider a small recent-practice area later, not a favorites-management system. Owner refinement (2026-11-19): retain subject-style disabled Coming Soon tiles for Letters & Sounds, Colors & Shapes and Reading, plus Numbers & Counting and Time & Clocks under Math.
 
 ### Mobile setup — first increment
 

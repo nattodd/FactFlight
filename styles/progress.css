@@ -1,4 +1,4 @@
-.progress-dashboard {--pd-border:#ded8ca;--pd-blue:#eaf5fa;--pd-yellow:#fff5d8}
+.progress-dashboard {--pd-border:#ded8ca;--pd-blue:var(--brand-sky);--pd-yellow:#fff5d8}
 .progress-dashboard .pd-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0}
 .progress-dashboard .pd-card{background:var(--pd-blue);border:1px solid var(--pd-border);border-radius:16px;padding:22px;min-width:0}
 .progress-dashboard .pd-card b,.progress-dashboard .pd-card strong{display:block;font-weight:800}
@@ -27,7 +27,7 @@
 .progress-dashboard .pd-filters label{flex:1 1 140px;min-width:0;font-weight:700}
 .progress-dashboard .pd-filters select{display:block;width:100%;margin-top:6px}
 .progress-dashboard .pd-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:14px}
-.progress-dashboard .pd-metrics div{background:var(--active);border-radius:8px;padding:9px}
+.progress-dashboard .pd-metrics div{background:var(--pd-blue);color:var(--brand-ink);border:1px solid var(--control-line);border-radius:8px;padding:9px}
 .progress-dashboard .pd-metrics dt{font-weight:700}.progress-dashboard .pd-metrics dd{margin:4px 0 0}
 .progress-dashboard .pd-collapse{margin-top:14px;min-height:44px}
 .progress-dashboard table{font-size:14px}.progress-dashboard .tablewrap{max-width:100%;overflow:auto}
@@ -35,7 +35,10 @@
 .progress-dashboard .pd-actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 @media(max-width:600px){.progress-dashboard .pd-cards{gap:6px}.progress-dashboard .pd-card{padding:13px 8px;min-height:112px}.progress-dashboard .pd-grid{grid-template-columns:1fr}.progress-dashboard .pd-body{padding:0 10px 12px}.progress-dashboard summary{padding:14px}.progress-dashboard .pd-primary>summary{font-size:21px}.progress-dashboard .pd-card b{min-height:40px}.progress-dashboard .pd-card strong{margin-top:6px}}
 
-[data-theme="dark"] .progress-dashboard{--pd-border:var(--line);--pd-blue:#233c42;--pd-yellow:#3c3020}
+[data-theme="dark"] .progress-dashboard{--pd-border:var(--line);--pd-yellow:#3c3020}
 [data-theme="dark"] .progress-dashboard .pd-status.ready{color:#b9f2be}[data-theme="dark"] .progress-dashboard .pd-status.working-on{color:#fcd873}[data-theme="dark"] .progress-dashboard .pd-status.needs-work{color:#ffb4bc}
 
 .progress-dashboard{font-family:var(--font-ui)}.progress-dashboard summary{color:var(--ink)}
+
+.progress-dashboard .pd-card,.progress-dashboard #pdResults>summary{color:var(--brand-ink)}
+.progress-dashboard .pd-results-icon{width:32px;height:32px;flex-shrink:0;color:var(--brand-ink)}
