@@ -28,7 +28,10 @@ async function framed(p,results=false){await p.waitForFunction(results=>{const v
   }
   await p.locator('#end').click();await framed(p,true);
   if(width===390&&process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,'results-framed.png')});
-  await p.locator('#resultHome').click();await p.locator('[data-math]').click();await p.locator('[data-operations]').click();await p.locator('[data-activity="halves"]').click();await framed(p);
+  await p.locator('#seeProgress').click();await p.waitForFunction(()=>Math.abs(document.querySelector('#historyView .eyebrow').getBoundingClientRect().top-12)<2);assert(await p.locator('#historyView h1').evaluate(e=>document.activeElement===e));
+  await p.locator('#back').click();await p.locator('#historyNav').click();await p.waitForFunction(()=>Math.abs(document.querySelector('#historyView .eyebrow').getBoundingClientRect().top-12)<2);
+  if(width===390&&process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,'progress-framed.png')});
+  await p.locator('#back').click();await p.locator('[data-math]').click();await p.locator('[data-operations]').click();await p.locator('[data-activity="halves"]').click();await framed(p);
   if(width===390&&process.env.FF_TEST_OUTPUT)await p.screenshot({path:path.join(process.env.FF_TEST_OUTPUT,'halves-mode-framed.png')});
   await c.close();console.log(`PASS all eight activities, four modes, settings/ready/Back, results and long questions at ${width}px`);
  }
