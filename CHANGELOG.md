@@ -8,11 +8,52 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventi
 
 ## [Unreleased]
 
+## [6.3.0] - 2026-11-19
+
+### Documentation
+- Recorded owner-reported v6.3 functional acceptance on Windows Chrome and iPhone Chrome/Safari; owner subsequently approved publication.
+- Prepared v6.3.0 version metadata and refreshed release notes, candidate references and promotion gates; owner accepted Windows/iPhone testing and approved publication.
+- Added an unscheduled Games & Strategy → Chess proposal centered on tactical pattern recognition, with supporting activities, illustrative phases and future compatibility requirements. Updated the roadmap graphic and README; existing release commitments remain unchanged. No Chess functionality is implemented.
+
 ### Fixed
+- Release preparation updates regression assertions for the current Quick Practice summary layout and 6.3.0 metadata; no practice behavior changes.
+- Opening Progress uses the shared mobile heading focus and framing, scrolling past the logo/navigation; mastery notification links still focus the specific earned choice.
+- Dark-mode Progress metric cards match the warm Mastery/Results panels; the Results chart icon uses a transparent background so its bars remain visible in both themes.
+- School Test table selection uses equal-sized choices with reserved mastery-badge space and three columns on phones; the test itself is unchanged.
+- Mastery activity summaries distinguish facts mastery from timed School Test achievements; numbered levels and collapsed family-range sections show their own mastered counts.
+- Completed flights show a quiet first-mastery card for newly qualified levels or chosen families, with a link to readiness details. Prior achievements are derived from retained learner history to suppress repeats and regained-mastery notices; School Tests use a separate timed-achievement message. No backup fields are added.
+- Quick Practice shows mastery beside the remembered level or family selection, keeping the start button clear; mixed selections identify when only some choices are mastered.
+- Progress summary cards use warm cream with clear borders; Results matches the soft-yellow Mastery heading, with readable warm dark-theme equivalents.
+- Parent practice focus uses a tappable checkbox card with an adjacent label, concise help and expandable setting details in both themes.
+- Chosen table/divisor tiles use three columns on narrow screens, equal-height rows and a contained trophy/label stack so mastered labels do not spill across borders.
+- Activity tiles bottom-align mastery trophies and partial-progress labels, with wrapping and natural height for longer text.
+- Math footer consistency: the Math label appears above the left-aligned Back button using the shared menu action-bar layout.
+- mobile action-bar alignment: Back sits on the left of the Math bar, and Continue/Start no longer inherit the narrow-screen top margin that offset them from Back.
+- menu consistency: all selectable tile symbols use the brand-yellow background and dark foreground in both themes. Coming Soon and parent-restricted choices retain unavailable styling.
+- owner refinement: Math group tiles again use the shared activity-tile sizing and typography. School Test stays below the tiles with normal scrolling; menu framing and deeper tile sizes are preserved. This supersedes the earlier compact Math-tile treatment.
+- compact Math icon correction: Numbers & Counting uses a contained vector 123 icon so font rendering cannot extend the digits beyond the icon border.
+- follow-up: mobile framing budgets for content above the heading so shorter menus align consistently; post-flight results use the same framing. Focus questions size to available width rather than character count, keeping the trailing equals/question mark together.
+- mobile navigation correction: entering menu steps scrolls the relevant heading into view above the choices; Back restores the triggering choice into view. Math group tiles use the shared activity sizing after owner review; the School Test shortcut remains below them with normal scrolling. Deeper tile dimensions remain unchanged.
+- Final regression updates the Home-menu assertion to verify the restored three disabled Coming Soon tiles; no runtime behavior changed.
+- Coming Soon refinement: bottom-aligned badges, consistent theme-aware tile/icon borders, and vector book, shapes and clock icons replace platform-dependent symbols. Applies to subject and Math menus; practice behavior is unchanged.
+- preview visual corrections: Operations & Facts uses a contained four-symbol icon; future subjects and Math groups return to disabled Coming Soon tiles. Progress uses bordered result metrics and a chart icon; later owner refinements use the warm Mastery palette. School Test, reporting calculations and learner records are unchanged.
+- regression fix: cross-tab readiness/focus refreshes now update practice menus only, preserving import review errors and in-progress management forms when another tab saves learner data.
 - Redacted personal home-directory prefixes from 13 verification documents/result files without changing historical test outcomes. This is a documentation privacy correction; existing Git history and published copies are not erased by a later cleanup commit.
 
 ### Added
-- Local staged-file and commit-message privacy hooks, GitHub noreply identity checks, ignored private-file patterns, and a proposed CI privacy check. Checks report rule names/locations without printing matched values. These safeguards do not rewrite existing history or change app behavior.
+- Final v6.3 candidate regression evidence and draft release documentation, with preview status reconciled and physical-device acceptance tracked separately.
+- regression runner, validated synthetic learner-backup generator and v6.3 Windows/iPhone device checklist. Full automated evidence separates current application, engine and retained prototype checks from unverified physical-device acceptance.
+- mastery trophies in activity, level, chosen table/divisor and School Test menus, plus the per-learner Parent corner “Focus on unmastered practice” preference (off by default). Restricted choices retain readable trophies/stripes and explanations; one-flight review allowances, explicit mixed-selection removal and missed-fact review prevent dead ends. Start checks cover remembered/repeated/next choices and voice readiness. Active flights, School Test content and learner backup formats remain unchanged; owner device acceptance is recorded in the release checklist.
+- Progress refinement: expanded activity cards use the full available width; “What to do next” gives plain-language practice steps, with detailed evidence rules behind a separate disclosure. Readiness calculations and saved records are unchanged.
+- Progress dashboard connects shared reports and readiness to the reviewed two-section design: three responsive summary cards, collapsed Mastery/Results, eight equal activity cards, coverage explanations, separate timed achievements, range-specific families, filtered reports, comparable records and flight logs. Selectable tables 1–12 stay separate from higher encountered factors. Existing JSON backups, School Test and saved records are unchanged. Synthetic Chrome checks pass; owner visual and device acceptance is recorded in the release checklist.
+- Math navigation: Operations & Facts shows all eight activity tiles directly, without an intermediate category click. Quick Practice opens the same eight activities, repeat shortcuts remain direct, Back restores context/focus and future areas are disabled Coming Soon tiles. School Test retains its shortcut and preset. No saved-record or generator changes in this navigation increment; owner device acceptance is recorded in the release checklist.
+- chosen division families and multiplication tables 1–12, with separate through-10/12 ranges, remembered settings, repeat/next actions and missed-fact review. Existing backups and old through-10 selections retain their meaning; new scopes use session schema 4 and their reviews use review payload version 2, requiring v6.3 readers. Original School Test remains unchanged. Physical-device acceptance is pending; available on the authorized v6.3 Branch Deploy, not released to production.
+- numbered-level generator increment: approved L2/L3 allocations, learner-specific in-memory carryover and bucket-balanced family selection. Released pools, L1/L4/L5 behavior, chosen tables, missed-fact review and School Test remain unchanged; no saved schema changes. Educator graphs now compare the preserved released baseline with measured output. Physical-device acceptance remains pending.
+- educator and parent guide with eight reproducible figures covering all 40 numbered scopes, exact pools, approved allocation targets and measured repetition tradeoffs. Graphs and quantitative sections regenerate from shared definitions, the preserved baseline and synthetic audit output.
+- Reproducible synthetic audit and documentation of all 40 numbered activity/level pools, fact-type definitions, repetitions, identity runs and adjacent structural similarities. Released baseline data is preserved separately from the new generator audit.
+- v6.3 calculation foundation for fact-family classification, explicit reporting denominators, range-specific readiness and separate timed achievements, with synthetic tests. Short flights accumulate; completion credits use the outer flight window so long flights also qualify. Content definitions now support the generator; reporting/readiness were initially disconnected and are now connected by the Progress increment. Voice, saved history and schemas are unchanged.
+- Planning documentation for the owner-approved expanded v6.3 scope, rules, synthetic acceptance cases and required Progress mockup fidelity, with a synchronized roadmap image. This documents future work only; no v6.3 application features are implemented by this update.
+- staged-file and commit-message privacy hooks, GitHub noreply identity checks, ignored private-file patterns, and a proposed CI privacy check. Checks report rule names/locations without printing matched values. These safeguards do not rewrite existing history or change app behavior.
 
 ## [6.2.0] - 2026-11-16
 

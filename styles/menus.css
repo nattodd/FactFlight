@@ -74,9 +74,10 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
   min-width:0;min-height:48px;width:auto;margin:0;padding:10px 14px;
   font-size:16px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;
  }
- #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px}
+ #menuView .bottom-actions .back{border:1px solid var(--control-line);border-radius:12px;align-self:stretch}
+ #menuView .bottom-actions button:hover:not(:disabled){transform:none}
  #menuView .bottom-actions .back{grid-column:1;grid-row:3}
- #menuView .bottom-actions .primary{grid-column:2;grid-row:3}
+ #menuView .bottom-actions .primary{grid-column:2;grid-row:3;margin:0;align-self:stretch}
  #resultsView .bottom-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  #resultsView .bottom-actions #again{grid-column:1/-1}
  #resultsView .bottom-actions #nextLevel,#resultsView .bottom-actions #nextTables{grid-column:1/-1}
@@ -138,3 +139,58 @@ html{scroll-padding-bottom:calc(var(--bottom-action-space,0px) + 20px)}
 #menuView .microphone-restriction{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;font-weight:650}
 #menuView #disableMicrophone{width:22px;height:22px;flex:none;padding:0;accent-color:var(--accent)}
 #menuView [data-input="voice"]:disabled,#menuView [data-review-input="voice"]:disabled{color:var(--muted);border-style:dashed;cursor:not-allowed}
+
+/* Compact future areas do not compete with available practice. */
+#menuView .future-math{margin:24px 0;padding:16px 20px;border:1px solid var(--line);border-radius:16px}#menuView .future-math h2{font-size:18px;margin:0 0 8px}#menuView .future-math p{margin:6px 0}
+
+/* Focus preferences never hide the mastered choice or its explanation. */
+#menuView .tile[data-activity]>strong{max-width:100%;overflow-wrap:anywhere}
+#menuView .tile>.activity-status{margin-top:auto;max-width:100%;overflow-wrap:anywhere;flex-shrink:0}
+#menuView .menu-trophy{display:block;color:var(--green);font-size:13px;font-weight:750}
+#menuView .focus-restricted{background:repeating-linear-gradient(135deg,#f3f3f3 0 8px,#dedede 8px 12px);color:var(--ink);opacity:1}
+#menuView [aria-disabled="true"]{cursor:not-allowed}
+#menuView .focus-choice{display:flex;flex-direction:column;gap:6px;min-width:0}
+#menuView .focus-choice>.tile,#menuView .focus-choice>.choice{width:100%;flex:1}
+#menuView .focus-explanation{font-size:12px;line-height:1.4;color:var(--muted)}
+#menuView .focus-allow{font-size:12px;min-height:44px;padding:8px}
+#menuView .focus-notice{border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0;background:var(--soft)}
+#menuView .focus-notice button{margin:4px}
+/* Family choices reserve room for readiness without squeezing its label. */
+#menuView .table-choices{grid-auto-rows:1fr;align-items:start}
+#menuView .table-choices :is([data-fact-table],[data-table]){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:96px;padding:10px 6px}
+#menuView .table-choices .menu-trophy{white-space:nowrap;line-height:1.35}
+#menuView .table-choices .menu-trophy .trophy-symbol{display:block}
+#menuView .table-choices .focus-choice{max-width:none}
+#menuView .table-choices .focus-choice>:is([data-fact-table],[data-table]){flex:1}
+#menuView .table-choices .focus-allow{overflow-wrap:anywhere}
+@media(max-width:600px){#menuView .table-choices{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+[data-theme="dark"] #menuView .focus-restricted{background:repeating-linear-gradient(135deg,#303038 0 8px,#44444d 8px 12px)}
+
+#menuView .tile .icon{flex-shrink:0;white-space:nowrap;line-height:1}
+#menuView .tile .operations-icon{padding:2px}
+#menuView .operations-icon svg{display:block;max-width:100%;max-height:100%}
+
+#menuView .tile.coming-soon{background:var(--card);border:1px solid var(--control-line);opacity:1}
+#menuView .tile.coming-soon .icon{background:var(--active);color:var(--ink);border:1px solid var(--control-line)}
+#menuView .tile.coming-soon .icon svg{display:block;max-width:100%;max-height:100%}
+#menuView .tile.coming-soon .badge{margin-top:auto;border-color:var(--control-line);color:var(--ink)}
+#menuView .tile.available>.sub:last-child{margin-top:auto}
+
+@media(max-width:900px){#menuView[data-screen]{min-height:100svh}}
+
+/* Yellow symbol backgrounds consistently identify available menu tiles. */
+#menuView .tile:not(:disabled):not([aria-disabled="true"]):not(.focus-restricted) .icon{background:var(--brand-yellow);color:var(--brand-ink)}
+
+/* Keep the native checkbox close to its label with a generous touch target. */
+#menuView .focus-setting{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--control-line);border-radius:16px;background:var(--card);cursor:pointer}
+#menuView .focus-setting:has(input:checked){background:var(--soft);border-color:var(--accent)}
+#menuView .focus-setting:focus-within{outline:3px solid var(--focus-ring);outline-offset:3px}
+#menuView .focus-setting input{width:24px;height:24px;min-width:24px;min-height:24px;flex:0 0 24px;margin:2px 0 0;padding:0;accent-color:var(--brand-yellow)}
+#menuView .focus-setting>span{min-width:0;line-height:1.4}
+#menuView .focus-setting strong{display:block;font-size:16px}
+#menuView .focus-setting-help{display:block;margin-top:6px;font-size:14px;font-weight:400;color:var(--muted)}
+#menuView .focus-setting-details{margin-top:16px}
+#menuView .focus-setting-details summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}
+
+#menuView .quick-scope .quick-readiness{display:inline-block;margin-left:6px;white-space:nowrap}

@@ -3,6 +3,8 @@
 'use strict';
 const $=id=>document.getElementById(id),esc=escapeHTML;
 const previous=history.slice(),previousReadable=historyReadable;
+const generationMemories=new Map();
+function generationMemory(){if(!generationMemories.has(active))generationMemories.set(active,new Map());return generationMemories.get(active)}
 let active=null,viewing=null,guest=[],store=null,storeError='',family={version:1,profiles:[],sessions:[]};
 // Disposable per-browser preferences are separate from learner/results backups.
 const quickPrefix='fact-flight-quick-v1:',quickMemory=new Map();
@@ -34,9 +36,9 @@ function rememberPractice(config){
  practiceMemory.set(key,value);practiceWarning='';
  if(active!=='guest')try{localStorage.setItem(key,JSON.stringify(value));practiceMemory.delete(key)}catch{practiceWarning='Practice choices could not be saved for next time. You can still practice.'}
 }
-function clearPractice(id){for(const layout of ['mobile','desktop']){const key=reviewPrefix+id+':'+layout;reviewMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}for(const activity of Object.keys(FactFlightMath.activities)){const key=practicePrefix+id+':'+activity;practiceMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}}
+function clearPractice(id){generationMemories.delete(id);for(const layout of ['mobile','desktop']){const key=reviewPrefix+id+':'+layout;reviewMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}for(const activity of Object.keys(FactFlightMath.activities)){const key=practicePrefix+id+':'+activity;practiceMemory.delete(key);if(id!=='guest')localStorage.removeItem(key)}}
 
-function validQuick(q){return q&&(q.tableChoices===undefined||(Array.isArray(q.tableChoices)&&(q.tableChoices.length===0||FactFlightMath.validTables(q.tableChoices))))&&(!q.selection||(q.activity==='multiplication'&&q.selection.type==='tables'&&FactFlightMath.validTables(q.selection.tables)))&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
+function validQuick(q){return q&&(q.tableChoices===undefined||(Array.isArray(q.tableChoices)&&(q.tableChoices.length===0||FactFlightMath.validFamilies(q.tableChoices))))&&(!q.selection||FactFlightMath.selectionScope(q.activity,q.selection))&&(q.familyRange===undefined||[10,12].includes(q.familyRange))&&q.version===1&&Object.hasOwn(FactFlightMath.activities,q.activity)&&Number.isInteger(q.level)&&q.level>=0&&q.level<=4&&[5,10,15,20].includes(q.count)&&['keypad','voice'].includes(q.input)&&['focus','worksheet'].includes(q.view)&&(q.target===''||(typeof q.target==='string'&&/^\d+$/.test(q.target)&&Number(q.target)>=1&&Number(q.target)<=q.count))}
 function quickChoice(){
  if(!active||!hasSelection())return null;
  let q=quickMemory.get(active);
@@ -63,19 +65,23 @@ if(store){
 function refresh(){try{if(!store)throw Error('Browser storage is unavailable.');family=store.read();storeError=''}catch(e){storeError=e.message}return family}
 function name(id){return id==='guest'?'Guest':id==='previous'?'Previous progress':family.profiles.find(p=>p.id===id)?.name||'Learner'}
 function records(id){if(id==='guest')return guest;if(id==='previous')return previous;refresh();const saved=family.sessions.filter(s=>s.learnerId===id);return [...unsaved.values()].filter(s=>s.learnerId===id&&!saved.some(r=>r.id===s.id)).concat(saved).sort((a,b)=>new Date(b.date)-new Date(a.date))}
-function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
-function change(){if(busy()){requestSessionExit();return}guest=[];clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=null;viewing=null;history=[];session=null;FlightMenu.home()}
+function select(id){if(busy()){requestSessionExit();return}if(id!=='guest'&&!refresh().profiles.some(p=>p.id===id))return;guest=[];globalThis.FactFlightFocus?.resetGuest();clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=id;viewing=id;history=records(id);session=null;storageOK=true;FlightMenu.home()}
+function change(){if(busy()){requestSessionExit();return}guest=[];globalThis.FactFlightFocus?.resetGuest();clearPractice('guest');quickMemory.delete('guest');quickWarning='';practiceWarning='';active=null;viewing=null;history=[];session=null;FlightMenu.home()}
 function tile(p,stats=false){return `<button class="learner" ${stats?'data-profile-stats':'data-learner'}="${esc(p.id)}"><span class="avatar" aria-hidden="true">${esc(p.name.slice(0,1).toUpperCase())}</span><strong>${esc(p.name)}</strong><span>${stats?'See results':'Tap to start'}</span></button>`}
 function entry(){refresh();return `<section class="learner-entry"><div class="eyebrow">Your learning space</div><div class="accent-line"></div><h1>Who's ready to take flight?</h1><p class="intro">Pick a learner, or jump in as a guest.<br>No sign-in, no fuss.</p>${storeError?`<p class="notice" role="alert">${esc(storeError)} You can still practice as Guest.</p>`:''}<div class="learners">${family.profiles.map(p=>tile(p)).join('')}<button class="learner outline" data-create-profile ${storeError?'disabled':''}><span class="avatar" aria-hidden="true">+</span><strong>Create Profile</strong><span>Nickname only</span></button><button class="learner outline" data-learner="guest"><span class="avatar" aria-hidden="true">☆</span><strong>Continue as Guest</strong><span>Not saved</span></button></div><button class="primary results-link" data-nav="progress">Results & Stats →</button><button class="quiet parent-entry" data-nav="parents">Parent corner</button><p class="family-footer">Free to learn · No account needed · Progress stays in this browser on this device</p></section>`}
 function create(){return `<button class="quiet back" data-profile-cancel>← Back</button><div class="profile-form"><span class="avatar" aria-hidden="true">+</span><h1>A little space of your own.</h1><p>Create a learner profile. No email or password needed.</p><form id="profileForm"><label for="nickname">What should we call you?</label><p id="nicknameHelp">A nickname is enough. You can leave this blank.</p><input id="nickname" maxlength="24" autocomplete="off" aria-describedby="nicknameHelp" placeholder="e.g. Sunny"><p>Progress stays in this browser on this device.</p><p id="profileError" role="alert"></p><button class="primary" type="submit">Create profile & explore →</button></form><button class="quiet" data-profile-cancel>Cancel</button></div>`}
 function identity(){return `<div class="learner-identity"><div><strong>${esc(name(active))}'s practice</strong><p>${active==='guest'?'Guest · results are not saved':'Your own learning space'}</p></div><button data-change-learner>Change learner</button></div>`}
 function picker(){refresh();return `<section class="learner-entry"><div class="eyebrow">Results & Stats</div><h1>Whose progress shall we see?</h1><p>Each learner has their own story.</p>${storeError?`<p class="notice" role="alert">${esc(storeError)}</p>`:''}<div class="learners">${family.profiles.map(p=>tile(p,true)).join('')}${active==='guest'?'<button class="learner outline" data-profile-stats="guest"><span class="avatar">☆</span><strong>Guest</strong><span>Temporary results</span></button>':''}<button class="learner outline" data-profile-stats="previous"><span class="avatar" aria-hidden="true">↶</span><strong>Previous progress</strong><span>Before profiles</span></button></div><p class="family-footer">Results remain separate for each learner.</p></section>`}
-function progress(id=active){if(busy()){requestSessionExit();return}if(!id){FlightMenu.profiles('statsPicker');return}viewing=id;history=records(id);renderHistory();show('historyView');window.scrollTo(0,0)}
+function progress(id=active,frame=true){if(busy()){requestSessionExit();return}if(!id){FlightMenu.profiles('statsPicker');return}viewing=id;history=records(id);renderHistory();show('historyView',frame);if(!matchMedia('(max-width:900px)').matches)window.scrollTo(0,0)}
+const freshAchievements=new Map();
 const engineBegin=begin;
 begin=function(){if(!hasSelection(true)){if(phase==='checking')cancelCheck();FlightMenu.home();return}history=records(active);viewing=active;storageOK=true;engineBegin();session.id=crypto.randomUUID();session.learnerId=active==='guest'?null:active;session.learnerName=name(active);if(active==='guest')session.guest=true;};
 // Engine finish retains its synchronous lifecycle. Durable writes run under a cross-tab lock.
 saveSession=function(record){
  if(record.guest)return;
+ // Capture only a fresh engine completion, before it enters saved history.
+ // A reporting problem must never prevent saving the flight.
+ try{freshAchievements.set(record.id,FactFlightReadiness.firstAchievements(records(record.learnerId),record))}catch{freshAchievements.delete(record.id)}
  const copy=structuredClone(record);unsaved.set(copy.id,copy);saveStates.set(copy.id,'Saving to '+name(copy.learnerId)+'…');
  const writing=Promise.resolve().then(()=>{if(!store)throw Error('Browser storage is unavailable.');return store.save(copy)}).then(()=>{unsaved.delete(copy.id);refresh();saveStates.set(copy.id,'Saved to '+name(copy.learnerId)+' on this browser.')}).catch(e=>{saveStates.set(copy.id,'Could not save: '+e.message+' Export this flight before closing.');}).finally(()=>{if($('resultsView').dataset.sessionId===copy.id){const status=$('profileSaveStatus');if(status)status.textContent=saveStates.get(copy.id)}if(session?.id===copy.id)$('saveStatus').textContent=saveStates.get(copy.id);pendingWrites.delete(copy.id)});
  pendingWrites.set(copy.id,writing);
@@ -84,68 +90,48 @@ const engineResult=renderResult;
 renderResult=function(s){
  storageOK=true;engineResult(s);$('resultsView').dataset.sessionId=String(s.id);
  const note=document.createElement('p');note.id='profileSaveStatus';note.setAttribute('role','status');note.textContent=s.guest?'Guest results are temporary and are not saved. They clear on reload or Change learner.':(unsaved.has(s.id)?saveStates.get(s.id):null)||(s.learnerId?'Saved for '+(family.profiles.some(p=>p.id===s.learnerId)?name(s.learnerId):s.learnerName||'Learner')+'.':'Previous progress · kept separate from learner profiles.');$('resultsView').querySelector('h1').after(note);
+ if(s.schemaVersion===4||s.review?.version===2){const compatibility=document.createElement('p');compatibility.className='notice';compatibility.textContent='Backups containing these results require Fact Flight v6.3 or later.';note.after(compatibility)}
  if(s.guest)$('exportOne').remove();
  else if(s.learnerId){$('exportOne').textContent='Export learner backup JSON';$('exportOne').onclick=()=>backupFromReport(s.learnerId,s)}
  else $('exportOne').textContent='Export previous flight archive JSON';
  if((s.learnerId||'previous')!==active&&!s.guest)$('again').remove();
  $('seeProgress').textContent=s.guest?'Guest results':'See learner progress';$('seeProgress').onclick=()=>progress(s.guest?'guest':s.learnerId||'previous');
  $('saveStatus').textContent=s.guest?'Guest · not saved':note.textContent;
+ const earned=freshAchievements.get(s.id);freshAchievements.delete(s.id);
+ if(earned?.length){
+  const card=document.createElement('section');card.className='mastery-notification';card.setAttribute('role','status');
+  const names={addition:'Addition',subtraction:'Subtraction',multiplication:'Multiplication',division:'Division',bonds:'Number bonds',doubles:'Doubles',halves:'Halves',squares:'Squares'};
+  const title=earned.every(x=>x.kind==='school')?'New timed achievement':'New mastery achieved';
+  const labels=earned.map(x=>x.kind==='level'?`${names[x.activity]} · Level ${x.level+1}`:x.kind==='school'?`School Test · Table ${x.table}`:`${names[x.activity]} · ${x.activity==='division'?'Divide by':'Table'} ${x.families[0]} · ${x.activity==='division'?'answers':'other factor'} 1–${x.range}`);
+  card.innerHTML=`<div class="mastery-notification-heading"><span aria-hidden="true">🏆</span><h2>${title}</h2></div><ul>${labels.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p>${earned.every(x=>x.kind==='school')?'Your recent tests meet the timed achievement goal.':'Your recent practice meets the readiness goal for '+(earned.length===1?'this choice.':'these choices.')} Well done.</p><button type="button" class="mastery-details">See mastery details →</button>`;
+  $('resultsView').querySelector('h1').after(card);
+  card.querySelector('button').onclick=()=>{
+   progress(s.learnerId,false);const mastery=$('pdMastery'),scope=earned[0];
+   mastery.addEventListener('toggle',()=>{
+    const id=scope.kind==='level'?`pdReady-${scope.activity}-${scope.level}`:scope.kind==='school'?`pdTimed-${scope.table-2}`:`pdReady-${scope.activity}-${scope.range}-${scope.families[0]-1}`;
+    const target=$(id)||mastery;for(let node=target;node&&node!==$('historyView');node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
+    const summary=target.querySelector('summary');summary.focus({preventScroll:true});summary.scrollIntoView({block:'start'});
+   },{once:true});mastery.open=true;
+  };
+ }
  FlightMenu.resultActions(s);
 };
-function groupProgressSections(){
- const headings=[...$('historyView').querySelectorAll(':scope > h2')].filter(h=>['Progress by activity','Facts to focus on','Flight log'].includes(h.textContent));
- for(const heading of headings){
-  const section=document.createElement('section');section.className='progress-report-section';
-  const nodes=[];
-  for(let node=heading;node&&(node===heading||node.tagName!=='H2')&&!node.classList.contains('controls');node=node.nextElementSibling)nodes.push(node);
-  heading.before(section);section.append(...nodes);
+renderHistory=function(){
+ const owner=viewing;
+ FactFlightProgress.render($('historyView'),{
+  sessions:history,learnerId:owner==='previous'?null:owner,learnerName:name(owner),guest:owner==='guest',
+  onHome:()=>FlightMenu.home(),onChoose:()=>FlightMenu.profiles('statsPicker'),
+  onFlight:s=>{if(s){renderResult(s);show('resultsView')}},
+  onExport:()=>owner==='previous'?download('fact-flight-history.json',JSON.stringify(history,null,2),'application/json'):backupFromReport(owner),
+  onCSV:flights=>{const original=history,ids=new Set(flights.map(f=>f.id));try{history=original.filter(s=>ids.has(String(s.id)));exportCSV()}finally{history=original}},
+  canReview:reviewAccess(owner),
+  review:owner!=='previous'&&owner!=='guest'?filter=>{if(reviewAccess(owner))FlightMenu.openReview(FactFlightMath.reviewCandidates(records(owner),filter,true),{owner,source:'progress',filter,back:()=>progress(owner)})}:null
+ });
+ if(owner==='previous'){
+  $('exportAll').textContent='Export previous history archive JSON';
+  $('pdBackupNote').textContent='Previous progress stays separate. Archive JSON cannot be restored with Import learner. CSV contains filtered flights.';
+  if(!previousReadable)$('historyView').insertAdjacentHTML('afterbegin','<p role="alert">Previous history could not be read. Original data has not been changed.</p>');
  }
-}
-function collapseProgressCards(container,id,label){
- if(!container)return;
- container.id=id;
- const cards=[...container.children];
- document.getElementById(id+'Toggle')?.remove();document.getElementById(id+'Count')?.remove();
- const count=document.createElement('p');count.id=id+'Count';count.className='small';container.before(count);
- let expanded=false;
- const button=document.createElement('button');button.id=id+'Toggle';button.setAttribute('aria-controls',id);
- function paint(){cards.forEach((card,i)=>card.classList.toggle('hidden',!expanded&&i>=3));count.textContent=`Showing ${expanded?cards.length:Math.min(3,cards.length)} of ${cards.length} ${label}`;button.setAttribute('aria-expanded',String(expanded));button.textContent=expanded?'Show fewer ▴':`Show all ${cards.length} ${label} ▾`}
- button.onclick=()=>{expanded=!expanded;paint()};if(cards.length>3)container.after(button);paint();
-}
-function renderTableProgress(activity){
- if(activity&&activity!=='multiplication')return;
- const section=document.createElement('section');section.className='table-progress';section.id='tableProgress';
- section.innerHTML=`<div class="eyebrow">Multiplication</div><h2>Times tables at a glance</h2><p>See what has been practised, one table at a time.</p><div class="table-progress-filters"><label for="tableWindow">History window<select id="tableWindow"><option value="recent">Recent 5 flights</option><option value="all">All flights</option></select></label><label for="tableChoice">Times table<select id="tableChoice"><option value="all">All tables</option></select></label></div><p id="tableScope" class="small"></p><div id="tableCards" aria-live="polite"></div><p class="table-timing"><strong>Active time is not recall speed.</strong> Includes microphone preparation, listening, input and retries. iPhone voice adds delay. Compare only similar input methods and practice settings.</p><details><summary>How these numbers work</summary><p>First try means correct on the first submission, with no skips. Encounters include answered or skipped questions; untouched questions are excluded. Wrong attempts count incorrect submissions, not incorrect facts. Distinct facts group reversed pairs.</p><p>A fact such as 4 × 7 counts once in both the 4 and 7 tables, but once in the overall encounter count. A square such as 4 × 4 counts once in its table. Table totals overlap: do not add them together.</p><p>Recent means the latest five flights containing attempted or skipped multiplication facts, including mixed reviews and School Test. All tables use the same window. Small samples (fewer than 10 encounters) are a starting point, not a mastery measure. Missing recorded times are excluded from the average.</p></details>`;
- section.insertBefore(section.querySelector('.table-timing'),section.querySelector('#tableCards'));
- $('historyView').querySelector('.metrics').after(section);
- const choice=section.querySelector('#tableChoice'),windowChoice=section.querySelector('#tableWindow');
- if(viewing==='guest')windowChoice.options[1].textContent='All temporary flights';
- const all=FactFlightMath.tableProgress(history,'all');
- for(const row of all.tables){const option=document.createElement('option');option.value=row.table;option.textContent=row.table+' times table';choice.append(option)}
- function paint(){
-  const data=FactFlightMath.tableProgress(history,windowChoice.value);
-  section.querySelector('#tableScope').textContent=`${windowChoice.value==='recent'?'Recent':'All'} · ${data.flights} multiplication flight${data.flights===1?'':'s'} · ${data.total.encounters} encounters overall (counted once).`;
-  const rows=data.tables.filter(r=>choice.value==='all'?r.encounters:r.table===Number(choice.value));
-  section.querySelector('#tableCards').innerHTML=rows.length?rows.map(r=>`<article class="table-progress-card" data-progress-table="${r.table}"><div class="table-card-heading"><h3>${r.table} times table</h3><span class="small">${r.encounters<10?'Small sample':'Practice snapshot'}</span></div><p class="table-first"><strong>${r.encounters?Math.round(r.first/r.encounters*100)+'%':'—'}</strong> first try</p><p class="small">${r.first} correct first try / ${r.encounters} encounters</p><dl><div><dt>Wrong attempts</dt><dd>${r.wrong}</dd></div><div><dt>Skips</dt><dd>${r.skips}</dd></div><div><dt>Distinct facts</dt><dd>${r.facts}</dd></div><div><dt>Avg active time</dt><dd>${r.averageMs===null?'—':(r.averageMs/1000).toFixed(1)+'s'}</dd></div></dl><p class="small">${r.encounters?'Timing from '+r.timed+' recorded encounters.':'No practice in this window yet.'}</p></article>`).join(''):'<p class="notice">No multiplication practice in this window yet. Complete a flight to start your table progress.</p>';
-  if(rows.length)collapseProgressCards(section.querySelector('#tableCards'),'tableCards','tables');
-  else{section.querySelector('#tableCardsToggle')?.remove();section.querySelector('#tableCardsCount')?.remove()}
- }
- choice.onchange=paint;windowChoice.onchange=paint;paint();
-}
-const engineHistory=renderHistory;
-renderHistory=function(activity=null){engineHistory(activity);groupProgressSections();collapseProgressCards($('historyView').querySelector('.activity-progress'),'activityCards','activities');renderTableProgress(activity);const label=document.createElement('p');label.className='learner-report-label';label.textContent=name(viewing)+(viewing==='guest'?' · Temporary results, not saved':' · Results & Stats');$('historyView').prepend(label);const choose=document.createElement('button');choose.textContent='Choose learner results';choose.onclick=()=>FlightMenu.profiles('statsPicker');$('historyView').querySelector('.controls').prepend(choose);
- if(viewing!== 'previous'&&viewing!=='guest'){
-  const owner=viewing,section=document.createElement('section');section.className='missed-review-panel';
-  section.innerHTML='<h2>Review missed facts</h2><label for="reviewActivity">Review scope</label><select id="reviewActivity"><option value="all">All activities</option>'+Object.entries(FactFlightMath.activities).map(([id,a])=>'<option value="'+id+'">'+a.name+'</option>').join('')+'</select><p>Use the latest five eligible flights in this scope. Choose up to five facts before starting.</p><button id="progressReview">Choose review facts →</button>';
-  $('historyView').querySelector('.metrics').after(section);
-  section.querySelector('button').disabled=!reviewAccess(owner);
-  if(!reviewAccess(owner))section.insertAdjacentHTML('beforeend','<p>Select this learner on Home to start their review.</p>');
-  section.querySelector('button').onclick=()=>{if(!reviewAccess(owner))return;const filter=section.querySelector('select').value;FlightMenu.openReview(FactFlightMath.reviewCandidates(records(owner),filter,true),{owner,source:'progress',filter,back:()=>progress(owner)})};
- }
- if(viewing==='guest'){$('exportAll').remove();$('exportCSV').remove();$('historyView').lastElementChild.textContent='Guest results clear on reload or Change learner. To save future flights, use Change learner → Create Profile before starting.'}
- else if(viewing==='previous'&&!previousReadable){$('historyView').insertAdjacentHTML('afterbegin','<p role="alert">Previous history could not be read. Original data has not been changed.</p>')}
- else if(viewing==='previous'){$('exportAll').textContent='Export previous history archive JSON';$('historyView').lastElementChild.textContent+=' Previous progress archives cannot be restored with Import learner.'}
- else {const owner=viewing;$('exportAll').textContent='Export learner backup JSON';$('exportAll').onclick=()=>backupFromReport(owner);$('historyView').lastElementChild.textContent+=' JSON backup includes all of this learner’s flights, including unsaved results, and restores through Manage learners → Import learner.'}
 };
 $('menuView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;if('learner'in d)select(d.learner);if('createProfile'in d)FlightMenu.profiles('createProfile');if('changeLearner'in d)change();if('profileCancel'in d)FlightMenu.home();if('profileStats'in d)progress(d.profileStats)});
 $('menuView').addEventListener('submit',async e=>{if(e.target.id!=='profileForm')return;e.preventDefault();const form=e.target,button=form.querySelector('button'),value=$('nickname').value;button.disabled=true;try{const p=await store.add(value);refresh();select(p.id)}catch(err){if(form.isConnected){$('profileError').textContent=err.message;button.disabled=false}}});
@@ -177,7 +163,7 @@ function hasSelection(force=false){
  return active!==null;
 }
 function manage(){
- refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Change a learner’s name, export, restore, or remove their profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-rename-profile="${esc(p.id)}" ${storeError?'disabled':''}>Change Learner Name</button><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p>`;
+ refresh();return `<button class="quiet back" data-nav="parents">← Parent corner</button><h1>Manage learners</h1><p>Change a learner’s name, export, restore, or remove their profile in this browser.</p><p class="notice">Export before deleting if you want to keep a copy. You can restore a Manage learners JSON export using Import learner.</p><button class="primary" data-nav="importLearner">Import learner →</button><p id="managementStatus" role="status">${esc(managementMessage||storeError)}</p><div class="manage-list">${family.profiles.map(p=>{const count=records(p.id).length;return `<section class="manage-learner"><div><h2>${esc(p.name)}</h2><p>${count} flight${count===1?'':'s'}${active===p.id?' · Current learner':''}</p></div><div class="manage-actions"><button data-rename-profile="${esc(p.id)}" ${storeError?'disabled':''}>Change Learner Name</button><button data-export-profile="${esc(p.id)}" ${storeError?'disabled':''}>Export results JSON</button><button data-delete-profile="${esc(p.id)}" ${storeError?'disabled':''}>Delete profile…</button></div></section>`}).join('')||'<p>No learner profiles yet.</p>'}</div><p>Other learners and Previous progress are kept separate.</p><p>Backups containing chosen division families or new table ranges require Fact Flight v6.3 or later. Existing backups remain supported.</p>`;
 }
 function backupFromReport(id,recovery=null){
  try{exportProfile(id)}catch(e){
@@ -211,7 +197,7 @@ $('confirmDeleteLearner').onclick=async()=>{
  if(!deleteTarget||busy())return;const target=deleteTarget;$('confirmDeleteLearner').disabled=true;
  try{
   await store.remove(target.id,target.snapshot);
-  quickMemory.delete(target.id);let preferenceWarning='';try{localStorage.removeItem(quickPrefix+target.id);clearPractice(target.id)}catch{preferenceWarning=' Practice preferences could not be cleared.'}
+  quickMemory.delete(target.id);let preferenceWarning='';try{localStorage.removeItem(quickPrefix+target.id);clearPractice(target.id);globalThis.FactFlightFocus?.remove(target.id)}catch{preferenceWarning=' Practice preferences could not be cleared.'}
   for(const [id,record] of unsaved)if(record.learnerId===target.id){unsaved.delete(id);saveStates.delete(id)}
   if(active===target.id){active=null;session=null}if(viewing===target.id){viewing=null;history=[]}if(session?.learnerId===target.id)session=null;
   // Remove stale rendered copies from this tab after the confirmed deletion.
@@ -278,6 +264,6 @@ $('renameLearnerForm').onsubmit=async e=>{
 };
 $('menuView').addEventListener('click',e=>{const button=e.target.closest('[data-rename-profile]');if(!button||button.disabled)return;try{openRename(button.dataset.renameProfile)}catch(err){if($('managementStatus'))$('managementStatus').textContent=err.message}});
 
-window.FlightProfiles={voiceRefreshProblem,restoreVoiceOwner,reviewRetryFacts,reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
+window.FlightProfiles={focusContext:()=>({id:active,name:name(active),sessions:active?records(active):[]}),generationMemory,voiceRefreshProblem,restoreVoiceOwner,reviewRetryFacts,reviewChoice,rememberReview,reviewAccess,reviewOwner:()=>active,canRepeat,practiceChoice,rememberPractice,quickChoice,rememberQuick,quickWarning:()=>[quickWarning,practiceWarning].filter(Boolean).join(' '),entry,create,identity,picker,progress,manage,importStart,reviewScreen,hasSelection,isGuest:()=>active==='guest'};
 history=[];
 })();

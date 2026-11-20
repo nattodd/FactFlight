@@ -12,7 +12,20 @@ const activities={
  squares:{name:'Squares',symbol:'n²',desc:'A number times itself',levels:['Bases 1–5','Bases 1–10','Bases 1–12','Bases 13–20','Bases 21–50']}
 };
 function validTables(tables){return Array.isArray(tables)&&tables.length>0&&tables.length<=10&&new Set(tables).size===tables.length&&tables.every(n=>Number.isInteger(n)&&n>=1&&n<=10)}
+function validFamilies(values){return Array.isArray(values)&&values.length>0&&values.length<=12&&new Set(values).size===values.length&&values.every(n=>Number.isInteger(n)&&n>=1&&n<=12)}
+function selectionScope(activity,selection){
+ if(selection?.type==='tables'&&activity==='multiplication'&&validTables(selection.tables))return {kind:'families',activity,families:selection.tables.slice(),range:10};
+ if(selection?.type==='families'&&['multiplication','division'].includes(activity)&&validFamilies(selection.families)&&[10,12].includes(selection.range)&&Object.keys(selection).every(k=>['type','families','range'].includes(k)))return {kind:'families',activity,families:selection.families.slice(),range:selection.range};
+ return null;
+}
+function makeSelection(activity,families,range=10){return activity==='multiplication'&&range===10&&families.every(n=>n<=10)?{type:'tables',tables:families.slice()}:{type:'families',families:families.slice(),range};}
+function selectionLabel(activity,selection){const s=selectionScope(activity,selection);return s?`${activity==='division'?'Divide by':'Tables'} ${s.families.join(', ')} · ${activity==='division'?'answers':'other factor'} 1–${s.range}`:'Choose at least one family';}
 function questionPool(settings){
+ if(settings.selection?.type==='families'){
+  const scope=selectionScope(settings.activity,settings.selection);if(!scope||settings.mode==='school')throw Error('Invalid family selection');
+  const families=typeof module!=='undefined'&&module.exports?require('./family-practice.js'):root.FactFlightFamilies;
+  return families.pool(scope);
+ }
  if(settings.selection!==undefined&&settings.selection!==null&&(!settings.selection||settings.selection.type!=='tables'||settings.activity!=='multiplication'||!validTables(settings.selection.tables)))throw Error('Choose one or more multiplication tables from 1 to 10');
  const groups=new Map(),kind=settings.activity,l=settings.level;
  const add=(key,text,answer)=>{if(!groups.has(key))groups.set(key,{key,variants:[]});const g=groups.get(key);if(!g.variants.some(v=>v.text===text))g.variants.push({text,answer})};
@@ -41,6 +54,10 @@ function questionPool(settings){
  return [...groups.values()];
 }
 function createQuestionSource(settings,random=Math.random,pool=questionPool(settings)){
+ if(settings.mode!=='school'&&!settings.selection&&[1,2].includes(settings.level)&&Object.hasOwn(activities,settings.activity)){
+  const mix=typeof module!=='undefined'&&module.exports?require('./practice-generator.js'):root.FactFlightGenerator;
+  return mix.createSource(settings,random,pool);
+ }
  if(!pool.length)throw Error('Choose a nonempty question pool');
  let remaining=[],recent=[],round=0;
  const variantCounts=new Map();
@@ -87,7 +104,7 @@ const reviewPools=new Map();
 function validReviewFact(f){
  if(!f||!Object.hasOwn(activities,f.activity)||typeof f.text!=='string'||typeof f.key!=='string'||!Number.isInteger(f.answer)||f.answer<0)return false;
  const school=f.table!==undefined,selected=f.selection!==undefined;
- if(school?(f.activity!=='multiplication'||!Number.isInteger(f.table)||f.table<2||f.table>10||f.level!==undefined||selected):selected?(f.activity!=='multiplication'||f.selection?.type!=='tables'||!validTables(f.selection.tables)||f.level!==undefined):(!Number.isInteger(f.level)||f.level<0||f.level>4))return false;
+ if(school?(f.activity!=='multiplication'||!Number.isInteger(f.table)||f.table<2||f.table>10||f.level!==undefined||selected):selected?(!selectionScope(f.activity,f.selection)||f.level!==undefined):(!Number.isInteger(f.level)||f.level<0||f.level>4))return false;
  const settings={activity:f.activity,level:f.level,selection:f.selection,mode:school?'school':'practice',table:f.table};
  const signature=JSON.stringify(settings);
  if(!reviewPools.has(signature)){
@@ -117,7 +134,7 @@ function reviewCandidates(flights,filter='all',rolling=true){
  }
  return [...found.values()].filter(x=>!rolling||x.successes.size<2).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).map(x=>x.fact);
 }
-function validReview(r){return !!r&&r.version===1&&['results','progress'].includes(r.source)&&(r.filter==='all'||Object.hasOwn(activities,r.filter))&&Array.isArray(r.facts)&&r.facts.length>=1&&r.facts.length<=5&&new Set(r.facts.map(f=>f?.activity+':'+f?.key)).size===r.facts.length&&r.facts.every(f=>validReviewFact(f)&&(r.filter==='all'||r.filter===f.activity))}
+function validReview(r){return !!r&&[1,2].includes(r.version)&&['results','progress'].includes(r.source)&&(r.filter==='all'||Object.hasOwn(activities,r.filter))&&Array.isArray(r.facts)&&r.facts.length>=1&&r.facts.length<=5&&new Set(r.facts.map(f=>f?.activity+':'+f?.key)).size===r.facts.length&&r.facts.every(f=>validReviewFact(f)&&(r.version===2||f.selection?.type!=='families')&&(r.filter==='all'||r.filter===f.activity))}
 function createReviewSource(review,random=Math.random){
  if(!validReview(review))throw Error('Review facts are unavailable. Choose a fresh review.');
  const map=new Map(review.facts.map(f=>[f.activity+':'+f.key,f]));
@@ -142,6 +159,6 @@ function tableProgress(flights,window='recent'){
  const finish=r=>({...r,facts:r.facts.size,averageMs:r.timed?r.ms/r.timed:null});
  return {flights:selected.length,eligibleFlights:eligible.length,total:finish(total),tables:[...tables].sort((a,b)=>a[0]-b[0]).map(([table,r])=>({table,...finish(r)}))};
 }
-const api={tableProgress,validTables,activities,questionPool,createQuestionSource,parseWholeNumber,validReviewFact,reviewFact,reviewCandidates,validReview,createReviewSource};
+const api={tableProgress,validTables,validFamilies,selectionScope,makeSelection,selectionLabel,activities,questionPool,createQuestionSource,parseWholeNumber,validReviewFact,reviewFact,reviewCandidates,validReview,createReviewSource};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FactFlightMath=api;
 })(globalThis);

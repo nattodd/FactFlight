@@ -45,8 +45,8 @@
    if(!review&&s.review!==undefined)fail();
    const selected=s.selection!==undefined;
    if(selected){
-    const t=s.selection?.tables;
-    if(s.activity!=='multiplication'||s.schemaVersion!==2||s.level!==undefined||s.selection?.type!=='tables'||!Array.isArray(t)||t.length<1||t.length>10||new Set(t).size!==t.length||!t.every(n=>integer(n)&&n>=1&&n<=10))fail();
+    const scope=root.FactFlightMath?.selectionScope(s.activity,s.selection);
+    if(!scope||s.level!==undefined||s.table!==undefined||s.schemaVersion!==(s.selection.type==='families'?4:2))fail();
    }
    if(s.activity!==undefined){if(!review&&(!activities.includes(s.activity)||(!selected&&(!integer(s.level)||s.level>4||s.schemaVersion!==1))))fail()}
    else if(!integer(s.table)||s.table<2||s.table>10)fail();
@@ -65,9 +65,8 @@
      reviewKeys.add(key);
     }else if(p.activity!==undefined)fail();
     if(selected){
-     const operands=typeof p.text==='string'?p.text.match(/^(\d+) × (\d+)$/):null;
-     if(!operands)fail();const a=Number(operands[1]),b=Number(operands[2]);
-     if(a<1||a>10||b<1||b>10||(!s.selection.tables.includes(a)&&!s.selection.tables.includes(b))||p.answer!==a*b||p.key!==`×:${Math.min(a,b)}:${Math.max(a,b)}`)fail();
+     const scope=root.FactFlightMath.selectionScope(s.activity,s.selection);
+     if(!root.FactFlightContent.classify(p,scope).valid)fail();
     }
     if(s.activity){if(!str(p.text)||!str(p.key))fail()}else if(!integer(p.a)||!integer(p.b)||!integer(p.factor))fail();
     for(const a of p.attempts)if(!a||!integer(a.value)||!str(a.transcript)||!['voice','keyboard','button'].includes(a.source)||typeof a.correct!=='boolean'||!num(a.at))fail();

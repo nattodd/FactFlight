@@ -2,9 +2,13 @@
 
 **Vision:** *Little practice. Big confidence.* Simple, enjoyable practice for children ages 2–12 without unnecessary accounts, subscriptions, advertisements, complex menus or prescribed learning paths.
 
-**Current stable release:** `v6.2.0`, released 2026-11-16 to main/GitHub Pages; see the [GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.2.0) and [release record](docs/v6.2-release-record.md). **Development branch:** `v6.2-development`. Netlify production remains `v6-development`. v6.1.0 at `f760615` is the previous stable release; rollback requires separate approval and compatibility with v6.2 review records.
+**Current stable release:** `v6.3.0`, owner-approved for main/GitHub Pages on 2026-11-19; see the [release record](docs/v6.3-release-record.md) for publication verification. **Development branch:** `v6.3-development`. Netlify production remains `v6-development`. v6.2.0 is the previous release; rollback requires separate approval and preservation of new division/extended-range records.
 
 **Publication — 2026-11-16:** The owner verified Netlify Branch Deploy `a9fe516`, accepted the release-check groups and approved v6.2.0 publication to main/GitHub Pages with tag and GitHub release. The updated image marks v6.2 Available Now and v6.3–v6.7 Coming Soon. Earlier local-only/pending status notes below are historical. Voice remains frozen and retry reliability remains a known limitation. Netlify production is unchanged.
+
+**Expanded v6.3 planning agreement — 2026-11-18:** The owner accepted the [practice quality and Progress rules](docs/v6.3-rules-specification.md), adding intentional question mix, shared readiness/reporting, the reviewed Progress dashboard and optional parent focus controls alongside division families, tables through 12 and grouped menus. Local `v6.3-development` was created at `a3101b0`, whose files match local main `46f2f9c` and whose history contains release tag `v6.2.0` (`13d09dd`). Authorization covers branch creation and planning docs/image only: no application changes, commits, pushes, merges, deployments or Netlify changes. The private Learner Stats Review Mock Dashboard is the required visual reference; recreate it with synthetic fixtures, never copy its real data or screenshots. v6.3 remains planned; v6.2.0 remains available. Earlier authorizations below retain their historical scope.
+
+**v6.3 preview authorization — 2026-11-19:** Local implementation and all 40 automated regression configurations passed. The owner authorized committing/pushing the candidate and enabled its Netlify Branch Deploy for Windows Chrome and iPhone Safari/Chrome testing. Physical acceptance remains pending; v6.3 remains Coming Soon for production. Main/GitHub Pages and Netlify production v6-development remain unchanged. See the [device checklist](docs/v6.3-device-checklist.md). Earlier local-only authorizations below describe their historical increments.
 
 **Planning agreement — 2026-11-15:** The owner agreed to the post-v6.1 milestone sequence and authorized this roadmap update only. Future features remain planned, not implemented or verified. This agreement does not authorize application changes, branch creation, commits, pushes, deployments or Netlify configuration changes. Milestone suffixes identify independently testable increments, not promised version tags or dates. Detailed product defaults below remain proposals to confirm before their implementation.
 
@@ -18,7 +22,7 @@
 2. **Useful in 30 seconds.** Open → choose an activity → pick a small amount → start. Remember the last choices, but let anyone switch quickly.
 3. **One app for many ages.** Toddlers get touch-first pictures and sounds; older kids get fluency, typing, and voice practice.
 4. **Private by default.** Results remain on the device unless a parent deliberately exports them. Profiles use optional nicknames; never require a child's real name.
-5. **Parent-controlled, child-friendly.** Settings and detailed reports are available but never block a quick practice session.
+5. **Parent-controlled, child-friendly.** Settings and detailed reports remain optional. Free choice is the default; the planned per-learner parent focus setting can restrict ready choices, with an explicit review allowance and no active-flight interruption.
 6. **Do not break what works.** Keep the verified v5 microphone behavior, timers, original math test, analytics, and browser compatibility.
 7. **Free and maintainable.** Prefer a static GitHub Pages site with HTML/CSS/JavaScript and local data. No paid backend required.
 
@@ -32,16 +36,19 @@ Keep the learner picker and Guest entry. Learner Home remains the subject screen
 |---|---|
 | Math | Numbers & Counting; Operations & Facts; Time & Clocks; later Money & Measurement |
 | Numbers & Counting | Recognition; counting objects; number sequences/order; skip counting |
-| Operations & Facts | Add & Subtract (addition, subtraction, bonds); Multiply & Divide; Doubles & Halves; Squares |
+| Operations & Facts | All eight activity tiles directly: Addition, Subtraction, Multiplication, Division, Number bonds, Doubles, Halves, Squares. Optional visual headings never add a click. |
 | Time & Clocks | Read clocks; analog/digital matching; 12/24-hour time; separate elapsed time |
 | Letters & Sounds | Alphabet; Letter Sounds |
 | Colors & Shapes | Colors; Shapes, without unnecessary extra group screens |
 | Reading | Initially a small activity/deck chooser; groups only when needed |
+| Games & Strategy — future, unscheduled | Chess: tactical pattern recognition first; supporting fundamentals, board awareness, openings and endgames. See section 4. |
 | Parent corner | Learner management, backups, detailed settings and content information |
 
-Target two to four major choices per screen, never 15–20 activity tiles. Operations category activity choices can sit within setup instead of another full-screen level. Table/family selection stays inside its activity. Preserve a clearly labeled original School Test shortcut under Math.
+Target two to four major subject choices per screen, never 15–20 activity tiles. Owner refinement (2026-11-18): Operations & Facts shows all eight existing activities directly; Quick Practice opens those eight directly. Do not insert Add & Subtract or other intermediate category screens. Table/family selection stays inside its activity. Preserve a clearly labeled original School Test shortcut under Math.
 
-Back returns to the previous context; Home returns to learner Home. Use consistent hierarchy, focus restoration, transitions, large touch targets and text/icon labels. Preserve Results repeat shortcuts and last-started settings so repeat users bypass the hierarchy. Consider a small recent-practice area later, not a favorites-management system. Keep Coming Soon compact and explicit; avoid empty future-subject tiles.
+Progress must match the reviewed **Mock Dashboard** in **Learner Stats Review**: three side-by-side summary tiles, collapsed Mastery then Results, equal compact activity cards, status icons/text, progress bars and bottom Collapse controls. This is distinct from grouped practice navigation. See [the visual acceptance contract](docs/v6.3-rules-specification.md#8-progress-page-and-report-definitions); private learner content stays outside the repository.
+
+Back returns to the previous context; Home returns to learner Home. Use consistent hierarchy, focus restoration, transitions, large touch targets and text/icon labels. Preserve Results repeat shortcuts and last-started settings so repeat users bypass the hierarchy. Consider a small recent-practice area later, not a favorites-management system. Owner refinement (2026-11-19): retain subject-style disabled Coming Soon tiles for Letters & Sounds, Colors & Shapes and Reading, plus Numbers & Counting and Time & Clocks under Math.
 
 ### Mobile setup — first increment
 
@@ -111,6 +118,55 @@ Begin with small reviewed sight-word decks, listen-and-select, flashcard reveal 
 
 Defer automatic spoken-word grading: homophones, accents, dialects and recognizer uncertainty differ from numeric parsing. Voice stays optional; recognition failure is not evidence that a child cannot read. Avoid unnecessary raw transcript retention in new word activities.
 
+### Games & Strategy → Chess — long-term, unscheduled
+
+**Purpose:** Short, focused practice that helps learners recognize chess patterns, understand threats and make better decisions. **Tactical pattern recognition is the central activity.** Chess complements the games learners already play; it is not a full chess game, AI opponent, multiplayer service or competitive platform.
+
+**Priority:** Future subject exploration, secondary to established development commitments. No release version, delivery date or implementation approval is assigned.
+
+**Proposed route:** Games & Strategy → Chess → Tactics → Quick Practice.
+
+**Core tactical patterns:** Forks, pins, skewers, discovered attacks, double attacks, hanging or undefended pieces, back-rank weaknesses and basic mating patterns. Positions may contain overlapping patterns; prompts and accepted answers must avoid ambiguous grading.
+
+**Illustrative difficulty progression—not finalized levels:**
+
+| Stage | Practice |
+|---|---|
+| Recognition | Identify a clearly presented tactical pattern from a few choices. |
+| Identify the opportunity | Select the piece that could execute the tactic. |
+| Find the move | Select the piece and destination square. |
+| Short calculation | Find simple tactical sequences, including mate in one or two where appropriate. |
+| Advanced recognition | Evaluate less obvious tactics with competing candidate moves. |
+
+Refine difficulty through future content review and learner testing. Keep recognition, move selection and calculation distinct in reporting; do not assume equivalent accuracy means equivalent skill.
+
+**Supporting activities:**
+
+- **Board fundamentals:** Piece recognition and movement, coordinates, square identification, captures, check and basic rules.
+- **Board awareness:** Attacked and defended squares, undefended pieces, threats and elementary material-winning opportunities.
+- **Checkmate and endgames:** Check versus checkmate, mate in one, stalemate, basic mating patterns and simple king-and-pawn concepts.
+- **Openings:** Recognize move sequences, positions and basic ideas for White openings and Black defenses. Candidate examples include the Italian Game, Ruy Lopez, Queen’s Gambit, London System, Sicilian Defense, French Defense and Caro-Kann Defense. Handle transpositions and overlapping opening names explicitly; do not mark a reasonable alternative name wrong.
+
+**Practice experience:** Offer Quick Practice with 5, 10, 15 or 20 positions and optional untimed practice. Use a responsive, touch-first board, large pieces, simple positions and minimal reading for beginners. Provide clear answer feedback, short explanations, keyboard-accessible alternatives, sufficient contrast and light/dark modes. Reuse local learner progress and missed-pattern review where appropriate. No required microphone, accounts, online services, streaks, rankings or competitive pressure.
+
+**Possible phases—not release milestones:**
+
+1. **Chess Foundations:** Coordinates, piece movement and basic tactical identification.
+2. **Tactical Recognition:** Curated coverage of the core patterns.
+3. **Interactive Tactics:** Piece-and-square selection, mate in one and short sequences.
+4. **Openings & Endgames:** Opening recognition and principles, checkmate/stalemate and beginner endgames.
+5. **Adaptive Review:** Transparent, locally derived suggestions for frequently missed patterns.
+
+Phases may overlap or be reordered during future planning. Start with a small, carefully reviewed activity set rather than a large unverified puzzle collection.
+
+**Future implementation boundaries:** Reuse profiles, session management, supported practice modes and results where appropriate. Separate chess content, rules, rendering and session logic. Represent positions with FEN and expected moves with an unambiguous format such as UCI. Validate legal positions, side to move, legal moves, accepted alternatives and solution sequences. Consider a small locally bundled rules library only after dependency review. Use original or appropriately licensed positions, artwork and explanations with recorded provenance. No full chess AI, external chess APIs, multiplayer or backend infrastructure.
+
+Preserve math, optional speech and existing learner history. Any new saved-record or export representation requires a separately reviewed compatibility plan before implementation.
+
+**Future acceptance criteria:** Reviewed content and solutions; unambiguous grading; accessible touch/keyboard interaction; correct local progress and review behavior; verified save/import/reload compatibility; and regression coverage protecting existing activities.
+
+*Guiding principle: Help players recognize patterns and make better decisions—not replace the chess games they already enjoy.*
+
 ## 5. Release Roadmap
 
 Completed releases are listed first, followed by the agreed future sequence. All future releases remain **PLANNED** and require separately authorized implementation and publication. Lettered increments identify delivery order within a version, not promised tags or dates. Grouped navigation precedes new subjects; one counting activity proves typed choices before broader expansion. Each release requires section 7's full regression matrix.
@@ -154,7 +210,7 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 **Milestone closed:** completed release and production voice verification are recorded above; accepted coverage limitations remain visible. No new app change or publication is part of this documentation update.
 
-### v6.2 — Targeted review and mobile setup usability (COMPLETE — current production)
+### v6.2 — Targeted review and mobile setup usability (COMPLETE — previous release)
 
 **Owner release-check acceptance — 2026-11-16:** Microphone checks, keypad fallback, two-tab recovery (including export from the non-saving tab and successful import into the saving tab), final practice/data smoke testing, family safeguards and physical usability passed as reported after preview `2072106`. Further physical-usability improvements are deferred to v6.3; specifics are not yet defined. Voice remains frozen. Local release finalization is complete; explicit production approval remains outstanding. v6.2 is Ready for Release, not yet published. See the [acceptance record](docs/v6.2-manual-release-checklist.md).
 
@@ -188,22 +244,50 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 - A reversed pair such as 4 × 7 contributes once to each relevant table view and once globally; 4 × 4 counts once in its table. Table totals overlap and must not be summed. Do not infer an exclusive intended table from randomized display order.
 - Show sample size and a small-sample notice (proposed threshold: ten encounters). Compare equivalent scopes/windows; avoid mastery percentages and unsupported improvement claims.
 
-### v6.3 — Fact families and grouped navigation (PLANNED)
+### v6.3 — Fact families and grouped navigation (COMPLETE — 2026-11-19)
+
+**Current status — 2026-11-19:** v6.3a–f are implemented and accepted. All 42 automated suite configurations pass; the owner accepted the added functionality on Windows Chrome and iPhone Chrome/Safari and authorized production publication. See [release notes](docs/v6.3-release-notes.md), [verification](docs/v6.3-release-preparation-regression.md) and [publication record](docs/v6.3-release-record.md). The roadmap graphic marks v6.3.0 Available Now, later releases Coming Soon and Chess unscheduled. Dated increment notes below retain their original historical scope.
+
+**Scope expansion — owner-approved 2026-11-18:** This existing milestone now includes practice quality and a quick, friendly Progress page explaining what a child practices, how they are doing and what to work on. The heading and established increment labels are retained; no later release is reordered. The [approved rules and synthetic acceptance examples](docs/v6.3-rules-specification.md) govern the expanded scope. At that planning stage application work required separate authorization; subsequent implemented increments and preview approvals are recorded below.
 
 **Build, in order:**
 
-1. **v6.3a — Fact-family extension:** Targeted division and explicit multiplication tables 11/12 with deliberate factor ranges.
-2. **v6.3b — Grouped navigation:** Subject/group/activity organization from section 2, supported by a small activity registry.
+**Immediate review priority — 2026-11-18:** The owner requested a complete L1–L5 question-quality audit before further tasks: current pools, private testing findings, fact definitions, repetitions/adjacent similarities and a proposed activity-specific balance. See [audit and proposal](docs/v6.3-question-mix-audit.md). This is a review gate, not implementation approval or a renumbering of the increments below. At that review stage the generator remained unchanged.
 
-**Value / risk:** More precise practice and room to expand. Medium complexity; medium-high compatibility risk for family records and medium navigation risk. Reuse selectors with operation-specific semantics and preserve existing Quick/repeat/School paths.
+**Local generator increment — 2026-11-18:** The owner subsequently authorized the reviewed L2/L3 mix with learner-specific in-memory carryover. It is implemented locally with measured before/after graphs in the [educator guide](docs/what-children-practice.md); see [verification and remaining device checks](docs/v6.3-generator-verification.md). Released pools, L1/L4/L5, chosen tables, missed-fact review and School Test are preserved. No storage schema or publication changes. v6.3 remains Coming Soon for production; integrated device acceptance is still required.
 
-**Done when:** Generator diversity, range/version validation, old/new imports, remembered preferences and Next Table endpoint tests pass. All activities and shortcuts remain reachable by keyboard/touch on required physical browsers. No School Test changes or silent range changes.
+**Local family increment — 2026-11-18:** After confirming a fresh production backup, the owner approved additive saved scopes for division families and multiplication tables 1–12, with explicit through-10/12 ranges. Local menus, generation, repeat/next, review and import/export checks are implemented; see [verification](docs/v6.3-families-verification.md). Existing records are not migrated or reinterpreted; new-scope backups require v6.3. School Test remains fixed. Physical-device acceptance is pending, and v6.3 remains Coming Soon. Grouped menus and the new Progress dashboard were implemented in subsequent increments.
+
+**Local grouped-navigation increment — 2026-11-18:** The owner authorized v6.3b navigation from section 2. The small activity registry, Operations & Facts groups, future areas (subsequently restored to Coming Soon tiles), direct Quick/repeat routes and Back focus restoration are implemented and locally tested; see [verification](docs/v6.3-grouped-menus-verification.md). School Test and backup compatibility are unchanged. The Progress dashboard was subsequently implemented; physical-device acceptance remains pending; v6.3 stays Coming Soon.
+
+**Navigation simplification — 2026-11-18:** The owner requested all eight activities directly under Operations & Facts and Quick Practice, removing the extra category click. Implemented locally with original activity order, contextual Back, repeat shortcuts and School Test preserved. Optional visual headings must not add navigation depth. No backup-format or publication change.
+
+Before v6.3a/b, establish shared scope/classification definitions, synthetic fixtures, pure reporting and readiness calculations. This foundation aligns the generator, expanded selectors and explanations.
+
+**Local foundation — 2026-11-18:** Owner-authorized shared definitions, reports/readiness and synthetic tests are implemented as standalone pure modules; [local verification](docs/v6.3-foundation-verification.md) records 35 test groups and an isolated Windows Chrome calculation smoke. They were standalone at that stage and are now loaded by the integrated app. The owner approved outer-window completion credits so long flights remain viable. Later increments integrated the UI, selectors, restrictions, generator allocation and approved additive saved scopes. v6.3a–f are now implemented and owner-accepted for the approved v6.3.0 release.
+
+1. **v6.3a — Fact-family extension:** Targeted division and explicit multiplication tables 11/12 with deliberate ranges, compatible records and range-specific readiness.
+2. **v6.3b — Grouped navigation:** Subject/group/activity organization from section 2, supported by a small activity registry; preserve Quick, repeat and School shortcuts.
+3. **v6.3c — Progress and menu trophies:** Recreate the owner-reviewed Learner Stats Review Mock Dashboard with synthetic data, shared reports, understandable readiness and separate timed achievements. Include table/divisor range breakdowns and distinguish selectable tables from higher encountered factors.
+
+   Local Progress dashboard implementation now connects the shared calculations with synthetic fixture verification; see [dashboard verification](docs/v6.3-progress-verification.md). The owner accepted the visual direction and subsequently confirmed Windows/iPhone functional testing. Menu trophies and parent focus restrictions were subsequently implemented locally with synthetic route checks; see [focus verification](docs/v6.3-focus-verification.md). Owner acceptance and production approval are recorded in the current release status above.
+4. **v6.3d — Optional parent focus:** Per-learner restrictions, default off; accessible disabled choices retaining trophies, checks at every start route, explicit one-flight review allowance, Guest isolation and all-ready recovery.
+5. **v6.3e — Intentional ordinary-practice generation:** Bounded encounter-driven allocation, targeted Level 3 mix, identity ceilings, structural variety and tested tiny-pool fallbacks; preserve advanced pools and original School Test.
+6. **v6.3f — Integrated acceptance:** Automated distribution/report/storage/start-route checks plus required physical-browser regression and owner visual review. No publication is implied.
+
+**Value / risk:** Better practice content and parent decisions without a prescribed path. High combined complexity: shared classification and evidence must stay consistent across selection, generation and reports; record/range compatibility, carryover state and restrictions are sensitive boundaries. Keep increments independently testable, current readiness distinct from retention, timed fluency separate, and voice frozen. Obtain a fresh backup before schema/metadata changes.
+
+**Full local regression — 2026-11-19:** All 40 suite configurations pass after the cross-tab import-message fix and test-harness updates; see [evidence](docs/v6.3-local-regression.md). The [owner device checklist](docs/v6.3-device-checklist.md) is ready with synthetic learner exports. That earlier result is retained as historical evidence. The final candidate rerun is linked above. Windows real-microphone and physical iPhone Safari/Chrome acceptance remain pending; production publication is not authorized and v6.3 remains Coming Soon.
+
+**Done when:** The rules specification's synthetic cases pass, short flights can qualify without reset penalties, high accuracy cannot conceal missing coverage, and all scopes/ranges remain explicit. Progress matches the private reviewed layout using synthetic fixtures, including narrow screens, collapsed/expanded states, equal cards, focus/scroll and clear definitions. Restriction routes, mixed choices, review overrides, learner separation and reload are verified. Seeded generation proves actual batch/single-flight distributions, identity ceilings, bounded fallbacks and no pool broadening. Old/new imports, remembered preferences and Next Table/Divisor endpoints pass. Complete section 7's Windows Chrome/iPhone Safari/iPhone Chrome regression; identify unavailable checks. No School Test changes, speech rewrites or silent history edits.
 
 #### Fact-family defaults — proposed
 
-Division selection means **Divide by** selected divisors with exact integer answers: choosing 4 produces `(4 × q) ÷ 4`. Share selector UI/configuration patterns but preserve ordered division identities and all existing levels.
+**Status update — 2026-11-18:** The defaults below were owner-approved planning rules and are now implemented in the development candidate; this established heading is retained. Owner device acceptance and production approval were subsequently recorded in the current release status above.
 
-Expand explicit multiplication to 1–12 with **Other factor: up to 10 / up to 12**. Existing selections retain their original up-to-10 meaning. Save the range and preserve it through repeats, preferences and exports. Next Table(s) advances all selections together and stops if any is 12; no wrapping/dropping tables. School stays unchanged. Coordinate generation, validation, session versions, imports, labels and analytics rather than adding buttons alone.
+Division selection means **Divide by** selected divisors 1–12, with answers up to 10 or up to 12 and exact integer answers: choosing 4 produces `(4 × q) ÷ 4`. Share selector UI/configuration patterns but preserve ordered division identities and all existing levels.
+
+Expand explicit multiplication to 1–12 with **Other factor: up to 10 / up to 12**. Existing selections retain their original up-to-10 meaning. Save the range and preserve it through repeats, preferences and exports. Next Table(s) advances all selections together and stops if any is 12; no wrapping/dropping tables. Next Divisor(s) follows the same stop-at-12 rule. Readiness is specific to each family/range; missing 11/12 coverage cannot be hidden by through-10 accuracy. School stays unchanged. Coordinate generation, validation, session versions, imports, labels and analytics rather than adding buttons alone.
 
 ### v6.4 — Numbers & Counting, shapes and colors (PLANNED)
 
@@ -273,7 +357,7 @@ Source review confirmed the following existing capabilities; do not reimplement 
 - Optional local nickname profiles, isolation, temporary Guest, renaming, scoped deletion and individual-learner backup/import with review, duplicate skipping and conflict rejection.
 - Responsive branded interface, themes, Home Screen icons and manifest. Manifest display is currently browser mode; offline caching is not implemented.
 
-See [generation](scripts/math-activities.js), [menus](scripts/menus.js), [engine/reports](index.html), [profile integration](scripts/profiles.js) and [storage/import](scripts/profile-store.js). Previous progress remains separate. New subjects are Coming Soon. Missed-fact review and per-table summaries are implemented and owner-accepted in the locally finalized v6.2.0. Division selection, explicit 11/12, full-family restore and offline support remain planned.
+See [generation](scripts/math-activities.js), [menus](scripts/menus.js), [engine/reports](index.html), [profile integration](scripts/profiles.js) and [storage/import](scripts/profile-store.js). Previous progress remains separate. New subjects are Coming Soon. Missed-fact review and per-table summaries are implemented and owner-accepted in the locally finalized v6.2.0. Division selection and explicit 11/12 are implemented in the v6.3 preview. Full-family restore and offline support remain planned.
 
 Preserve local-first storage, optional nicknames, reliable non-voice input and existing history. No accounts, advertising, subscriptions, remote analytics or cloud synchronization are part of this plan. Recognized transcripts are stored locally with results and may appear in exports; the app does not store microphone recordings. Browser speech recognition may send audio to an online service. Do not claim all speech processing is on-device. Competitor products may inform research but do not define the product.
 
@@ -308,7 +392,7 @@ Icons/manifest already exist. Separately improve standalone launch and verify it
 
 ## 7. Development, testing, and release process
 
-1. Keep production `main` at verified v6.1.0 until a separately approved release. Active local branch `v6.2-development` was created from verified main `f760615`; completion notes from `b62a014` and the planning documentation/image are carried forward with owner approval for a local documentation-only commit. Recheck branch and working state before implementation. Future release branches should likewise start from verified production, not blindly from a previous development tip.
+1. Keep production `main` at the approved v6.2.0 baseline until a separately approved release. Active local branch `v6.3-development` starts at `a3101b0`, verified file-identical to local main `46f2f9c` and descended from v6.2.0 tag `13d09dd`; it retains the existing privacy safeguards. Initial authorization covered branch creation and planning docs/image; subsequent owner approvals covered the local v6.3 implementation described above. Full local regression has passed. Commits, pushes and publication remain unauthorized. Recheck branch and working state before further changes. Future release branches must likewise use a verified baseline.
 2. Develop incrementally locally. Run pure generator/validation checks, then affected browser suites using isolated synthetic data. Reuse existing generation, menu, profile, import, repeat, feedback and regression coverage; do not automate against real learner stores.
 3. Use only the approved Netlify Branch Deploy workflow. Production stays `v6-development`; the documented enabled additional branch is `v6.1-development`. A new branch needs separately approved allowlist configuration. Earlier preview approvals do not authorize new commits/pushes or primary-site changes.
 4. Batch coherent, separately approved preview pushes after local checks. Verify deployed SHA and Branch Deploy context before physical-device testing. Check usage before/after allowing for delay/rounding. Last account-specific evidence: 19 production deploys / 285 deployment credits / 14.7 remaining, with traffic increasing during the trial. This is historical, not a fresh balance. No extra production-deploy charge in that trial does not mean unlimited free previews. See [billing evidence](docs/v6.1-branch-deploy-trial.md).
@@ -330,11 +414,13 @@ Optional challenges, picture reveals and session-local rewards follow simple rev
 
 Money/coins/change and measurement units/conversions belong together; patterns near Numbers & Counting; vocabulary can extend Reading. Science, geography, parent-created decks and importable content packs remain an idea inventory. Wait for multiple real content types before designing a pack/authoring platform. Sharing content must not share children's progress.
 
+Games & Strategy → Chess is a long-term, unscheduled subject proposal centered on tactical pattern recognition. It does not change the established release sequence or take priority over committed subjects and reliability work. Its proposed phases describe possible increments, not approved releases.
+
 Mandatory accounts, subscriptions, advertising, remote analytics, cloud synchronization, social features and complicated prescribed curricula remain outside this agreed plan.
 
 ### Decisions before implementation
 
-The sequence is agreed; confirm detailed defaults while preparing each increment:
+The sequence is agreed. The expanded v6.3 defaults are accepted in the [rules specification](docs/v6.3-rules-specification.md); do not reopen them as unapproved proposals. Before coding, complete its technical boundary fixtures (identity flags, chronology, allocation bookkeeping and activity/range aggregation). The following older checklist remains a reference for other increments; approved v6.3 rules supersede overlapping proposed defaults:
 
 - Review eligibility/window, two-flight retirement, small-pool behavior and Guest scope.
 - Table overlap/denominators and small-sample threshold.
