@@ -2,7 +2,7 @@
 
 **Vision:** *Little practice. Big confidence.* Simple, enjoyable practice for children ages 2–12 without unnecessary accounts, subscriptions, advertisements, complex menus or prescribed learning paths.
 
-**Current stable release:** `v6.2.0`, released 2026-11-16 to main/GitHub Pages; see the [GitHub release](https://github.com/nattodd/FactFlight/releases/tag/v6.2.0) and [release record](docs/v6.2-release-record.md). **Development branch:** `v6.3-development`. Netlify production remains `v6-development`. v6.1.0 at `f760615` is the previous stable release; rollback requires separate approval and compatibility with v6.2 review records.
+**Current stable release:** `v6.3.0`, owner-approved for main/GitHub Pages on 2026-11-19; see the [release record](docs/v6.3-release-record.md) for publication verification. **Development branch:** `v6.3-development`. Netlify production remains `v6-development`. v6.2.0 is the previous release; rollback requires separate approval and preservation of new division/extended-range records.
 
 **Publication — 2026-11-16:** The owner verified Netlify Branch Deploy `a9fe516`, accepted the release-check groups and approved v6.2.0 publication to main/GitHub Pages with tag and GitHub release. The updated image marks v6.2 Available Now and v6.3–v6.7 Coming Soon. Earlier local-only/pending status notes below are historical. Voice remains frozen and retry reliability remains a known limitation. Netlify production is unchanged.
 
@@ -41,6 +41,7 @@ Keep the learner picker and Guest entry. Learner Home remains the subject screen
 | Letters & Sounds | Alphabet; Letter Sounds |
 | Colors & Shapes | Colors; Shapes, without unnecessary extra group screens |
 | Reading | Initially a small activity/deck chooser; groups only when needed |
+| Games & Strategy — future, unscheduled | Chess: tactical pattern recognition first; supporting fundamentals, board awareness, openings and endgames. See section 4. |
 | Parent corner | Learner management, backups, detailed settings and content information |
 
 Target two to four major subject choices per screen, never 15–20 activity tiles. Owner refinement (2026-11-18): Operations & Facts shows all eight existing activities directly; Quick Practice opens those eight directly. Do not insert Add & Subtract or other intermediate category screens. Table/family selection stays inside its activity. Preserve a clearly labeled original School Test shortcut under Math.
@@ -117,6 +118,55 @@ Begin with small reviewed sight-word decks, listen-and-select, flashcard reveal 
 
 Defer automatic spoken-word grading: homophones, accents, dialects and recognizer uncertainty differ from numeric parsing. Voice stays optional; recognition failure is not evidence that a child cannot read. Avoid unnecessary raw transcript retention in new word activities.
 
+### Games & Strategy → Chess — long-term, unscheduled
+
+**Purpose:** Short, focused practice that helps learners recognize chess patterns, understand threats and make better decisions. **Tactical pattern recognition is the central activity.** Chess complements the games learners already play; it is not a full chess game, AI opponent, multiplayer service or competitive platform.
+
+**Priority:** Future subject exploration, secondary to established development commitments. No release version, delivery date or implementation approval is assigned.
+
+**Proposed route:** Games & Strategy → Chess → Tactics → Quick Practice.
+
+**Core tactical patterns:** Forks, pins, skewers, discovered attacks, double attacks, hanging or undefended pieces, back-rank weaknesses and basic mating patterns. Positions may contain overlapping patterns; prompts and accepted answers must avoid ambiguous grading.
+
+**Illustrative difficulty progression—not finalized levels:**
+
+| Stage | Practice |
+|---|---|
+| Recognition | Identify a clearly presented tactical pattern from a few choices. |
+| Identify the opportunity | Select the piece that could execute the tactic. |
+| Find the move | Select the piece and destination square. |
+| Short calculation | Find simple tactical sequences, including mate in one or two where appropriate. |
+| Advanced recognition | Evaluate less obvious tactics with competing candidate moves. |
+
+Refine difficulty through future content review and learner testing. Keep recognition, move selection and calculation distinct in reporting; do not assume equivalent accuracy means equivalent skill.
+
+**Supporting activities:**
+
+- **Board fundamentals:** Piece recognition and movement, coordinates, square identification, captures, check and basic rules.
+- **Board awareness:** Attacked and defended squares, undefended pieces, threats and elementary material-winning opportunities.
+- **Checkmate and endgames:** Check versus checkmate, mate in one, stalemate, basic mating patterns and simple king-and-pawn concepts.
+- **Openings:** Recognize move sequences, positions and basic ideas for White openings and Black defenses. Candidate examples include the Italian Game, Ruy Lopez, Queen’s Gambit, London System, Sicilian Defense, French Defense and Caro-Kann Defense. Handle transpositions and overlapping opening names explicitly; do not mark a reasonable alternative name wrong.
+
+**Practice experience:** Offer Quick Practice with 5, 10, 15 or 20 positions and optional untimed practice. Use a responsive, touch-first board, large pieces, simple positions and minimal reading for beginners. Provide clear answer feedback, short explanations, keyboard-accessible alternatives, sufficient contrast and light/dark modes. Reuse local learner progress and missed-pattern review where appropriate. No required microphone, accounts, online services, streaks, rankings or competitive pressure.
+
+**Possible phases—not release milestones:**
+
+1. **Chess Foundations:** Coordinates, piece movement and basic tactical identification.
+2. **Tactical Recognition:** Curated coverage of the core patterns.
+3. **Interactive Tactics:** Piece-and-square selection, mate in one and short sequences.
+4. **Openings & Endgames:** Opening recognition and principles, checkmate/stalemate and beginner endgames.
+5. **Adaptive Review:** Transparent, locally derived suggestions for frequently missed patterns.
+
+Phases may overlap or be reordered during future planning. Start with a small, carefully reviewed activity set rather than a large unverified puzzle collection.
+
+**Future implementation boundaries:** Reuse profiles, session management, supported practice modes and results where appropriate. Separate chess content, rules, rendering and session logic. Represent positions with FEN and expected moves with an unambiguous format such as UCI. Validate legal positions, side to move, legal moves, accepted alternatives and solution sequences. Consider a small locally bundled rules library only after dependency review. Use original or appropriately licensed positions, artwork and explanations with recorded provenance. No full chess AI, external chess APIs, multiplayer or backend infrastructure.
+
+Preserve math, optional speech and existing learner history. Any new saved-record or export representation requires a separately reviewed compatibility plan before implementation.
+
+**Future acceptance criteria:** Reviewed content and solutions; unambiguous grading; accessible touch/keyboard interaction; correct local progress and review behavior; verified save/import/reload compatibility; and regression coverage protecting existing activities.
+
+*Guiding principle: Help players recognize patterns and make better decisions—not replace the chess games they already enjoy.*
+
 ## 5. Release Roadmap
 
 Completed releases are listed first, followed by the agreed future sequence. All future releases remain **PLANNED** and require separately authorized implementation and publication. Lettered increments identify delivery order within a version, not promised tags or dates. Grouped navigation precedes new subjects; one counting activity proves typed choices before broader expansion. Each release requires section 7's full regression matrix.
@@ -160,7 +210,7 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 **Milestone closed:** completed release and production voice verification are recorded above; accepted coverage limitations remain visible. No new app change or publication is part of this documentation update.
 
-### v6.2 — Targeted review and mobile setup usability (COMPLETE — current production)
+### v6.2 — Targeted review and mobile setup usability (COMPLETE — previous release)
 
 **Owner release-check acceptance — 2026-11-16:** Microphone checks, keypad fallback, two-tab recovery (including export from the non-saving tab and successful import into the saving tab), final practice/data smoke testing, family safeguards and physical usability passed as reported after preview `2072106`. Further physical-usability improvements are deferred to v6.3; specifics are not yet defined. Voice remains frozen. Local release finalization is complete; explicit production approval remains outstanding. v6.2 is Ready for Release, not yet published. See the [acceptance record](docs/v6.2-manual-release-checklist.md).
 
@@ -194,9 +244,9 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 - A reversed pair such as 4 × 7 contributes once to each relevant table view and once globally; 4 × 4 counts once in its table. Table totals overlap and must not be summed. Do not infer an exclusive intended table from randomized display order.
 - Show sample size and a small-sample notice (proposed threshold: ten encounters). Compare equivalent scopes/windows; avoid mastery percentages and unsupported improvement claims.
 
-### v6.3 — Fact families and grouped navigation (PLANNED)
+### v6.3 — Fact families and grouped navigation (COMPLETE — 2026-11-19)
 
-**Current status — 2026-11-19:** v6.3a–e are implemented in the development candidate `d44dad6`; v6.3f integrated acceptance remains open. The owner accepted the latest tile appearance and is testing Windows/iPhone. The final full regression is recorded in [final candidate evidence](docs/v6.3-final-regression.md); [draft release notes](docs/v6.3-release-notes.md) and the [release checklist](docs/v6.3-release-plan.md) describe remaining gates. v6.3 remains Coming Soon for production. The established heading is retained. Dated increment notes below describe their original stage, not current implementation authorization. This final regression/documentation task is local only: no new commits, pushes or production changes.
+**Current status — 2026-11-19:** v6.3a–f are implemented and accepted. All 42 automated suite configurations pass; the owner accepted the added functionality on Windows Chrome and iPhone Chrome/Safari and authorized production publication. See [release notes](docs/v6.3-release-notes.md), [verification](docs/v6.3-release-preparation-regression.md) and [publication record](docs/v6.3-release-record.md). The roadmap graphic marks v6.3.0 Available Now, later releases Coming Soon and Chess unscheduled. Dated increment notes below retain their original historical scope.
 
 **Scope expansion — owner-approved 2026-11-18:** This existing milestone now includes practice quality and a quick, friendly Progress page explaining what a child practices, how they are doing and what to work on. The heading and established increment labels are retained; no later release is reordered. The [approved rules and synthetic acceptance examples](docs/v6.3-rules-specification.md) govern the expanded scope. At that planning stage application work required separate authorization; subsequent implemented increments and preview approvals are recorded below.
 
@@ -214,13 +264,13 @@ Accepted limitations remain Android/tablets, unavailable manual genuine legacy h
 
 Before v6.3a/b, establish shared scope/classification definitions, synthetic fixtures, pure reporting and readiness calculations. This foundation aligns the generator, expanded selectors and explanations.
 
-**Local foundation — 2026-11-18:** Owner-authorized shared definitions, reports/readiness and synthetic tests are implemented as standalone pure modules; [local verification](docs/v6.3-foundation-verification.md) records 35 test groups and an isolated Windows Chrome calculation smoke. They were standalone at that stage and are now loaded by the integrated app. The owner approved outer-window completion credits so long flights remain viable. Later increments integrated the UI, selectors, restrictions, generator allocation and approved additive saved scopes. v6.3a–e are implemented; v6.3f acceptance remains pending and v6.3 stays Coming Soon for production.
+**Local foundation — 2026-11-18:** Owner-authorized shared definitions, reports/readiness and synthetic tests are implemented as standalone pure modules; [local verification](docs/v6.3-foundation-verification.md) records 35 test groups and an isolated Windows Chrome calculation smoke. They were standalone at that stage and are now loaded by the integrated app. The owner approved outer-window completion credits so long flights remain viable. Later increments integrated the UI, selectors, restrictions, generator allocation and approved additive saved scopes. v6.3a–f are now implemented and owner-accepted for the approved v6.3.0 release.
 
 1. **v6.3a — Fact-family extension:** Targeted division and explicit multiplication tables 11/12 with deliberate ranges, compatible records and range-specific readiness.
 2. **v6.3b — Grouped navigation:** Subject/group/activity organization from section 2, supported by a small activity registry; preserve Quick, repeat and School shortcuts.
 3. **v6.3c — Progress and menu trophies:** Recreate the owner-reviewed Learner Stats Review Mock Dashboard with synthetic data, shared reports, understandable readiness and separate timed achievements. Include table/divisor range breakdowns and distinguish selectable tables from higher encountered factors.
 
-   Local Progress dashboard implementation now connects the shared calculations with synthetic fixture verification; see [dashboard verification](docs/v6.3-progress-verification.md). The owner accepted the visual direction and latest tile appearance; complete physical-device checks remain pending. Menu trophies and parent focus restrictions were subsequently implemented locally with synthetic route checks; see [focus verification](docs/v6.3-focus-verification.md). Full device acceptance remains pending; v6.3 remains Coming Soon for production. The candidate is on the authorized Branch Deploy.
+   Local Progress dashboard implementation now connects the shared calculations with synthetic fixture verification; see [dashboard verification](docs/v6.3-progress-verification.md). The owner accepted the visual direction and subsequently confirmed Windows/iPhone functional testing. Menu trophies and parent focus restrictions were subsequently implemented locally with synthetic route checks; see [focus verification](docs/v6.3-focus-verification.md). Owner acceptance and production approval are recorded in the current release status above.
 4. **v6.3d — Optional parent focus:** Per-learner restrictions, default off; accessible disabled choices retaining trophies, checks at every start route, explicit one-flight review allowance, Guest isolation and all-ready recovery.
 5. **v6.3e — Intentional ordinary-practice generation:** Bounded encounter-driven allocation, targeted Level 3 mix, identity ceilings, structural variety and tested tiny-pool fallbacks; preserve advanced pools and original School Test.
 6. **v6.3f — Integrated acceptance:** Automated distribution/report/storage/start-route checks plus required physical-browser regression and owner visual review. No publication is implied.
@@ -233,7 +283,7 @@ Before v6.3a/b, establish shared scope/classification definitions, synthetic fix
 
 #### Fact-family defaults — proposed
 
-**Status update — 2026-11-18:** The defaults below were owner-approved planning rules and are now implemented in the development candidate; this established heading is retained. Physical-device acceptance and production approval remain pending.
+**Status update — 2026-11-18:** The defaults below were owner-approved planning rules and are now implemented in the development candidate; this established heading is retained. Owner device acceptance and production approval were subsequently recorded in the current release status above.
 
 Division selection means **Divide by** selected divisors 1–12, with answers up to 10 or up to 12 and exact integer answers: choosing 4 produces `(4 × q) ÷ 4`. Share selector UI/configuration patterns but preserve ordered division identities and all existing levels.
 
@@ -363,6 +413,8 @@ Icons/manifest already exist. Separately improve standalone launch and verify it
 Optional challenges, picture reveals and session-local rewards follow simple review. Later slow-but-correct review must explain selection and allow parent override. Avoid streak pressure, premium currency, ads, notification campaigns and required games.
 
 Money/coins/change and measurement units/conversions belong together; patterns near Numbers & Counting; vocabulary can extend Reading. Science, geography, parent-created decks and importable content packs remain an idea inventory. Wait for multiple real content types before designing a pack/authoring platform. Sharing content must not share children's progress.
+
+Games & Strategy → Chess is a long-term, unscheduled subject proposal centered on tactical pattern recognition. It does not change the established release sequence or take priority over committed subjects and reliability work. Its proposed phases describe possible increments, not approved releases.
 
 Mandatory accounts, subscriptions, advertising, remote analytics, cloud synchronization, social features and complicated prescribed curricula remain outside this agreed plan.
 
